@@ -1,0 +1,12 @@
+# directories
+.vs/
+.vscode/
+Build/
+Thirdparty/premake/
+Thirdparty/vulkan-sdk/
+
+# extensions 
+*.sln
+*.vcxproj
+*.vcxproj.user
+*.vcxproj.filters
