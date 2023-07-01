@@ -21,7 +21,7 @@ namespace Cosmos
 	// destructor
 	Input::~Input()
 	{
-
+		s_Input = nullptr;
 	}
 
 	void Input::Update(f32 timestep)
@@ -89,14 +89,14 @@ namespace Cosmos
 			if (pressed)
 			{
 				EventData e;
-				e.data.u16[0] = key;
+				e.data.u32[0] = key;
 				EVENT_FIRE(EventType::KEY_PRESSED, 0, e);
 			}
 
 			else
 			{
 				EventData e;
-				e.data.u16[0] = key;
+				e.data.u32[0] = key;
 				EVENT_FIRE(EventType::KEY_RELEASED, 0, e);
 			}
 		}

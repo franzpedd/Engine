@@ -61,6 +61,12 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
 // --------------------------------------------------------------------------
 
+#define RENDERER_VULKAN // this enables vulkan code to be implemented in certain files
+
+// --------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------
+
 #if defined(API_EXPORT)
 	#if defined(_MSC_VER)
 		#define COSMOS_API __declspec(dllexport)

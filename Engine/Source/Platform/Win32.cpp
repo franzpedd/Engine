@@ -1,4 +1,5 @@
 #include "Platform.h"
+#include "Vulkan.h"
 
 #if defined(PLATFORM_WINDOWS)
 
@@ -12,20 +13,18 @@ namespace Cosmos
 {
 	struct PlatformWin32
 	{
-	public:
-
 		// constructor
 		PlatformWin32() = default;
 
 		// destructor
 		~PlatformWin32() = default;
 
-	public:
-
 		HINSTANCE HInstance;
 		HWND HWind;
 		f64 ClockFrequency;
 		LARGE_INTEGER StarTime;
+		u32 WindowExStyle;
+		u32 WindowStyle;
 	};
 
 	static PlatformWin32* s_Platform;
@@ -63,28 +62,28 @@ namespace Cosmos
 		LOG_ASSERT(RegisterClassA(&wc), "The window class registration has failed");
 
 		// setup window style
-		u32 windowExStyle = WS_EX_APPWINDOW;
-		u32 windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
-		windowStyle |= WS_MAXIMIZEBOX;
-		windowStyle |= WS_MINIMIZEBOX;
-		windowStyle |= WS_THICKFRAME;
+		s_Platform->WindowExStyle = WS_EX_APPWINDOW;
+		s_Platform->WindowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
+		s_Platform->WindowStyle |= WS_MAXIMIZEBOX;
+		s_Platform->WindowStyle |= WS_MINIMIZEBOX;
+		s_Platform->WindowStyle |= WS_THICKFRAME;
 
 		// adjust window position (consider window decorations)
 		RECT borderRect = { 0, 0, 0, 0 };
-		AdjustWindowRectEx(&borderRect, windowStyle, 0, windowExStyle);
+		AdjustWindowRectEx(&borderRect, s_Platform->WindowStyle, 0, s_Platform->WindowExStyle);
 
 		m_XPos += borderRect.left;
-		m_YPos += borderRect.top;
+		m_YPos += borderRect.right;
 		m_Width += borderRect.right - borderRect.left;
 		m_Height += borderRect.bottom - borderRect.top;
 
 		// create window object
 		HWND handle = CreateWindowExA
 		(
-			windowExStyle,
+			s_Platform->WindowExStyle,
 			"Cosmos_WC",
 			m_Title,
-			windowStyle,
+			s_Platform->WindowStyle,
 			m_XPos,
 			m_YPos,
 			m_Width,
@@ -133,12 +132,36 @@ namespace Cosmos
 		SleepEx(static_cast<DWORD>(ms), TRUE);
 	}
 
-	f64 GetTime()
+	std::pair<u32, u32> Platform::GetSize()
 	{
-		LARGE_INTEGER now;
-		QueryPerformanceCounter(&now);
+		std::pair<u32, u32> res;
 
-		return (f64)now.QuadPart * s_Platform->ClockFrequency;
+		RECT borderRect = { 0, 0, 0, 0 };
+		AdjustWindowRectEx(&borderRect, s_Platform->WindowStyle, 0, s_Platform->WindowExStyle);
+
+		RECT windowRect{ 0, 0, 0, 0 };
+		if (GetWindowRect(s_Platform->HWind, &windowRect))
+		{
+			res.first = windowRect.right - windowRect.left - (borderRect.right - borderRect.left);
+			res.second = windowRect.bottom - windowRect.top - (borderRect.bottom - borderRect.top);
+		}
+
+		return res;
+	}
+
+	void Platform::SetSize(std::pair<u32, u32> size)
+	{
+		RECT borderRect = { 0, 0, 0, 0 };
+		AdjustWindowRectEx(&borderRect, s_Platform->WindowStyle, 0, s_Platform->WindowExStyle);
+
+		size.first += borderRect.right - borderRect.left;
+		size.first += borderRect.bottom - borderRect.top;
+
+		if (SetWindowPos(s_Platform->HWind, 0, 0, 0, size.first, size.second, 0))
+		{
+			m_Width = size.first;
+			m_Height = size.second;
+		}
 	}
 
 	void OutputMessageToConsole(const char* message, u8 color)
@@ -170,6 +193,89 @@ namespace Cosmos
 		WriteConsoleA(GetStdHandle(STD_ERROR_HANDLE), message, (DWORD)length, number_written, 0);
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	}
+
+	f64 GetTime()
+	{
+		LARGE_INTEGER now;
+		QueryPerformanceCounter(&now);
+
+		return (f64)now.QuadPart * s_Platform->ClockFrequency;
+	}
+
+	void ReadDirectory(const std::string& directory, const std::string& pattern, std::map<std::string, std::string>& files, bool recursive)
+	{
+		LOG_WARNING("Rework this part for it not to be platform specific, using C++ Filesystem");
+		LOG_WARNING("Also, using _s on windows");
+		
+		std::string searchPattern(directory + "/" + pattern);
+
+		_WIN32_FIND_DATAA data;
+		HANDLE hFind;
+
+		if ((hFind = FindFirstFileA(searchPattern.c_str(), &data)) != INVALID_HANDLE_VALUE)
+		{
+			do
+			{
+				std::string fileName(data.cFileName);
+				fileName.erase(fileName.find_last_of("."), std::string::npos);
+				files[fileName] = directory + "/" + data.cFileName;
+			} while (FindNextFileA(hFind, &data) != 0);
+			FindClose(hFind);
+		}
+
+		if (recursive)
+		{
+			std::string dirPattern = directory + "/*";
+
+			if ((hFind = FindFirstFileA(dirPattern.c_str(), &data)) != INVALID_HANDLE_VALUE)
+			{
+				do
+				{
+					if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+					{
+						char subDir[MAX_PATH];
+						strcpy_s(subDir, directory.c_str());
+						strcat_s(subDir, "/");
+						strcat_s(subDir, data.cFileName);
+
+						if ((strcmp(data.cFileName, ".") != 0) && (strcmp(data.cFileName, "..") != 0))
+						{
+							ReadDirectory(subDir, pattern, files, recursive);
+						}
+					}
+				} while (FindNextFileA(hFind, &data) != 0);
+				FindClose(hFind);
+			}
+		}
+	}
+
+	#if defined RENDERER_VULKAN
+
+	const char* GetRendererAPIRequiredExtensions()
+	{
+		return "VK_KHR_win32_surface";
+	}
+
+	VkResult CreateWindowSurface(VkInstance instance, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface)
+	{
+		VkResult err = VK_ERROR_UNKNOWN;
+		VkWin32SurfaceCreateInfoKHR surfaceCI = {};
+		PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
+
+		LOG_ASSERT(vkCreateWin32SurfaceKHR, "Win32: Vulkan instance missing VK_KHR_win32_surface extension");
+		
+		std::memset(&surfaceCI, 0, sizeof(surfaceCI));
+		surfaceCI.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		surfaceCI.hwnd = s_Platform->HWind;
+		surfaceCI.hinstance = s_Platform->HInstance;
+
+		err = vkCreateWin32SurfaceKHR(instance, &surfaceCI, allocator, surface);
+		LOG_ASSERT(err == VK_SUCCESS, "Failed to create Win32 Surface");
+
+		return err;
+	}
+
+	#endif
 
 	LRESULT CALLBACK WindowsProcessMessages(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
 	{

@@ -1,7 +1,9 @@
 # directories
 .vs/
 .vscode/
-Build/
+Build
+Thirdparty/gli
+Thirdparty/glm
 Thirdparty/premake/
 Thirdparty/vulkan-sdk/
 

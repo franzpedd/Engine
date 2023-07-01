@@ -107,5 +107,7 @@ class Premake :
 
 # entrypoint
 Vulkan.Download("1.3.236.0");
+Util.Clone("https://github.com/g-truc/glm", "glm", "0.9.8");
+Util.Clone("https://github.com/g-truc/gli", "gli", "0.8.2");
 Premake.Download("5.0.0-beta2");
 Premake.Generate();

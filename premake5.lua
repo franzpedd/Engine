@@ -12,6 +12,8 @@ vkpath = os.getenv("VULKAN_SDK")
 includelist = {}
 includelist["Engine"] = "%{wks.location}/Engine/Source"
 includelist["Runtime"] = "%{wks.location}/Runtime/Source"
+includelist["GLI"] = "%{wks.location}/Thirdparty/gli"
+includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["Vulkan"] = "%{vkpath}/Include"
 
 -- libraries used
@@ -21,7 +23,8 @@ librarylist["Shaderc"] = "%{vkpath}/Lib/shaderc_shared.lib"
 
 -- include any dependency
 group "Thirdarty"
--- include "Thirdparty/MyAwesomeDependency"
+    include "Thirdparty/gli.lua"
+    include "Thirdparty/glm.lua"
 group ""
 
 -- include projects

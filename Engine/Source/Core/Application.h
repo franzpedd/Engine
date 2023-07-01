@@ -3,8 +3,11 @@
 #include "Core/Defines.h"
 #include "Event.h"
 #include "Input.h"
+#include "Scene.h"
 
 #include "Platform/Platform.h"
+
+#include "Renderer/Vulkan/VKRenderer.h"
 
 #include "Util/Clock.h"
 
@@ -20,6 +23,8 @@ namespace Cosmos
             std::shared_ptr<Input> Input;
             std::shared_ptr<EventSystem> EventSystem;
             std::shared_ptr<Clock> Clock;
+            std::shared_ptr<VKRenderer> Renderer;
+            std::shared_ptr<Scene> Scene;
 
             f64 LastTime{};
             bool IsRunning{};
@@ -28,7 +33,7 @@ namespace Cosmos
     public:
 
         // constructor
-         Application();
+        Application();
         
         // destructor
         virtual ~Application();
@@ -69,8 +74,8 @@ namespace Cosmos
     private:
 
         static Application* s_Application;
-        Specification m_Specification;
 
+        Specification m_Specification;
     };
 
     // application events handler

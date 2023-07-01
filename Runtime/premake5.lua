@@ -8,14 +8,19 @@ project "Runtime"
 
     files
     {
+        "Source/**.c",
         "Source/**.h",
+        "Source/**.hpp",
         "Source/**.cpp"
     }
 
     includedirs
     {
         "%{includelist.Engine}",
-        "%{includelist.Editor}"
+        "%{includelist.Editor}",
+        "%{includelist.Vulkan}",
+        "%{includelist.GLI}",
+        "%{includelist.GLM}"
     }
 
     links
@@ -39,4 +44,4 @@ project "Runtime"
         optimize "Full"
 
     filter "system:windows"
-        disablewarnings { "4251" }
+        disablewarnings { "4251", "26495", "26451", "33010" }

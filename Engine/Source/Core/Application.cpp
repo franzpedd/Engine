@@ -15,8 +15,8 @@ namespace Cosmos
         m_Specification.Input = Input::Create();
         m_Specification.EventSystem = EventSystem::Create();
         m_Specification.Clock = Clock::Create();
-        
-        LOG_TRACE("The time is now %f", GetTime());
+        m_Specification.Renderer = VKRenderer::Create(m_Specification.Platform, "Runtime", "Cosmos", true);
+        m_Specification.Scene = Scene::Create(m_Specification.Platform, m_Specification.Renderer);
 
         RegisterEvents();
     }
@@ -24,10 +24,15 @@ namespace Cosmos
     Application::~Application()
     {
         UnregisterEvents();
+
+        s_Application = nullptr;
     }
 
     void Application::Run()
     {
+        m_Specification.Renderer->Prepare();
+        m_Specification.Scene->Prepare();
+
         m_Specification.IsRunning = true;
 
         // setup frame system
@@ -42,10 +47,7 @@ namespace Cosmos
 
         while (m_Specification.IsRunning)
         {
-            if (!m_Specification.Platform->ProcessMessages()) // quit message was not triggered by platform
-            {
-                m_Specification.IsRunning = false;
-            }
+            m_Specification.Platform->ProcessMessages();
 
             // update clock
             m_Specification.Clock->Update();
@@ -81,8 +83,6 @@ namespace Cosmos
             // update last time
             m_Specification.LastTime = currentTime;
         }
-
-        m_Specification.IsRunning = false;
 
         OnTerminate(); // calls runtime terminates before shutting down the engine systems
     }
@@ -124,7 +124,7 @@ namespace Cosmos
         {
             case EventType::KEY_PRESSED:
             {
-                if (edata.data.u16[0] == Input::Keycode::KEYCODE_ESCAPE)
+                if (edata.data.u32[0] == Input::Keycode::KEYCODE_ESCAPE)
                 {
                     Application::Get().GetSpecification().IsRunning = false;
                 }

@@ -8,14 +8,18 @@ project "Engine"
 
     files
     {
+        "Source/**.c",
         "Source/**.h",
+        "Source/**.hpp",
         "Source/**.cpp"
     }
 
     includedirs
     {
         "%{includelist.Engine}",
-        "%{includelist.Vulkan}"
+        "%{includelist.Vulkan}",
+        "%{includelist.GLI}",
+        "%{includelist.GLM}"
     }
 
     links
@@ -40,4 +44,4 @@ project "Engine"
         optimize "Full"
 
     filter "system:windows"
-        disablewarnings { "4251" }
+        disablewarnings { "4251", "26495", "26451", "33010" }

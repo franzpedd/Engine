@@ -3,7 +3,9 @@
 #include "Core/Defines.h"
 #include "Core/Event.h"
 
+#include <map>
 #include <memory>
+#include <string>
 
 namespace Cosmos
 {
@@ -26,6 +28,12 @@ namespace Cosmos
 		// freezes the main-thread
 		void Sleep(u64 ms);
 
+		// returns current window size
+		std::pair<u32, u32> GetSize();
+
+		// sets a new window size
+		void SetSize(std::pair<u32, u32> size);
+
 	private:
 
 		const char* m_Title;
@@ -35,6 +43,8 @@ namespace Cosmos
 		u32 m_YPos;
 	};
 	
+	// returns a vector of files read in a directory
+	COSMOS_API void ReadDirectory(const std::string& directory, const std::string& pattern, std::map<std::string, std::string>& files, bool recursive);
 
 	// writes a message to the application's console
 	COSMOS_API void OutputMessageToConsole(const char* message, u8 color);
