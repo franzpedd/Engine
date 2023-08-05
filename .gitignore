@@ -1,0 +1,16 @@
+# folders
+.vs/
+_Build/
+Thirdparty/glfw
+Thirdparty/gli
+Thirdparty/glm
+Thirdparty/imgui
+Thirdparty/premake
+Thirdparty/tinygltf
+
+# extensions
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.spv
