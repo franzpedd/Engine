@@ -39,7 +39,7 @@ namespace Cosmos
 		inline std::vector<VkImage>& Images() { return mImages; }
 
 		// returns the swapchain image views
-		inline std::vector<VkImageView>& ImageViews() { return mImageViews; }
+		inline std::vector<VkImageView> ImageViews() { return mImageViews; }
 
 		// returns the simultaniously rendered images
 		inline uint32_t ImageCount() { return mImageCount; }
@@ -55,6 +55,9 @@ namespace Cosmos
 
 		// returns the swapchain's framebuffers
 		inline std::vector<VkFramebuffer>& Framebuffers() { return mFramebuffers; }
+
+		// returns the swapchain's color view
+		inline VkImageView& ColorView() { return mColorView; }
 
 	public:
 
@@ -94,7 +97,7 @@ namespace Cosmos
 		VkSwapchainKHR mSwapchain = VK_NULL_HANDLE;
 		std::vector<VkImage> mImages = {};
 		std::vector<VkImageView> mImageViews = {};
-		uint32_t mImageCount = 2;
+		uint32_t mImageCount;
 		VkSurfaceFormatKHR mSurfaceFormat = {};
 		VkPresentModeKHR mPresentMode = {};
 		VkExtent2D mExtent = {};

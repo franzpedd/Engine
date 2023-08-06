@@ -1,5 +1,4 @@
 #pragma once
 
 #include "Core/Application.h"
-
-#include "Util/Logger.h"
+#include "Core/UI.h"

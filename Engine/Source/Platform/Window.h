@@ -82,7 +82,6 @@ namespace Cosmos
 		int mWidth;
 		int mHeight;
 		GLFWwindow* mWindow;
-		bool mShouldResizeWindow;
-		bool mShouldResizeUI;
+		bool mShouldResizeWindow = false;
 	};
 }

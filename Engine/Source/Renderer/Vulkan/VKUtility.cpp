@@ -80,16 +80,16 @@ namespace Cosmos
 		// make the transition
 		VkImageMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = mipLevels;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = mipLevels;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
 
 		VkPipelineStageFlags srcStage;
 		VkPipelineStageFlags dstStage;
@@ -97,11 +97,11 @@ namespace Cosmos
 		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
 			barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		}
-		
+
 		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -109,7 +109,7 @@ namespace Cosmos
 			srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
-		
+
 		else
 		{
 			LOG_ASSERT(false, "Unsupported layout transition");
@@ -181,15 +181,15 @@ namespace Cosmos
 
 		// end command buffer
 		vkEndCommandBuffer(cmdBuffer);
-		
+
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &cmdBuffer;
-		
+
 		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(device->GraphicsQueue());
-		
+
 		vkFreeCommandBuffers(device->Device(), device->CommandPool(), 1, &cmdBuffer);
 	}
 
@@ -231,15 +231,15 @@ namespace Cosmos
 
 		// end command buffer
 		vkEndCommandBuffer(cmdBuffer);
-		
+
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &cmdBuffer;
-		
+
 		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(device->GraphicsQueue());
-		
+
 		vkFreeCommandBuffers(device->Device(), device->CommandPool(), 1, &cmdBuffer);
 	}
 
@@ -250,7 +250,7 @@ namespace Cosmos
 		vkGetPhysicalDeviceFormatProperties(device->PhysicalDevice(), imageFormat, &formatProperties);
 
 		LOG_ASSERT(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT, "Image format does not support linear blitting");
-		
+
 		// begin command buffer
 		VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {};
 		cmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -290,7 +290,7 @@ namespace Cosmos
 			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr,	1, &barrier);
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 			VkImageBlit blit = {};
 			blit.srcOffsets[0] = { 0, 0, 0 };
@@ -323,19 +323,19 @@ namespace Cosmos
 		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,	0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		// end command buffer
 		vkEndCommandBuffer(cmdBuffer);
-		
+
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &cmdBuffer;
-		
+
 		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(device->GraphicsQueue());
-		
+
 		vkFreeCommandBuffers(device->Device(), device->CommandPool(), 1, &cmdBuffer);
 	}
 
@@ -379,31 +379,31 @@ namespace Cosmos
 		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufferAllocInfo.commandPool = device->CommandPool();
 		cmdBufferAllocInfo.commandBufferCount = 1;
-		
+
 		VkCommandBuffer commandBuffer;
 		vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &commandBuffer);
-		
+
 		VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 		cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		
+
 		vkBeginCommandBuffer(commandBuffer, &cmdBufferBeginInfo);
-		
+
 		return commandBuffer;
 	}
 
 	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
-		
+
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
-		
+
 		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(device->GraphicsQueue());
-		
+
 		vkFreeCommandBuffers(device->Device(), device->CommandPool(), 1, &commandBuffer);
 	}
 }

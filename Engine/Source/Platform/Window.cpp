@@ -28,7 +28,7 @@ namespace Cosmos
 
 		mWindow = glfwCreateWindow(width, height, title, nullptr, nullptr);
 		LOG_ASSERT(mWindow != nullptr, "Failed to create Window");
-		
+
 		glfwSetWindowUserPointer(mWindow, reinterpret_cast<void*>(this));
 		SetCallbacks();
 	}
@@ -121,7 +121,7 @@ namespace Cosmos
 			});
 
 		// window resized
-		glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height)
+		glfwSetFramebufferSizeCallback(mWindow, [](GLFWwindow* window, int width, int height)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
 				win->HintResizeWindow(true);

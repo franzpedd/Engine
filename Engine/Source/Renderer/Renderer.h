@@ -13,7 +13,7 @@ namespace Cosmos
 	// forward declaration
 	class UI;
 	class Window;
-	
+
 	class Renderer
 	{
 	public:
@@ -55,6 +55,9 @@ namespace Cosmos
 		void Update();
 
 	private:
+
+		// submit all render passes
+		void ManageRenderPasses(uint32_t& imageIndex);
 
 		// creates global structures shared across the renderer
 		void CreateGlobalStates();

@@ -9,16 +9,17 @@
 
 // not using own implementation of GLFW + VULKAN for ImGUI
 #if defined(_MSC_VER)
-	#pragma warning( push )
-	#pragma warning( disable : 26451 )
+#pragma warning( push )
+#pragma warning( disable : 26451 )
 #endif
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_vulkan.cpp>
 #if defined(_MSC_VER)
-	# pragma warning(pop)
+# pragma warning(pop)
 #endif
 
+#include <array>
 #include <vector>
 
 namespace Cosmos
@@ -31,12 +32,24 @@ namespace Cosmos
 	UI::UI(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device, std::shared_ptr<VKSwapchain>& swapchain)
 		: mWindow(window), mInstance(instance), mDevice(device), mSwapchain(swapchain)
 	{
-		
+		CreateResources();
+		SetupConfiguration();
 	}
 
 	UI::~UI()
 	{
+		for (auto framebuffer : mFramebuffers)
+		{
+			vkDestroyFramebuffer(mDevice->Device(), framebuffer, nullptr);
+		}
+
+		vkDestroyRenderPass(mDevice->Device(), mRenderPass, nullptr);
+
+		vkFreeCommandBuffers(mDevice->Device(), mCommandPool, (uint32_t)mCommandBuffers.size(), mCommandBuffers.data());
+		vkDestroyCommandPool(mDevice->Device(), mCommandPool, nullptr);
+
 		vkDestroyDescriptorPool(mDevice->Device(), mDescriptorPool, nullptr);
+
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -66,7 +79,35 @@ namespace Cosmos
 		ImGui_ImplVulkan_SetMinImageCount(count);
 	}
 
-	void UI::SetupConfiguration(VkRenderPass& renderPass)
+	void UI::Resize()
+	{
+		// recreate framebuffer based on image views
+		{
+			for (auto framebuffer : mFramebuffers)
+			{
+				vkDestroyFramebuffer(mDevice->Device(), framebuffer, nullptr);
+			}
+
+			mFramebuffers.resize(mSwapchain->ImageViews().size());
+
+			for (size_t i = 0; i < mSwapchain->ImageViews().size(); i++)
+			{
+				VkImageView attachments[] = { mSwapchain->ImageViews()[i] };
+
+				VkFramebufferCreateInfo framebufferCI = {};
+				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+				framebufferCI.renderPass = mRenderPass;
+				framebufferCI.attachmentCount = 1;
+				framebufferCI.pAttachments = attachments;
+				framebufferCI.width = mSwapchain->Extent().width;
+				framebufferCI.height = mSwapchain->Extent().height;
+				framebufferCI.layers = 1;
+				LOG_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+			}
+		}
+	}
+
+	void UI::SetupConfiguration()
 	{
 		// initial config
 		IMGUI_CHECKVERSION();
@@ -117,9 +158,9 @@ namespace Cosmos
 		initInfo.DescriptorPool = mDescriptorPool;
 		initInfo.MinImageCount = mSwapchain->ImageCount();
 		initInfo.ImageCount = mSwapchain->ImageCount();
-		initInfo.MSAASamples = mDevice->GetMaxUsableSamples();
+		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		initInfo.Allocator = nullptr;
-		ImGui_ImplVulkan_Init(&initInfo, renderPass);
+		ImGui_ImplVulkan_Init(&initInfo, mRenderPass);
 
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
 
@@ -130,6 +171,92 @@ namespace Cosmos
 
 		// destroy used resources for uploading fonts
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
+	}
+
+	void UI::CreateResources()
+	{
+		// render pass
+		{
+			VkAttachmentDescription attachment = {};
+			attachment.format = mSwapchain->SurfaceFormat().format;
+			attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+			attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			VkAttachmentReference colorAttachment = {};
+			colorAttachment.attachment = 0;
+			colorAttachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorAttachment;
+
+			VkSubpassDependency dependency = {};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.srcAccessMask = 0;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			VkRenderPassCreateInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			info.attachmentCount = 1;
+			info.pAttachments = &attachment;
+			info.subpassCount = 1;
+			info.pSubpasses = &subpass;
+			info.dependencyCount = 1;
+			info.pDependencies = &dependency;
+			LOG_ASSERT(vkCreateRenderPass(mDevice->Device(), &info, nullptr, &mRenderPass) == VK_SUCCESS, "Failed to create render pass");
+		}
+
+		// command pool
+		{
+			QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->PhysicalDevice(), mDevice->Surface());
+
+			VkCommandPoolCreateInfo cmdPoolInfo = {};
+			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
+			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			LOG_ASSERT(vkCreateCommandPool(mDevice->Device(), &cmdPoolInfo, nullptr, &mCommandPool) == VK_SUCCESS, "Failed to create command pool");
+		}
+
+		// command buffers
+		{
+			mCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+			VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+			cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			cmdBufferAllocInfo.commandPool = mCommandPool;
+			cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
+			vkAllocateCommandBuffers(mDevice->Device(), &cmdBufferAllocInfo, mCommandBuffers.data());
+		}
+
+		// frame buffers
+		{
+			mFramebuffers.resize(mSwapchain->ImageViews().size());
+
+			for (size_t i = 0; i < mSwapchain->ImageViews().size(); i++)
+			{
+				VkImageView attachments[] = { mSwapchain->ImageViews()[i] };
+
+				VkFramebufferCreateInfo framebufferCI = {};
+				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+				framebufferCI.renderPass = mRenderPass;
+				framebufferCI.attachmentCount = 1;
+				framebufferCI.pAttachments = attachments;
+				framebufferCI.width = mSwapchain->Extent().width;
+				framebufferCI.height = mSwapchain->Extent().height;
+				framebufferCI.layers = 1;
+				LOG_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+			}
+		}
 	}
 
 	void UI::SetupCustomStyle()

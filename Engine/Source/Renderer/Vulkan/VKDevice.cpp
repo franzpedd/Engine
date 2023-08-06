@@ -19,7 +19,7 @@ namespace Cosmos
 		: mWindow(window), mInstance(instance)
 	{
 		Logger() << "Creating VKDevice";
-		
+
 		mWindow->CreateWindowSurface(instance->Instance(), &mSurface, nullptr);
 		SelectPhysicalDevice();
 
@@ -118,10 +118,10 @@ namespace Cosmos
 	VkSampleCountFlagBits VKDevice::GetMaxUsableSamples()
 	{
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "TODO: Move MSAA samples to settings.ini");
-		
+
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties(mPhysicalDevice, &props);
-		
+
 		VkSampleCountFlags counts = props.limits.framebufferColorSampleCounts & props.limits.framebufferDepthSampleCounts;
 		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
 		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
@@ -129,7 +129,7 @@ namespace Cosmos
 		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
 		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
 		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
-		
+
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
@@ -191,9 +191,9 @@ namespace Cosmos
 
 		std::vector<const char*> validations = mInstance->ValidationsList();
 
-		#if defined VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
+#if defined VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 		extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-		#endif
+#endif
 
 		VkDeviceCreateInfo deviceCI = {};
 		deviceCI.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -244,6 +244,6 @@ namespace Cosmos
 		cmdBufferAllocInfo.commandPool = mCommandPool;
 		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
-		LOG_ASSERT(vkAllocateCommandBuffers(mDevice, &cmdBufferAllocInfo, mCommandBuffers.data()) == VK_SUCCESS, "failed to create command buffer vector");
+		LOG_ASSERT(vkAllocateCommandBuffers(mDevice, &cmdBufferAllocInfo, mCommandBuffers.data()) == VK_SUCCESS, "Failed to create command buffer vector");
 	}
 }

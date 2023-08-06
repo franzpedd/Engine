@@ -27,7 +27,6 @@ namespace Cosmos
 		CreateGlobalStates();
 
 		mUI = UI::Create(mWindow, mInstance, mDevice, mSwapchain);
-		mUI->SetupConfiguration(mRenderPass);
 
 		mUBO = UBO::Create(mDevice, mRenderPass, mPipelineCache);
 	}
@@ -52,119 +51,163 @@ namespace Cosmos
 		// updating UI
 		mUI->Update();
 
-		// acquire next image in the swapchain
-		vkWaitForFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
-
 		uint32_t imageIndex;
-		VkResult res = vkAcquireNextImageKHR(mDevice->Device(), mSwapchain->Swapchain(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult res;
 
-		if (res == VK_ERROR_OUT_OF_DATE_KHR)
+		// acquire next image in the swapchain
 		{
-			mSwapchain->Recreate(mRenderPass, mMSAACount);
-			return;
+			vkWaitForFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
+
+			res = vkAcquireNextImageKHR(mDevice->Device(), mSwapchain->Swapchain(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &imageIndex);
+
+			if (res == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				mSwapchain->Recreate(mRenderPass, mMSAACount);
+				return;
+			}
+
+			else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+			{
+				LOG_ASSERT(false, "Failed to acquired next swapchain image");
+			}
+
+			vkResetFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame]);
 		}
 
-		else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
-		{
-			LOG_ASSERT(false, "Failed to acquired next swapchain image");
-		}
+		ManageRenderPasses(imageIndex);
 
-		vkResetFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame]);
-
-		// init command buffer
-		vkResetCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-
-		VkCommandBufferBeginInfo cmdBeginInfo = {};
-		cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdBeginInfo.pNext = nullptr;
-		cmdBeginInfo.flags = 0;
-		LOG_ASSERT(vkBeginCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], &cmdBeginInfo) == VK_SUCCESS, "Failed to begin command buffer recording");
-		
-		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { {0.5f, 0.0f, 0.5f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
-
-		VkRenderPassBeginInfo renderPassBeginInfo = {};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.renderPass = mRenderPass;
-		renderPassBeginInfo.framebuffer = mSwapchain->Framebuffers()[imageIndex];
-		renderPassBeginInfo.renderArea.offset = { 0, 0 };
-		renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
-		renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
-		renderPassBeginInfo.pClearValues = clearValues.data();
-
-		// todo: multiple render passes
-		// todo: update all pipelines and drawing commands
-		vkCmdBeginRenderPass(mDevice->CommandBuffers()[mCurrentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-		
-		// set frame commandbuffer viewport
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)mSwapchain->Extent().width;
-		viewport.height = (float)mSwapchain->Extent().height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &viewport);
-
-		// set frame commandbuffer scissor
-		VkRect2D scissor = {};
-		scissor.offset = { 0, 0 };
-		scissor.extent = mSwapchain->Extent();
-		vkCmdSetScissor(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &scissor);
-
-		// draws the UI
-		mUI->Draw(mDevice->CommandBuffers()[mCurrentFrame]);
-
-		vkCmdEndRenderPass(mDevice->CommandBuffers()[mCurrentFrame]);
-
-		// end command buffer
-		LOG_ASSERT(vkEndCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame]) == VK_SUCCESS, "Failed to end command buffer recording");
-
-		// submits to graphics queue
+		VkSwapchainKHR swapChains[] = { mSwapchain->Swapchain() };
 		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrame] };
 		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[mCurrentFrame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pNext = nullptr;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &mDevice->CommandBuffers()[mCurrentFrame];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-		LOG_ASSERT(vkQueueSubmit(mDevice->GraphicsQueue(), 1, &submitInfo, mInFlightFences[mCurrentFrame]) == VK_SUCCESS, "Failed to submit draw command");
 
-		// presents the image
-		VkSwapchainKHR swapChains[] = { mSwapchain->Swapchain() };
-		VkPresentInfoKHR presentInfo = {};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-
-		res = vkQueuePresentKHR(mDevice->PresentQueue(), &presentInfo);
-
-		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || mWindow->ShouldResizeWindow())
+		// submits to graphics queue
 		{
-			mUI->SetImageCount(mSwapchain->ImageCount());
-			LOG_TO_TERMINAL(Logger::Severity::Warn, "Check if needs to implement vulkan+glfw ui window recreation");
+			// grab all commandbuffers used into a single queue submit
+			std::array<VkCommandBuffer, 2> submitCommandBuffers =
+			{
+				mDevice->CommandBuffers()[mCurrentFrame],
+				mUI->CommandBuffers()[mCurrentFrame]
+			};
 
-			mWindow->HintResizeWindow(false);
-			mSwapchain->Recreate(mRenderPass, mMSAACount);
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.pNext = nullptr;
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = waitSemaphores;
+			submitInfo.pWaitDstStageMask = waitStages;
+			submitInfo.commandBufferCount = (uint32_t)submitCommandBuffers.size();
+			submitInfo.pCommandBuffers = submitCommandBuffers.data();
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+			LOG_ASSERT(vkQueueSubmit(mDevice->GraphicsQueue(), 1, &submitInfo, mInFlightFences[mCurrentFrame]) == VK_SUCCESS, "Failed to submit draw command");
 		}
 
-		else if (res != VK_SUCCESS)
+		// presents the image
 		{
-			LOG_ASSERT(false, "Failed to present swapchain image");
+			VkPresentInfoKHR presentInfo = {};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = signalSemaphores;
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = swapChains;
+			presentInfo.pImageIndices = &imageIndex;
+
+			res = vkQueuePresentKHR(mDevice->PresentQueue(), &presentInfo);
+
+			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || mWindow->ShouldResizeWindow())
+			{
+				mWindow->HintResizeWindow(false);
+				mSwapchain->Recreate(mRenderPass, mMSAACount);
+
+				mUI->SetImageCount(mSwapchain->ImageCount());
+				mUI->Resize();
+			}
+
+			else if (res != VK_SUCCESS)
+			{
+				LOG_ASSERT(false, "Failed to present swapchain image");
+			}
 		}
 
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
+	void Renderer::ManageRenderPasses(uint32_t& imageIndex)
+	{
+		// color and depth render pass
+		{
+			vkResetCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+			cmdBeginInfo.flags = 0;
+			LOG_ASSERT(vkBeginCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], &cmdBeginInfo) == VK_SUCCESS, "Failed to begin command buffer recording");
+
+			std::array<VkClearValue, 2> clearValues = {};
+			clearValues[0].color = { {0.5f, 0.0f, 0.5f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.renderPass = mRenderPass;
+			renderPassBeginInfo.framebuffer = mSwapchain->Framebuffers()[imageIndex];
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
+			renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
+			renderPassBeginInfo.pClearValues = clearValues.data();
+			vkCmdBeginRenderPass(mDevice->CommandBuffers()[mCurrentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// set frame commandbuffer viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)mSwapchain->Extent().width;
+			viewport.height = (float)mSwapchain->Extent().height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &viewport);
+
+			// set frame commandbuffer scissor
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = mSwapchain->Extent();
+			vkCmdSetScissor(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &scissor);
+
+			vkCmdEndRenderPass(mDevice->CommandBuffers()[mCurrentFrame]);
+
+			// end command buffer
+			LOG_ASSERT(vkEndCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame]) == VK_SUCCESS, "Failed to end command buffer recording");
+		}
+
+		// user interface
+		{
+			vkResetCommandBuffer(mUI->CommandBuffers()[mCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+			cmdBeginInfo.flags = 0;
+			LOG_ASSERT(vkBeginCommandBuffer(mUI->CommandBuffers()[mCurrentFrame], &cmdBeginInfo) == VK_SUCCESS, "Failed to begin command buffer recording");
+
+			VkClearValue clearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.renderPass = mUI->RenderPass();
+			renderPassBeginInfo.framebuffer = mUI->Framebuffers()[imageIndex];
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
+			renderPassBeginInfo.clearValueCount = 1;
+			renderPassBeginInfo.pClearValues = &clearValue;
+			vkCmdBeginRenderPass(mUI->CommandBuffers()[mCurrentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			mUI->Draw(mUI->CommandBuffers()[mCurrentFrame]);
+
+			vkCmdEndRenderPass(mUI->CommandBuffers()[mCurrentFrame]);
+
+			LOG_ASSERT(vkEndCommandBuffer(mUI->CommandBuffers()[mCurrentFrame]) == VK_SUCCESS, "Failed to end command buffer recording");
+		}
 	}
 
 	void Renderer::CreateGlobalStates()
@@ -192,7 +235,8 @@ namespace Cosmos
 			colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			// finalLayout should not be VK_IMAGE_LAYOUT_PRESENT_SRC_KHR as ui is a post render pass that will present
 
 			VkAttachmentDescription depthAttachment = {};
 			depthAttachment.format = FindDepthFormat(mDevice);
@@ -244,7 +288,7 @@ namespace Cosmos
 			renderPassCI.dependencyCount = 1;
 			renderPassCI.pDependencies = &dependency;
 			LOG_ASSERT(vkCreateRenderPass(mDevice->Device(), &renderPassCI, nullptr, &mRenderPass) == VK_SUCCESS, "Failed to create render pass");
-			
+
 			mSwapchain->CreateFramebuffers(mRenderPass, mMSAACount);
 		}
 

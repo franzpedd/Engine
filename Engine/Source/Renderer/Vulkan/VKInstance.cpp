@@ -32,7 +32,8 @@ namespace Cosmos
 		VkDebugUtilsMessengerCreateInfoEXT debugUtilsCI = {};
 		VkInstanceCreateInfo instanceCI = {};
 		instanceCI.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		instanceCI.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		instanceCI.flags = 0;
+		//instanceCI.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 		instanceCI.pApplicationInfo = &applicationInfo;
 
 		if (validations)
@@ -95,7 +96,7 @@ namespace Cosmos
 		glfwExtensions = Window::GetRequiredInstanceExtensions(&glfwExtensionCount);
 
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-		extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+		//extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
 		if (mValidations)
@@ -104,7 +105,7 @@ namespace Cosmos
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 		}
-		
+
 		return extensions;
 	}
 
