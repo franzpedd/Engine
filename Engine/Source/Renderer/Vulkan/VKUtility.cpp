@@ -39,7 +39,7 @@ namespace Cosmos
 		vkBindImageMemory(device->Device(), image, memory, 0);
 	}
 
-	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
+	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 	{
 		VkImageViewCreateInfo imageViewCI = {};
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -48,7 +48,7 @@ namespace Cosmos
 		imageViewCI.format = format;
 		imageViewCI.subresourceRange.aspectMask = aspectFlags;
 		imageViewCI.subresourceRange.baseMipLevel = 0;
-		imageViewCI.subresourceRange.levelCount = mipLevels;
+		imageViewCI.subresourceRange.levelCount = 1;
 		imageViewCI.subresourceRange.baseArrayLayer = 0;
 		imageViewCI.subresourceRange.layerCount = 1;
 
@@ -364,20 +364,22 @@ namespace Cosmos
 	{
 		const std::vector<VkFormat>& candidates =
 		{
-			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
-			VK_FORMAT_D24_UNORM_S8_UINT
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D24_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM
 		};
 
 		return FindSuitableFormat(device, candidates, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	}
 
-	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device)
+	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool)
 	{
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufferAllocInfo.commandPool = device->CommandPool();
+		cmdBufferAllocInfo.commandPool = commandPool;
 		cmdBufferAllocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
@@ -392,7 +394,7 @@ namespace Cosmos
 		return commandBuffer;
 	}
 
-	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandBuffer commandBuffer)
+	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -404,6 +406,33 @@ namespace Cosmos
 		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(device->GraphicsQueue());
 
-		vkFreeCommandBuffers(device->Device(), device->CommandPool(), 1, &commandBuffer);
+		vkFreeCommandBuffers(device->Device(), commandPool, 1, &commandBuffer);
+	}
+
+	void InsertImageMemoryBarrier(VkCommandBuffer cmdbuffer, VkImage image, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageSubresourceRange subresourceRange)
+	{
+		VkImageMemoryBarrier imageMemoryBarrier = {};
+		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		imageMemoryBarrier.pNext = 0;
+		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.srcAccessMask = srcAccessMask;
+		imageMemoryBarrier.dstAccessMask = dstAccessMask;
+		imageMemoryBarrier.oldLayout = oldImageLayout;
+		imageMemoryBarrier.newLayout = newImageLayout;
+		imageMemoryBarrier.image = image;
+		imageMemoryBarrier.subresourceRange = subresourceRange;
+
+		vkCmdPipelineBarrier
+		(
+			cmdbuffer,
+			srcStageMask,
+			dstStageMask,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageMemoryBarrier
+		);
+
 	}
 }

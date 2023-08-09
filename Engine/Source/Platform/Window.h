@@ -46,7 +46,7 @@ namespace Cosmos
 	public:
 
 		// updates the window
-		void Update();
+		void OnUpdate();
 
 		// checks if application quit was requested
 		bool ShouldQuit();

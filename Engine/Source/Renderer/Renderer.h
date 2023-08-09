@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Commander.h"
+
 #include "Vulkan/VKInstance.h"
 #include "Vulkan/VKDevice.h"
 #include "Vulkan/VKDrawable.h"
 #include "Vulkan/VKSwapchain.h"
+#include "Vulkan/VKUtility.h"
 
 #include <vulkan/vulkan.h>
 #include <memory>
@@ -38,7 +41,13 @@ namespace Cosmos
 		// returns the backend swapchain class object
 		inline std::shared_ptr<VKSwapchain>& BackendSwapchain() { return mSwapchain; }
 
+		// returns a reference to the renderer commander
+		inline std::shared_ptr<Commander>& RendererCommander() { return mCommander; }
+
 	public:
+
+		// returns the user interface
+		inline std::shared_ptr<UI>& UserInterface() { return mUI; }
 
 		// returns the vulkan render pass
 		inline VkRenderPass& RenderPass() { return mRenderPass; }
@@ -49,12 +58,21 @@ namespace Cosmos
 		// returns the current in-process frame
 		inline uint32_t CurrentFrame() { return mCurrentFrame; }
 
+		// returns the current image index
+		inline uint32_t ImageIndex() { return mImageIndex; }
+
+		// returns the globally used msaa factor
+		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
+
 	public:
 
 		// updates the renderer
-		void Update();
+		void OnUpdate();
 
 	private:
+
+		// renderer render backend
+		void Render();
 
 		// submit all render passes
 		void ManageRenderPasses(uint32_t& imageIndex);
@@ -69,18 +87,18 @@ namespace Cosmos
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
+		std::shared_ptr<Commander> mCommander;
+
 		std::shared_ptr<UI> mUI;
 
 		VkPipelineCache mPipelineCache;
 		VkRenderPass mRenderPass;
 		VkSampleCountFlagBits mMSAACount;
 
-		std::shared_ptr<UBO> mUBO;
-
-		// sync
 		std::vector<VkSemaphore> mImageAvailableSemaphores;
 		std::vector<VkSemaphore> mRenderFinishedSemaphores;
 		std::vector<VkFence> mInFlightFences;
 		uint32_t mCurrentFrame = 0;
+		uint32_t mImageIndex = 0;
 	};
 }

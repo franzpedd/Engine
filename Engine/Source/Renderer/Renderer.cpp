@@ -1,9 +1,5 @@
 #include "Renderer.h"
 
-#include "Vulkan/VKDevice.h"
-#include "Vulkan/VKInstance.h"
-#include "Vulkan/VKUtility.h"
-
 #include "Core/UI.h"
 #include "Platform/Window.h"
 #include "Util/Logger.h"
@@ -28,7 +24,7 @@ namespace Cosmos
 
 		mUI = UI::Create(mWindow, mInstance, mDevice, mSwapchain);
 
-		mUBO = UBO::Create(mDevice, mRenderPass, mPipelineCache);
+		mCommander = Commander::Create();
 	}
 
 	Renderer::~Renderer()
@@ -46,19 +42,25 @@ namespace Cosmos
 		}
 	}
 
-	void Renderer::Update()
+	void Renderer::OnUpdate()
 	{
 		// updating UI
-		mUI->Update();
+		mUI->NewFrame();
+		mUI->OnUpdate();
+		mUI->EndFrame();
 
-		uint32_t imageIndex;
+		Render();
+	}
+
+	void Renderer::Render()
+	{
 		VkResult res;
 
 		// acquire next image in the swapchain
 		{
 			vkWaitForFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
 
-			res = vkAcquireNextImageKHR(mDevice->Device(), mSwapchain->Swapchain(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &imageIndex);
+			res = vkAcquireNextImageKHR(mDevice->Device(), mSwapchain->Swapchain(), UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
 
 			if (res == VK_ERROR_OUT_OF_DATE_KHR)
 			{
@@ -74,7 +76,7 @@ namespace Cosmos
 			vkResetFences(mDevice->Device(), 1, &mInFlightFences[mCurrentFrame]);
 		}
 
-		ManageRenderPasses(imageIndex);
+		ManageRenderPasses(mImageIndex);
 
 		VkSwapchainKHR swapChains[] = { mSwapchain->Swapchain() };
 		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrame] };
@@ -111,7 +113,7 @@ namespace Cosmos
 			presentInfo.pWaitSemaphores = signalSemaphores;
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &imageIndex;
+			presentInfo.pImageIndices = &mImageIndex;
 
 			res = vkQueuePresentKHR(mDevice->PresentQueue(), &presentInfo);
 
@@ -121,7 +123,7 @@ namespace Cosmos
 				mSwapchain->Recreate(mRenderPass, mMSAACount);
 
 				mUI->SetImageCount(mSwapchain->ImageCount());
-				mUI->Resize();
+				mUI->OnResize();
 			}
 
 			else if (res != VK_SUCCESS)
@@ -132,6 +134,7 @@ namespace Cosmos
 
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
+
 	void Renderer::ManageRenderPasses(uint32_t& imageIndex)
 	{
 		// color and depth render pass

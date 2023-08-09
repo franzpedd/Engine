@@ -72,7 +72,7 @@ namespace Cosmos
 		mHeight = height;
 	}
 
-	void Window::Update()
+	void Window::OnUpdate()
 	{
 		glfwPollEvents();
 	}

@@ -64,6 +64,7 @@ namespace Cosmos
 			swapchainCI.imageExtent = mExtent;
 			swapchainCI.imageArrayLayers = 1;
 			swapchainCI.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT; // for copying the images, allowing viewports
 
 			if (indices.graphics != indices.present)
 			{
@@ -97,7 +98,7 @@ namespace Cosmos
 
 		for (size_t i = 0; i < mImages.size(); i++)
 		{
-			mImageViews[i] = CreateImageView(mDevice, mImages[i], mSurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+			mImageViews[i] = CreateImageView(mDevice, mImages[i], mSurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 	}
 
@@ -122,7 +123,7 @@ namespace Cosmos
 				mColorMemory
 			);
 
-			mColorView = CreateImageView(mDevice, mColorImage, format, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+			mColorView = CreateImageView(mDevice, mColorImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
 		// create frame depth resources
@@ -144,7 +145,7 @@ namespace Cosmos
 				mDepthMemory
 			);
 
-			mDepthView = CreateImageView(mDevice, mDepthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+			mDepthView = CreateImageView(mDevice, mDepthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
 
 		// create frame buffers

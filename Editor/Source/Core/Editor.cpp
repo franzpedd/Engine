@@ -4,7 +4,6 @@ namespace Cosmos
 {
 	Editor::Editor()
 	{
-
 	}
 
 	Editor::~Editor()

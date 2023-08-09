@@ -6,10 +6,13 @@
 #define GLM_FORCE_RADIANS
 
 #if defined(_MSC_VER)
-	#pragma warning( push )
-	#pragma warning( disable : 26495)
+#pragma warning( push )
+#pragma warning( disable : 26495)
 #endif
 #include <glm/glm.hpp>
 #if defined(_MSC_VER)
-	# pragma warning(pop)
+# pragma warning(pop)
 #endif
+
+// wrap math library
+typedef glm::vec2 Vec2;

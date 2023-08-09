@@ -22,9 +22,10 @@ namespace Cosmos
 		// initializes main loop
 		void Run();
 
-	private:
+	protected:
 
 		std::shared_ptr<Window> mWindow;
 		std::shared_ptr<Renderer> mRenderer;
+		std::shared_ptr<UI> mUI;
 	};
 }

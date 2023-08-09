@@ -59,6 +59,9 @@ namespace Cosmos
 		// returns the swapchain's color view
 		inline VkImageView& ColorView() { return mColorView; }
 
+		// returns the swapchain's depth view
+		inline VkImageView& DepthView() { return mDepthView; }
+
 	public:
 
 		// creates the swapchain

@@ -16,7 +16,7 @@ namespace Cosmos
 	void CreateImage(std::shared_ptr<VKDevice>& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory);
 
 	// creates an image view
-	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 	// perform an image layout modification of a given image
 	void TransitionImageLayout(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
@@ -40,8 +40,13 @@ namespace Cosmos
 	VkFormat FindDepthFormat(std::shared_ptr<VKDevice>& device);
 
 	// starts the recording of a once-used command buffer
-	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device);
+	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool);
 
 	// ends the recording of a once-used command buffer
-	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandBuffer commandBuffer);
+	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer);
+
+	// creates an image memory barrier
+	void InsertImageMemoryBarrier(VkCommandBuffer cmdbuffer, VkImage image, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageSubresourceRange subresourceRange);
+
+	//
 }

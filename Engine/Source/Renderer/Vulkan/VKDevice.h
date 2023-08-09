@@ -44,6 +44,12 @@ namespace Cosmos
 		// returns a reference to the vulkan physical device
 		inline VkPhysicalDevice& PhysicalDevice() { return mPhysicalDevice; }
 
+		// returns a reference to the vulkan physical device features
+		inline VkPhysicalDeviceFeatures& Features() { return mFeatures; }
+
+		// returns a reference to the vulkan physical device properties
+		inline VkPhysicalDeviceProperties& Properties() { return mProperties; }
+
 		// returns the graphics queue
 		inline VkQueue& GraphicsQueue() { return mGraphicsQueue; }
 
@@ -85,7 +91,7 @@ namespace Cosmos
 		void CreateCommandBuffers();
 
 	private:
-		
+
 		std::shared_ptr<VKInstance>& mInstance;
 		std::shared_ptr<Window>& mWindow;
 

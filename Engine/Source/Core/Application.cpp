@@ -11,6 +11,8 @@ namespace Cosmos
 	{
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
 		mRenderer = Renderer::Create(mWindow);
+
+		mUI = mRenderer->UserInterface();
 	}
 
 	Application::~Application()
@@ -21,9 +23,9 @@ namespace Cosmos
 	{
 		while (!mWindow->ShouldQuit())
 		{
-			mWindow->Update();
+			mWindow->OnUpdate();
 			//mGame->Update();
-			mRenderer->Update();
+			mRenderer->OnUpdate();
 		}
 	}
 }

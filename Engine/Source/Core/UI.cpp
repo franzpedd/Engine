@@ -1,6 +1,7 @@
 #include "UI.h"
 
 #include "Platform/Window.h"
+#include "Renderer/Commander.h"
 #include "Renderer/Vulkan/VKDevice.h"
 #include "Renderer/Vulkan/VKInstance.h"
 #include "Renderer/Vulkan/VKSwapchain.h"
@@ -24,6 +25,53 @@
 
 namespace Cosmos
 {
+	UIElementStack::UIElementStack()
+	{
+	}
+
+	UIElementStack::~UIElementStack()
+	{
+		for (UIElement* element : mElements)
+		{
+			element->OnDeletion();
+			delete element;
+		}
+	}
+
+	void UIElementStack::PushOver(UIElement* element)
+	{
+		element->OnCreation();
+		mElements.emplace_back(element);
+	}
+
+	void UIElementStack::PopOver(UIElement* element)
+	{
+		auto it = std::find(mElements.begin() + mMiddlePos, mElements.end(), element);
+		if (it != mElements.end())
+		{
+			element->OnDeletion();
+			mElements.erase(it);
+		}
+	}
+
+	void UIElementStack::Push(UIElement* element)
+	{
+		element->OnCreation();
+		mElements.emplace(mElements.begin() + mMiddlePos, element);
+		mMiddlePos++;
+	}
+
+	void UIElementStack::Pop(UIElement* element)
+	{
+		auto it = std::find(mElements.begin(), mElements.begin() + mMiddlePos, element);
+		if (it != mElements.begin() + mMiddlePos)
+		{
+			element->OnDeletion();
+			mElements.erase(it);
+			mMiddlePos--;
+		}
+	}
+
 	std::shared_ptr<UI> UI::Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device, std::shared_ptr<VKSwapchain>& swapchain)
 	{
 		return std::make_shared<UI>(window, instance, device, swapchain);
@@ -34,6 +82,8 @@ namespace Cosmos
 	{
 		CreateResources();
 		SetupConfiguration();
+
+		mCommanderEntry = CommandEntry::Create(device);
 	}
 
 	UI::~UI()
@@ -55,18 +105,35 @@ namespace Cosmos
 		ImGui::DestroyContext();
 	}
 
-	void UI::Update()
+	void UI::NewFrame()
 	{
-		// init new frame
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+	}
 
+	void UI::OnUpdate()
+	{
 		// draw ui elements
 		ImGui::ShowDemoWindow();
 
-		// render
+		// update all elements
+		for (UIElement* element : mUIElements.Elements())
+		{
+			element->OnUpdate();
+		}
+	}
+
+	void UI::EndFrame()
+	{
 		ImGui::Render();
+
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
 	}
 
 	void UI::Draw(VkCommandBuffer cmd)
@@ -79,7 +146,7 @@ namespace Cosmos
 		ImGui_ImplVulkan_SetMinImageCount(count);
 	}
 
-	void UI::Resize()
+	void UI::OnResize()
 	{
 		// recreate framebuffer based on image views
 		{
@@ -105,6 +172,11 @@ namespace Cosmos
 				LOG_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
 			}
 		}
+
+		for (UIElement* element : mUIElements.Elements())
+		{
+			element->OnResize();
+		}
 	}
 
 	void UI::SetupConfiguration()
@@ -115,6 +187,13 @@ namespace Cosmos
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+		//if (io.BackendFlags | ImGuiBackendFlags_PlatformHasViewports && io.BackendFlags | ImGuiBackendFlags_RendererHasViewports)
+		//{
+		//	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		//}
+
 		io.Fonts->AddFontDefault();
 		io.IniFilename = "ui.ini";
 
@@ -140,7 +219,7 @@ namespace Cosmos
 		VkDescriptorPoolCreateInfo poolCI = {};
 		poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolCI.pNext = nullptr;
-		poolCI.flags = 0;
+		poolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		poolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
 		poolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolCI.pPoolSizes = poolSizes;
@@ -165,9 +244,9 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
 
 		// upload fonts
-		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice);
+		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, mCommandPool);
 		ImGui_ImplVulkan_CreateFontsTexture(cmdBuffer);
-		EndSingleTimeCommand(mDevice, cmdBuffer);
+		EndSingleTimeCommand(mDevice, mCommandPool, cmdBuffer);
 
 		// destroy used resources for uploading fonts
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -354,5 +433,71 @@ namespace Cosmos
 		style.WindowTitleAlign = ImVec2(0.50f, 0.50f);
 		style.WindowMenuButtonPosition = -1;
 		style.ColorButtonPosition = 0;
+	}
+}
+
+namespace Cosmos::ui
+{
+	void Begin(const char* title)
+	{
+		ImGui::Begin(title);
+	}
+
+	void End()
+	{
+		ImGui::End();
+	}
+
+	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout)
+	{
+		ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+		ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+
+		// create descriptor set
+		VkDescriptorSet descriptorSet;
+		{
+			VkDescriptorSetAllocateInfo alloc_info = {};
+			alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			alloc_info.descriptorPool = v->DescriptorPool;
+			alloc_info.descriptorSetCount = 1;
+			alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
+			VkResult err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptorSet);
+			check_vk_result(err);
+		}
+
+		// update descriptor set
+		{
+			VkDescriptorImageInfo desc_image[1] = {};
+			desc_image[0].sampler = sampler;
+			desc_image[0].imageView = view;
+			desc_image[0].imageLayout = layout;
+
+			VkWriteDescriptorSet write_desc[1] = {};
+			write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write_desc[0].dstSet = descriptorSet;
+			write_desc[0].descriptorCount = 1;
+			write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write_desc[0].pImageInfo = desc_image;
+			vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, nullptr);
+		}
+
+		return descriptorSet;
+	}
+
+	void RemoveTexture(VkDescriptorSet descriptorSet)
+	{
+		ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+		ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+		vkFreeDescriptorSets(v->Device, v->DescriptorPool, 1, &descriptorSet);
+	}
+
+	void Image(VkDescriptorSet image, Vec2& size)
+	{
+		ImGui::Image((ImTextureID)image, ImVec2{ size.x, size.y });
+	}
+
+	Vec2 GetContentRegionAvail()
+	{
+		return Vec2{ ImGui::GetContentRegionAvail().x , ImGui::GetContentRegionAvail().y };
 	}
 }
