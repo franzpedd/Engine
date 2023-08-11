@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Core/Application.h"
-#include "Core/UI.h"
+
+#include "UI/UICore.h"
+#include "UI/UIDrawable.h"
+#include "UI/UIElement.h"
 
 #include "Renderer/Renderer.h"
 

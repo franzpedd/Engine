@@ -100,7 +100,7 @@ namespace Cosmos
 		shaderModuleCI.codeSize = binary.size();
 		shaderModuleCI.pCode = reinterpret_cast<const uint32_t*>(binary.data());
 
-		LOG_ASSERT(vkCreateShaderModule(mDevice->Device(), &shaderModuleCI, nullptr, &mShaderModule) == VK_SUCCESS, "Failed to create shader module");
+		VK_ASSERT(vkCreateShaderModule(mDevice->Device(), &shaderModuleCI, nullptr, &mShaderModule), "Failed to create shader module");
 	}
 
 	void VKShader::CreateShaderStage()

@@ -1,8 +1,8 @@
 #include "Application.h"
 
-#include "UI.h"
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
+#include "UI/UICore.h"
 #include "Util/Logger.h"
 
 namespace Cosmos

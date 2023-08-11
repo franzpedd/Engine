@@ -59,12 +59,6 @@ namespace Cosmos
 		// returns the compute queue
 		inline VkQueue& ComputeQueue() { return mComputeQueue; }
 
-		// returns the command pool
-		inline VkCommandPool& CommandPool() { return mCommandPool; }
-
-		// returns the command buffers
-		inline std::vector<VkCommandBuffer>& CommandBuffers() { return mCommandBuffers; }
-
 	public:
 
 		// returns the queue indices for all available queues
@@ -84,12 +78,6 @@ namespace Cosmos
 		// creates a logical device out of the choosen physical device
 		void CreateLogicalDevice();
 
-		// creates the command pool
-		void CreateCommandPool();
-
-		// creates the command buffers
-		void CreateCommandBuffers();
-
 	private:
 
 		std::shared_ptr<VKInstance>& mInstance;
@@ -104,7 +92,5 @@ namespace Cosmos
 		VkQueue mGraphicsQueue;
 		VkQueue mPresentQueue;
 		VkQueue mComputeQueue;
-		VkCommandPool mCommandPool;
-		std::vector<VkCommandBuffer> mCommandBuffers;
 	};
 }

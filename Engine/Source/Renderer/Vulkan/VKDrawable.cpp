@@ -154,7 +154,7 @@ namespace Cosmos
 		PLCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		PLCI.setLayoutCount = 1;
 		PLCI.pSetLayouts = &mDescriptorSetLayout;
-		LOG_ASSERT(vkCreatePipelineLayout(mDevice->Device(), &PLCI, nullptr, &mPipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout");
+		VK_ASSERT(vkCreatePipelineLayout(mDevice->Device(), &PLCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
 
 		VkGraphicsPipelineCreateInfo GPCI = {};
 		GPCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -172,7 +172,7 @@ namespace Cosmos
 		GPCI.renderPass = renderPass;
 		GPCI.subpass = 0;
 		GPCI.basePipelineHandle = VK_NULL_HANDLE;
-		LOG_ASSERT(vkCreateGraphicsPipelines(mDevice->Device(), pipelineCache, 1, &GPCI, nullptr, &mGraphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline");
+		VK_ASSERT(vkCreateGraphicsPipelines(mDevice->Device(), pipelineCache, 1, &GPCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 	}
 
 	void UBO::CreateDescriptorSetLayout()
@@ -190,7 +190,7 @@ namespace Cosmos
 		layoutInfo.flags = 0;
 		layoutInfo.bindingCount = 1;
 		layoutInfo.pBindings = &layoutBinding;
-		LOG_ASSERT(vkCreateDescriptorSetLayout(mDevice->Device(), &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+		VK_ASSERT(vkCreateDescriptorSetLayout(mDevice->Device(), &layoutInfo, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
 	}
 
 	void UBO::CreateDescriptorSets()
@@ -204,7 +204,7 @@ namespace Cosmos
 		descSetAllocInfo.pSetLayouts = layouts.data();
 		
 		mDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-		LOG_ASSERT(vkAllocateDescriptorSets(mDevice->Device(), &descSetAllocInfo, mDescriptorSets.data()) == VK_SUCCESS, "Failed to create descriptor sets");
+		VK_ASSERT(vkAllocateDescriptorSets(mDevice->Device(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to create descriptor sets");
 		
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -237,7 +237,7 @@ namespace Cosmos
 		descPoolCI.poolSizeCount = 1;
 		descPoolCI.pPoolSizes = &poolSize;
 		descPoolCI.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-		LOG_ASSERT(vkCreateDescriptorPool(mDevice->Device(), &descPoolCI, nullptr, &mDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool");
+		VK_ASSERT(vkCreateDescriptorPool(mDevice->Device(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 	}
 
 	void UBO::CreateUniformBuffers()

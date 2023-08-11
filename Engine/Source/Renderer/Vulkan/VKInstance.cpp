@@ -62,7 +62,7 @@ namespace Cosmos
 
 		instanceCI.enabledExtensionCount = (uint32_t)extensions.size();
 		instanceCI.ppEnabledExtensionNames = extensions.data();
-		LOG_ASSERT(vkCreateInstance(&instanceCI, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan Instance");
+		VK_ASSERT(vkCreateInstance(&instanceCI, nullptr, &mInstance), "Failed to create Vulkan Instance");
 
 		if (validations)
 		{
@@ -75,7 +75,7 @@ namespace Cosmos
 			debugUtilsCI.pfnUserCallback = DebugCallback;
 			debugUtilsCI.pUserData = nullptr;
 
-			LOG_ASSERT(CreateDebugUtilsMessengerEXT(mInstance, &debugUtilsCI, nullptr, &mDebugMessenger) == VK_SUCCESS, "Failed to create Vulkan Debug Messenger");
+			VK_ASSERT(CreateDebugUtilsMessengerEXT(mInstance, &debugUtilsCI, nullptr, &mDebugMessenger), "Failed to create Vulkan Debug Messenger");
 		}
 	}
 
@@ -125,13 +125,13 @@ namespace Cosmos
 
 		if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 		{
-			LOG_TO_TERMINAL(Logger::Severity::Info, "Validation Layer: %s", pCallback->pMessage);
+			//LOG_TO_TERMINAL(Logger::Severity::Info, "Validation Layer: %s", pCallback->pMessage);
 			return VK_FALSE;
 		}
 
 		if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
 		{
-			LOG_TO_TERMINAL(Logger::Severity::Trace, "Validation Layer: %s", pCallback->pMessage);
+			//LOG_TO_TERMINAL(Logger::Severity::Trace, "Validation Layer: %s", pCallback->pMessage);
 			return VK_FALSE;
 		}
 

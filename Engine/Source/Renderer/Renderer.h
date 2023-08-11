@@ -14,7 +14,7 @@
 namespace Cosmos
 {
 	// forward declaration
-	class UI;
+	class UICore;
 	class Window;
 
 	class Renderer
@@ -41,16 +41,10 @@ namespace Cosmos
 		// returns the backend swapchain class object
 		inline std::shared_ptr<VKSwapchain>& BackendSwapchain() { return mSwapchain; }
 
-		// returns a reference to the renderer commander
-		inline std::shared_ptr<Commander>& RendererCommander() { return mCommander; }
-
 	public:
 
 		// returns the user interface
-		inline std::shared_ptr<UI>& UserInterface() { return mUI; }
-
-		// returns the vulkan render pass
-		inline VkRenderPass& RenderPass() { return mRenderPass; }
+		inline std::shared_ptr<UICore>& UserInterface() { return mUI; }
 
 		// returns the vulkan pipeline cache
 		inline VkPipelineCache& PipelineCache() { return mPipelineCache; }
@@ -60,9 +54,6 @@ namespace Cosmos
 
 		// returns the current image index
 		inline uint32_t ImageIndex() { return mImageIndex; }
-
-		// returns the globally used msaa factor
-		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
 
 	public:
 
@@ -87,13 +78,10 @@ namespace Cosmos
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
-		std::shared_ptr<Commander> mCommander;
-
-		std::shared_ptr<UI> mUI;
+		Commander mCommander;
+		std::shared_ptr<UICore> mUI;
 
 		VkPipelineCache mPipelineCache;
-		VkRenderPass mRenderPass;
-		VkSampleCountFlagBits mMSAACount;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;
 		std::vector<VkSemaphore> mRenderFinishedSemaphores;

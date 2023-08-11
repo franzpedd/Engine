@@ -29,13 +29,10 @@ namespace Cosmos
 		vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mFeatures);
 
 		CreateLogicalDevice();
-		CreateCommandPool();
-		CreateCommandBuffers();
 	}
 
 	VKDevice::~VKDevice()
 	{
-		vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
 		vkDestroyDevice(mDevice, nullptr);
 		vkDestroySurfaceKHR(mInstance->Instance(), mSurface, nullptr);
 	}
@@ -217,33 +214,10 @@ namespace Cosmos
 			deviceCI.ppEnabledLayerNames = nullptr;
 		}
 
-		LOG_ASSERT(vkCreateDevice(mPhysicalDevice, &deviceCI, nullptr, &mDevice) == VK_SUCCESS, "Failed to create Vulkan Device");
+		VK_ASSERT(vkCreateDevice(mPhysicalDevice, &deviceCI, nullptr, &mDevice), "Failed to create Vulkan Device");
 
 		vkGetDeviceQueue(mDevice, indices.graphics.value(), 0, &mGraphicsQueue);
 		vkGetDeviceQueue(mDevice, indices.present.value(), 0, &mPresentQueue);
 		vkGetDeviceQueue(mDevice, indices.compute.value(), 0, &mComputeQueue);
-	}
-
-	void VKDevice::CreateCommandPool()
-	{
-		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice, mSurface);
-
-		VkCommandPoolCreateInfo cmdPoolInfo = {};
-		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
-		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		LOG_ASSERT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &mCommandPool) == VK_SUCCESS, "Failed to create command pool");
-	}
-
-	void VKDevice::CreateCommandBuffers()
-	{
-		mCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
-		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufferAllocInfo.commandPool = mCommandPool;
-		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
-		LOG_ASSERT(vkAllocateCommandBuffers(mDevice, &cmdBufferAllocInfo, mCommandBuffers.data()) == VK_SUCCESS, "Failed to create command buffer vector");
 	}
 }

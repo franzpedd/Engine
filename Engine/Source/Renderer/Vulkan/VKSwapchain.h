@@ -12,6 +12,8 @@ namespace Cosmos
 	class VKSurface;
 	class Window;
 
+	struct CommandEntry;
+
 	class VKSwapchain
 	{
 		struct Details
@@ -53,16 +55,25 @@ namespace Cosmos
 		// returns swapchain's extent
 		inline VkExtent2D& Extent() { return mExtent; }
 
-		// returns the swapchain's framebuffers
-		inline std::vector<VkFramebuffer>& Framebuffers() { return mFramebuffers; }
-
 		// returns the swapchain's color view
 		inline VkImageView& ColorView() { return mColorView; }
 
 		// returns the swapchain's depth view
 		inline VkImageView& DepthView() { return mDepthView; }
 
+		// returns a reference to the renderer command entry
+		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
+
 	public:
+
+		// creates the command pool
+		void CreateCommandPool();
+
+		// creates the swapchain commandbuffers
+		void CreateCommandBuffers();
+
+		// creates the swapchain render pass, a render pass containing the backbuffer
+		void CreateRenderPass();
 
 		// creates the swapchain
 		void CreateSwapchain();
@@ -71,13 +82,13 @@ namespace Cosmos
 		void CreateImageViews();
 
 		// creates the swapchain framebuffers
-		void CreateFramebuffers(VkRenderPass& renderPass, VkSampleCountFlagBits msaa);
+		void CreateFramebuffers();
 
 		// cleans the current swapchain
 		void Cleanup();
 
 		// recreates the swapchain
-		void Recreate(VkRenderPass& renderPass, VkSampleCountFlagBits msaa);
+		void Recreate();
 
 		// fills all information about the swapchain details
 		Details QueryDetails();
@@ -111,6 +122,9 @@ namespace Cosmos
 		VkImage mDepthImage;
 		VkDeviceMemory mDepthMemory;
 		VkImageView mDepthView;
-		std::vector<VkFramebuffer> mFramebuffers = {};
+
+		VkSampleCountFlagBits mMSAACount;
+
+		std::shared_ptr<CommandEntry> mCommandEntry;
 	};
 }

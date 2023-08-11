@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace Cosmos
@@ -11,30 +12,34 @@ namespace Cosmos
 
 	struct CommandEntry
 	{
+	public:
+
+		// returns a smart ptr of a new commander entry
+		static std::shared_ptr<CommandEntry> Create(std::shared_ptr<VKDevice>& device, std::string name);
+
+		// constructor
+		CommandEntry(std::shared_ptr<VKDevice>& device, std::string name);
+
+		// destructor
+		~CommandEntry();
+
+		// returns the name of the command entry
+		inline std::string& Name() { return name; }
+
+	public:
+
 		std::shared_ptr<VKDevice>& device;
+		std::string name;
 		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 		VkRenderPass renderPass = VK_NULL_HANDLE;
 		VkCommandPool commandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> commandBuffers = {};
 		std::vector<VkFramebuffer> framebuffers = {};
-
-		// returns a smart ptr of a new commander entry
-		static std::shared_ptr<CommandEntry> Create(std::shared_ptr<VKDevice>& device);
-
-		// constructor
-		CommandEntry(std::shared_ptr<VKDevice>& device);
-
-		// destructor
-		~CommandEntry();
 	};
 
 	class Commander
 	{
-
 	public:
-
-		// returns a reference to a new renderer commander
-		static std::shared_ptr<Commander> Create();
 
 		// constructor
 		Commander();
@@ -42,17 +47,26 @@ namespace Cosmos
 		// destructor
 		~Commander();
 
+		// returns a reference to the commander singleton
+		static Commander& Get() { return *sCommander; }
+
+		// access the command entries 
+		std::vector<std::shared_ptr<CommandEntry>>& Access() { return mEntrylist; }
+
 	public:
 
 		// adds a new commander entry from the list
-		void Add(CommandEntry* entry);
+		void Add(std::shared_ptr<CommandEntry> entry);
 
 		// removes a commander entry from the list
-		void Pop(CommandEntry* entry);
+		void Pop(std::shared_ptr<CommandEntry> entry);
+
+		// outputs the name of registered commanders
+		void Print();
 
 	private:
 
-		std::vector<CommandEntry*> mEntrylist;
-
+		static Commander* sCommander;
+		std::vector<std::shared_ptr<CommandEntry>> mEntrylist; // todo: move to unordered map
 	};
 }

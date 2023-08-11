@@ -75,3 +75,13 @@ namespace Cosmos
 		std::abort();																					\
 	}																									\
 }
+
+#define VK_ASSERT(fn, ...)																					\
+{																											\
+	VkResult res = (fn);																					\
+	if (res != VK_SUCCESS)																					\
+	{																										\
+		Cosmos::Logger::ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);		\
+		std::abort();																						\
+	}																										\
+}

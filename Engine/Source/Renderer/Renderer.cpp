@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-#include "Core/UI.h"
 #include "Platform/Window.h"
+#include "UI/UICore.h"
 #include "Util/Logger.h"
 
 #include <array>
@@ -22,16 +22,15 @@ namespace Cosmos
 
 		CreateGlobalStates();
 
-		mUI = UI::Create(mWindow, mInstance, mDevice, mSwapchain);
+		mUI = UICore::Create(mWindow, mInstance, mDevice, mSwapchain);
 
-		mCommander = Commander::Create();
+		mCommander.Print();
 	}
 
 	Renderer::~Renderer()
 	{
 		vkDeviceWaitIdle(mDevice->Device());
 
-		vkDestroyRenderPass(mDevice->Device(), mRenderPass, nullptr);
 		vkDestroyPipelineCache(mDevice->Device(), mPipelineCache, nullptr);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -64,7 +63,7 @@ namespace Cosmos
 
 			if (res == VK_ERROR_OUT_OF_DATE_KHR)
 			{
-				mSwapchain->Recreate(mRenderPass, mMSAACount);
+				mSwapchain->Recreate();
 				return;
 			}
 
@@ -88,8 +87,8 @@ namespace Cosmos
 			// grab all commandbuffers used into a single queue submit
 			std::array<VkCommandBuffer, 2> submitCommandBuffers =
 			{
-				mDevice->CommandBuffers()[mCurrentFrame],
-				mUI->CommandBuffers()[mCurrentFrame]
+				mSwapchain->CommandEntries()->commandBuffers[mCurrentFrame],
+				mUI->CommandEntries()->commandBuffers[mCurrentFrame]
 			};
 
 			VkSubmitInfo submitInfo = {};
@@ -102,7 +101,7 @@ namespace Cosmos
 			submitInfo.pCommandBuffers = submitCommandBuffers.data();
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphores;
-			LOG_ASSERT(vkQueueSubmit(mDevice->GraphicsQueue(), 1, &submitInfo, mInFlightFences[mCurrentFrame]) == VK_SUCCESS, "Failed to submit draw command");
+			VK_ASSERT(vkQueueSubmit(mDevice->GraphicsQueue(), 1, &submitInfo, mInFlightFences[mCurrentFrame]), "Failed to submit draw command");
 		}
 
 		// presents the image
@@ -120,7 +119,7 @@ namespace Cosmos
 			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || mWindow->ShouldResizeWindow())
 			{
 				mWindow->HintResizeWindow(false);
-				mSwapchain->Recreate(mRenderPass, mMSAACount);
+				mSwapchain->Recreate();
 
 				mUI->SetImageCount(mSwapchain->ImageCount());
 				mUI->OnResize();
@@ -139,13 +138,17 @@ namespace Cosmos
 	{
 		// color and depth render pass
 		{
-			vkResetCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+			VkCommandBuffer& cmdBuffer = mCommander.Access()[0]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander.Access()[0]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander.Access()[0]->renderPass;
+
+			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
 			VkCommandBufferBeginInfo cmdBeginInfo = {};
 			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBeginInfo.pNext = nullptr;
 			cmdBeginInfo.flags = 0;
-			LOG_ASSERT(vkBeginCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame], &cmdBeginInfo) == VK_SUCCESS, "Failed to begin command buffer recording");
+			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBeginInfo), "Failed to begin command buffer recording");
 
 			std::array<VkClearValue, 2> clearValues = {};
 			clearValues[0].color = { {0.5f, 0.0f, 0.5f, 1.0f} };
@@ -153,13 +156,13 @@ namespace Cosmos
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.renderPass = mRenderPass;
-			renderPassBeginInfo.framebuffer = mSwapchain->Framebuffers()[imageIndex];
+			renderPassBeginInfo.renderPass = renderPass;
+			renderPassBeginInfo.framebuffer = frameBuffer;
 			renderPassBeginInfo.renderArea.offset = { 0, 0 };
 			renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
 			renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
 			renderPassBeginInfo.pClearValues = clearValues.data();
-			vkCmdBeginRenderPass(mDevice->CommandBuffers()[mCurrentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			// set frame commandbuffer viewport
 			VkViewport viewport = {};
@@ -169,132 +172,72 @@ namespace Cosmos
 			viewport.height = (float)mSwapchain->Extent().height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &viewport);
+			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
 			// set frame commandbuffer scissor
 			VkRect2D scissor = {};
 			scissor.offset = { 0, 0 };
 			scissor.extent = mSwapchain->Extent();
-			vkCmdSetScissor(mDevice->CommandBuffers()[mCurrentFrame], 0, 1, &scissor);
+			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-			vkCmdEndRenderPass(mDevice->CommandBuffers()[mCurrentFrame]);
+			vkCmdEndRenderPass(cmdBuffer);
 
 			// end command buffer
-			LOG_ASSERT(vkEndCommandBuffer(mDevice->CommandBuffers()[mCurrentFrame]) == VK_SUCCESS, "Failed to end command buffer recording");
+			VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end command buffer recording");
 		}
 
 		// user interface
 		{
-			vkResetCommandBuffer(mUI->CommandBuffers()[mCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+			VkCommandBuffer& cmdBuffer = mCommander.Access()[1]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander.Access()[1]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander.Access()[1]->renderPass;
+
+			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
 			VkCommandBufferBeginInfo cmdBeginInfo = {};
 			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBeginInfo.pNext = nullptr;
 			cmdBeginInfo.flags = 0;
-			LOG_ASSERT(vkBeginCommandBuffer(mUI->CommandBuffers()[mCurrentFrame], &cmdBeginInfo) == VK_SUCCESS, "Failed to begin command buffer recording");
+			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBeginInfo), "Failed to begin command buffer recording");
 
 			VkClearValue clearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.renderPass = mUI->RenderPass();
-			renderPassBeginInfo.framebuffer = mUI->Framebuffers()[imageIndex];
+			renderPassBeginInfo.renderPass = renderPass;
+			renderPassBeginInfo.framebuffer = frameBuffer;
 			renderPassBeginInfo.renderArea.offset = { 0, 0 };
 			renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
 			renderPassBeginInfo.clearValueCount = 1;
 			renderPassBeginInfo.pClearValues = &clearValue;
-			vkCmdBeginRenderPass(mUI->CommandBuffers()[mCurrentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			mUI->Draw(mUI->CommandBuffers()[mCurrentFrame]);
+			// set frame commandbuffer viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)mSwapchain->Extent().width;
+			viewport.height = (float)mSwapchain->Extent().height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-			vkCmdEndRenderPass(mUI->CommandBuffers()[mCurrentFrame]);
+			// set frame commandbuffer scissor
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = mSwapchain->Extent();
+			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-			LOG_ASSERT(vkEndCommandBuffer(mUI->CommandBuffers()[mCurrentFrame]) == VK_SUCCESS, "Failed to end command buffer recording");
+			mUI->Draw(cmdBuffer);
+
+			vkCmdEndRenderPass(cmdBuffer);
+
+			VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end command buffer recording");
 		}
 	}
 
 	void Renderer::CreateGlobalStates()
 	{
-		mMSAACount = mDevice->GetMaxUsableSamples();
-
-		// render pass
-		{
-			// attachments descriptions
-			VkAttachmentDescription colorAttachment = {};
-			colorAttachment.format = mSwapchain->SurfaceFormat().format;
-			colorAttachment.samples = mMSAACount;
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-			VkAttachmentDescription colorAttachmentResolve = {};
-			colorAttachmentResolve.format = mSwapchain->SurfaceFormat().format;
-			colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-			colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			// finalLayout should not be VK_IMAGE_LAYOUT_PRESENT_SRC_KHR as ui is a post render pass that will present
-
-			VkAttachmentDescription depthAttachment = {};
-			depthAttachment.format = FindDepthFormat(mDevice);
-			depthAttachment.samples = mMSAACount;
-			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-			// attachments references
-			VkAttachmentReference colorAttachmentRef = {};
-			colorAttachmentRef.attachment = 0;
-			colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-			VkAttachmentReference colorAttachmentResolveRef = {};
-			colorAttachmentResolveRef.attachment = 2;
-			colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-			VkAttachmentReference depthAttachmentRef = {};
-			depthAttachmentRef.attachment = 1;
-			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-			// subpass
-			VkSubpassDescription subpass = {};
-			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-			subpass.colorAttachmentCount = 1;
-			subpass.pColorAttachments = &colorAttachmentRef;
-			subpass.pDepthStencilAttachment = &depthAttachmentRef;
-			subpass.pResolveAttachments = &colorAttachmentResolveRef;
-
-			VkSubpassDependency dependency = {};
-			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-			dependency.dstSubpass = 0;
-			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-			dependency.srcAccessMask = 0;
-			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-			std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
-
-			VkRenderPassCreateInfo renderPassCI = {};
-			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-			renderPassCI.attachmentCount = (uint32_t)attachments.size();
-			renderPassCI.pAttachments = attachments.data();
-			renderPassCI.subpassCount = 1;
-			renderPassCI.pSubpasses = &subpass;
-			renderPassCI.dependencyCount = 1;
-			renderPassCI.pDependencies = &dependency;
-			LOG_ASSERT(vkCreateRenderPass(mDevice->Device(), &renderPassCI, nullptr, &mRenderPass) == VK_SUCCESS, "Failed to create render pass");
-
-			mSwapchain->CreateFramebuffers(mRenderPass, mMSAACount);
-		}
-
 		// sync objects
 		{
 			mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -313,9 +256,9 @@ namespace Cosmos
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 			{
-				LOG_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mImageAvailableSemaphores[i]) == VK_SUCCESS, "Failed to create image available semaphore");
-				LOG_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mRenderFinishedSemaphores[i]) == VK_SUCCESS, "Failed to create render finished semaphore");
-				LOG_ASSERT(vkCreateFence(mDevice->Device(), &fenceCI, nullptr, &mInFlightFences[i]) == VK_SUCCESS, "Failed to create in flight fence");
+				VK_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mImageAvailableSemaphores[i]), "Failed to create image available semaphore");
+				VK_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mRenderFinishedSemaphores[i]), "Failed to create render finished semaphore");
+				VK_ASSERT(vkCreateFence(mDevice->Device(), &fenceCI, nullptr, &mInFlightFences[i]), "Failed to create in flight fence");
 			}
 		}
 
@@ -325,7 +268,7 @@ namespace Cosmos
 			pipelineCacheCI.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 			pipelineCacheCI.pNext = nullptr;
 			pipelineCacheCI.flags = 0;
-			LOG_ASSERT(vkCreatePipelineCache(mDevice->Device(), &pipelineCacheCI, nullptr, &mPipelineCache) == VK_SUCCESS, "Failed to create pipeline cache");
+			VK_ASSERT(vkCreatePipelineCache(mDevice->Device(), &pipelineCacheCI, nullptr, &mPipelineCache), "Failed to create pipeline cache");
 		}
 	}
 }
