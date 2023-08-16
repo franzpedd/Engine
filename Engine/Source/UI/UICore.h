@@ -7,9 +7,7 @@
 namespace Cosmos
 {
 	// forward declarations
-	class VKInstance;
-	class VKDevice;
-	class VKSwapchain;
+	class Renderer;
 	class Window;
 
 	struct CommandEntry;
@@ -19,10 +17,10 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new user interface
-		static std::shared_ptr<UICore> Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device, std::shared_ptr<VKSwapchain>& swapchain);
+		static std::shared_ptr<UICore> Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
 
 		// constructor
-		UICore(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device, std::shared_ptr<VKSwapchain>& swapchain);
+		UICore(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
 
 		// destructor
 		~UICore();
@@ -31,18 +29,12 @@ namespace Cosmos
 		inline UIElementStack& ElementStack() { return mUIElements; }
 
 		// returns a reference to the renderer command entries
-		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommanderEntry; }
+		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
 
 	public:
 
-		// inits a new frame
-		void NewFrame();
-
 		// updates the ui
 		void OnUpdate();
-
-		// finishes current frame
-		void EndFrame();
 
 		// draws the ui
 		void Draw(VkCommandBuffer cmd);
@@ -67,10 +59,8 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
-		std::shared_ptr<VKInstance>& mInstance;
-		std::shared_ptr<VKDevice>& mDevice;
-		std::shared_ptr<VKSwapchain>& mSwapchain;
-		std::shared_ptr<CommandEntry> mCommanderEntry;
+		std::shared_ptr<Renderer>& mRenderer;
+		std::shared_ptr<CommandEntry> mCommandEntry;
 
 		UIElementStack mUIElements;
 	};

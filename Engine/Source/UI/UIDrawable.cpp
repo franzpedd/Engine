@@ -6,7 +6,6 @@
 #pragma warning( disable : 26451 )
 #endif
 #include <imgui.h>
-#include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_vulkan.cpp>
 #if defined(_MSC_VER)
 # pragma warning(pop)
@@ -60,16 +59,31 @@ namespace Cosmos::ui
 		return descriptorSet;
 	}
 
-	void RemoveTexture(VkDescriptorSet descriptorSet)
-	{
-		ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
-		ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-		vkFreeDescriptorSets(v->Device, v->DescriptorPool, 1, &descriptorSet);
-	}
-
 	void Image(VkDescriptorSet image, Vec2& size)
 	{
 		ImGui::Image((ImTextureID)image, ImVec2{ size.x, size.y });
+	}
+
+	void DockspaceOverEverything()
+	{
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+
+		const ImGuiWindowFlags wFlags = ImGuiWindowFlags_NoTitleBar 
+			| ImGuiWindowFlags_NoCollapse 
+			| ImGuiWindowFlags_NoResize 
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoBringToFrontOnFocus 
+			| ImGuiWindowFlags_NoNavFocus;
+
+		ImGui::Begin("Dockspace", 0, wFlags);
+
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
+
+		ImGui::End();
+
 	}
 
 	Vec2 GetContentRegionAvail()

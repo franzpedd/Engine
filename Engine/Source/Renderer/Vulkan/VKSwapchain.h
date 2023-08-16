@@ -61,6 +61,9 @@ namespace Cosmos
 		// returns the swapchain's depth view
 		inline VkImageView& DepthView() { return mDepthView; }
 
+		// returns the sampling in use
+		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
+
 		// returns a reference to the renderer command entry
 		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
 

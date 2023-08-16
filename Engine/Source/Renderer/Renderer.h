@@ -43,9 +43,6 @@ namespace Cosmos
 
 	public:
 
-		// returns the user interface
-		inline std::shared_ptr<UICore>& UserInterface() { return mUI; }
-
 		// returns the vulkan pipeline cache
 		inline VkPipelineCache& PipelineCache() { return mPipelineCache; }
 
@@ -59,6 +56,9 @@ namespace Cosmos
 
 		// updates the renderer
 		void OnUpdate();
+
+		// links the user interface to the renderer
+		inline void ConnectUI(std::shared_ptr<UICore>& ui) { mUI = ui; }
 
 	private:
 
@@ -79,8 +79,6 @@ namespace Cosmos
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
 		Commander mCommander;
-		std::shared_ptr<UICore> mUI;
-
 		VkPipelineCache mPipelineCache;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;
@@ -88,5 +86,7 @@ namespace Cosmos
 		std::vector<VkFence> mInFlightFences;
 		uint32_t mCurrentFrame = 0;
 		uint32_t mImageIndex = 0;
+
+		std::shared_ptr<UICore> mUI;
 	};
 }

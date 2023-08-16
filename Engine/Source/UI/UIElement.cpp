@@ -10,14 +10,12 @@ namespace Cosmos
 	{
 		for (UIElement* element : mElements)
 		{
-			element->OnDeletion();
 			delete element;
 		}
 	}
 
 	void UIElementStack::PushOver(UIElement* element)
 	{
-		element->OnCreation();
 		mElements.emplace_back(element);
 	}
 
@@ -26,14 +24,12 @@ namespace Cosmos
 		auto it = std::find(mElements.begin() + mMiddlePos, mElements.end(), element);
 		if (it != mElements.end())
 		{
-			element->OnDeletion();
 			mElements.erase(it);
 		}
 	}
 
 	void UIElementStack::Push(UIElement* element)
 	{
-		element->OnCreation();
 		mElements.emplace(mElements.begin() + mMiddlePos, element);
 		mMiddlePos++;
 	}
@@ -43,7 +39,6 @@ namespace Cosmos
 		auto it = std::find(mElements.begin(), mElements.begin() + mMiddlePos, element);
 		if (it != mElements.begin() + mMiddlePos)
 		{
-			element->OnDeletion();
 			mElements.erase(it);
 			mMiddlePos--;
 		}

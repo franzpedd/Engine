@@ -14,11 +14,11 @@ namespace Cosmos::ui
 	// adds a texture in the user interface for later usage
 	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout);
 
-	// removes a texture from the user interface pool
-	void RemoveTexture(VkDescriptorSet descriptorSet);
-
 	// shows an image to the bound ui window
 	void Image(VkDescriptorSet image, Vec2& size);
+
+	// enables the dockspace over the window drawable area
+	void DockspaceOverEverything();
 
 	// returns the window size of currently bound window
 	Vec2 GetContentRegionAvail();

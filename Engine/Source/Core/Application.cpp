@@ -9,10 +9,13 @@ namespace Cosmos
 {
 	Application::Application()
 	{
+		// create objects
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
 		mRenderer = Renderer::Create(mWindow);
+		mUI = UICore::Create(mWindow, mRenderer);
 
-		mUI = mRenderer->UserInterface();
+		// connect the UI to the renderer to handle resize events
+		mRenderer->ConnectUI(mUI);
 	}
 
 	Application::~Application()
@@ -25,6 +28,7 @@ namespace Cosmos
 		{
 			mWindow->OnUpdate();
 			//mGame->Update();
+			mUI->OnUpdate();
 			mRenderer->OnUpdate();
 		}
 	}

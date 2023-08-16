@@ -19,8 +19,9 @@ project "Editor"
     {
         "%{includelist.Engine}",
         "%{includelist.Editor}",
-
+        
         "%{includelist.Vulkan}",
+        "%{includelist.ImGUI}",
         "%{includelist.GLI}",
         "%{includelist.GLM}",
         "%{includelist.TinyGLTF}"
@@ -28,7 +29,8 @@ project "Editor"
 
     links
     {
-        "Engine"
+        "Engine",
+        "ImGUI"
     }
 
     defines 

@@ -1,3 +1,3 @@
 # Vulkan renderer
 
-![](https://github.com/franzpedd/Engine/blob/main/documentation/vulkan-imgui.jpg?raw=true)
+![](https://github.com/franzpedd/Engine/blob/main/documentation/editor-viewport.jpg?raw=true)

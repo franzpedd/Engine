@@ -21,10 +21,6 @@ namespace Cosmos
 		mSwapchain = VKSwapchain::Create(mWindow, mInstance, mDevice);
 
 		CreateGlobalStates();
-
-		mUI = UICore::Create(mWindow, mInstance, mDevice, mSwapchain);
-
-		mCommander.Print();
 	}
 
 	Renderer::~Renderer()
@@ -43,11 +39,6 @@ namespace Cosmos
 
 	void Renderer::OnUpdate()
 	{
-		// updating UI
-		mUI->NewFrame();
-		mUI->OnUpdate();
-		mUI->EndFrame();
-
 		Render();
 	}
 
@@ -85,10 +76,11 @@ namespace Cosmos
 		// submits to graphics queue
 		{
 			// grab all commandbuffers used into a single queue submit
-			std::array<VkCommandBuffer, 2> submitCommandBuffers =
+			std::array<VkCommandBuffer, 3> submitCommandBuffers =
 			{
-				mSwapchain->CommandEntries()->commandBuffers[mCurrentFrame],
-				mUI->CommandEntries()->commandBuffers[mCurrentFrame]
+				mCommander.Access()[0]->commandBuffers[mCurrentFrame], // swapchain
+				mCommander.Access()[2]->commandBuffers[mCurrentFrame], // viewport
+				mCommander.Access()[1]->commandBuffers[mCurrentFrame]  // imgui
 			};
 
 			VkSubmitInfo submitInfo = {};
@@ -136,6 +128,10 @@ namespace Cosmos
 
 	void Renderer::ManageRenderPasses(uint32_t& imageIndex)
 	{
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = { {0.5f, 0.0f, 0.5f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		// color and depth render pass
 		{
 			VkCommandBuffer& cmdBuffer = mCommander.Access()[0]->commandBuffers[mCurrentFrame];
@@ -149,10 +145,6 @@ namespace Cosmos
 			cmdBeginInfo.pNext = nullptr;
 			cmdBeginInfo.flags = 0;
 			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBeginInfo), "Failed to begin command buffer recording");
-
-			std::array<VkClearValue, 2> clearValues = {};
-			clearValues[0].color = { {0.5f, 0.0f, 0.5f, 1.0f} };
-			clearValues[1].depthStencil = { 1.0f, 0 };
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -179,6 +171,56 @@ namespace Cosmos
 			scissor.offset = { 0, 0 };
 			scissor.extent = mSwapchain->Extent();
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+
+			// render scene
+
+			vkCmdEndRenderPass(cmdBuffer);
+
+			// end command buffer
+			VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end command buffer recording");
+		}
+
+		// viewport
+		{
+			VkCommandBuffer& cmdBuffer = mCommander.Access()[2]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander.Access()[2]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander.Access()[2]->renderPass;
+
+			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+
+			VkCommandBufferBeginInfo cmdBeginInfo = {};
+			cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBeginInfo.pNext = nullptr;
+			cmdBeginInfo.flags = 0;
+			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBeginInfo), "Failed to begin command buffer recording");
+			
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.renderPass = renderPass;
+			renderPassBeginInfo.framebuffer = frameBuffer;
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.renderArea.extent = mSwapchain->Extent();
+			renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
+			renderPassBeginInfo.pClearValues = clearValues.data();
+			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// set frame commandbuffer viewport
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)mSwapchain->Extent().width;
+			viewport.height = (float)mSwapchain->Extent().height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+
+			// set frame commandbuffer scissor
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = mSwapchain->Extent();
+			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+
+			// render scene
 
 			vkCmdEndRenderPass(cmdBuffer);
 
@@ -211,22 +253,6 @@ namespace Cosmos
 			renderPassBeginInfo.clearValueCount = 1;
 			renderPassBeginInfo.pClearValues = &clearValue;
 			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-			// set frame commandbuffer viewport
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = (float)mSwapchain->Extent().width;
-			viewport.height = (float)mSwapchain->Extent().height;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
-
-			// set frame commandbuffer scissor
-			VkRect2D scissor = {};
-			scissor.offset = { 0, 0 };
-			scissor.extent = mSwapchain->Extent();
-			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			mUI->Draw(cmdBuffer);
 

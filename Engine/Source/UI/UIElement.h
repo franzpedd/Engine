@@ -16,12 +16,6 @@ namespace Cosmos
 
 	public:
 
-		// call to handle initial resources before start updating
-		virtual void OnCreation() = 0;
-
-		// call to handle final operations on the element
-		virtual void OnDeletion() = 0;
-
 		// updates the ui element
 		virtual void OnUpdate() = 0;
 
