@@ -24,7 +24,8 @@ project "Editor"
         "%{includelist.ImGUI}",
         "%{includelist.GLI}",
         "%{includelist.GLM}",
-        "%{includelist.TinyGLTF}"
+        "%{includelist.TinyGLTF}",
+		"%{includelist.STB}"
     }
 
     links

@@ -39,6 +39,66 @@ namespace Cosmos
 		vkBindImageMemory(device->Device(), image, memory, 0);
 	}
 
+	void TransitionImageLayout(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+	{
+		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(device, cmdPool);
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		VkPipelineStageFlags sourceStage;
+		VkPipelineStageFlags destinationStage;
+
+		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+		{
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		}
+
+		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+
+		else
+		{
+			LOG_ASSERT(false, "Invalid layout transition");
+		}
+
+		vkCmdPipelineBarrier
+		(
+			cmdBuffer,
+			sourceStage,
+			destinationStage,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&barrier
+		);
+
+		EndSingleTimeCommand(device, cmdPool, cmdBuffer);
+	}
+
 	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 	{
 		VkImageViewCreateInfo imageViewCI = {};
@@ -58,7 +118,7 @@ namespace Cosmos
 		return imageView;
 	}
 
-	void BufferCreate(std::shared_ptr<VKDevice>& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& memory)
+	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
 	{
 		// specify buffer
 		VkBufferCreateInfo bufferCI = {};
@@ -66,20 +126,44 @@ namespace Cosmos
 		bufferCI.size = size;
 		bufferCI.usage = usage;
 		bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		VK_ASSERT(vkCreateBuffer(device->Device(), &bufferCI, nullptr, &buffer), "Failed to create buffer");
+		VK_ASSERT(vkCreateBuffer(device->Device(), &bufferCI, nullptr, buffer), "Failed to create buffer");
 
 		// alocate memory for specified buffer 
 		VkMemoryRequirements memoryReqs;
-		vkGetBufferMemoryRequirements(device->Device(), buffer, &memoryReqs);
+		vkGetBufferMemoryRequirements(device->Device(), *buffer, &memoryReqs);
 
 		VkMemoryAllocateInfo memoryAllocInfo = {};
 		memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		memoryAllocInfo.pNext = nullptr;
 		memoryAllocInfo.allocationSize = memoryReqs.size;
 		memoryAllocInfo.memoryTypeIndex = device->GetMemoryType(memoryReqs.memoryTypeBits, properties);
-		VK_ASSERT(vkAllocateMemory(device->Device(), &memoryAllocInfo, nullptr, &memory), "Failed to allocate memory for buffer");
+		VK_ASSERT(vkAllocateMemory(device->Device(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
+
+		// data is not null, must map the buffer and copy the data
+		if (data != nullptr)
+		{
+			void* mapped;
+			VK_ASSERT(vkMapMemory(device->Device(), *memory, 0, size, 0, &mapped), "Faled to map memory");
+			memcpy(mapped, data, size);
+
+			// if host coherency hasn't been requested, do a manual flush to make writes visible
+			if ((properties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+			{
+				VkMappedMemoryRange mappedRange = {};
+				mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+				mappedRange.memory = *memory;
+				mappedRange.offset = 0;
+				mappedRange.size = size;
+				vkFlushMappedMemoryRanges(device->Device(), 1, &mappedRange);
+			}
+
+			vkUnmapMemory(device->Device(), *memory);
+		}
 
 		// link buffer with allocated memory
-		vkBindBufferMemory(device->Device(), buffer, memory, 0);
+		VK_ASSERT(vkBindBufferMemory(device->Device(), *buffer, *memory, 0), "Failed to bind buffer with memory");
+
+		return VK_SUCCESS;
 	}
 
 	void BufferCopy(std::shared_ptr<VKDevice>& device, VkBuffer src, VkBuffer dst, VkDeviceSize size, VkCommandPool& commandPool)
@@ -264,6 +348,66 @@ namespace Cosmos
 			0, nullptr,
 			1, &imageMemoryBarrier
 		);
+	}
 
+	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
+	{
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.pNext = nullptr;
+		cmdBufferAllocInfo.commandBufferCount = 1;
+		cmdBufferAllocInfo.commandPool = cmdPool;
+		cmdBufferAllocInfo.level = level;
+
+		VkCommandBuffer cmdBuffer;
+		VK_ASSERT(vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &cmdBuffer), "Failed to allocate command buffers");
+
+		if (begin)
+		{
+			VkCommandBufferBeginInfo cmdBufferBI = {};
+			cmdBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufferBI.pNext = nullptr;
+			cmdBufferBI.flags = 0;
+			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBI), "Failed to initialize command buffer");
+		}
+
+		return cmdBuffer;
+	}
+
+	void BeginCommandBuffer(VkCommandBuffer cmdBuffer)
+	{
+		VkCommandBufferBeginInfo cmdBufferBI = {};
+		cmdBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufferBI.pNext = nullptr;
+		cmdBufferBI.flags = 0;
+		VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBI), "Failed to initialize command buffer");
+	}
+
+	void FlushCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free)
+	{
+		VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end the recording of the command buffer");
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmdBuffer;
+
+		VkFenceCreateInfo fenceCI = {};
+		fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCI.pNext = nullptr;
+		fenceCI.flags = 0;
+
+		VkFence fence;
+		VK_ASSERT(vkCreateFence(device->Device(), &fenceCI, nullptr, &fence), "Failed to create fence for command buffer submission");
+		VK_ASSERT(vkQueueSubmit(queue, 1, &submitInfo, fence), "Failed to submit command buffer");
+		VK_ASSERT(vkWaitForFences(device->Device(), 1, &fence, VK_TRUE, 100000000000), "Failed to wait for fences");
+
+		vkDestroyFence(device->Device(), fence, nullptr);
+
+		if (free)
+		{
+			vkFreeCommandBuffers(device->Device(), cmdPool, 1, &cmdBuffer);
+		}
 	}
 }

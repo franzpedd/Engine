@@ -61,19 +61,7 @@ namespace Cosmos
 		// returns the swapchain's depth view
 		inline VkImageView& DepthView() { return mDepthView; }
 
-		// returns the sampling in use
-		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
-
-		// returns a reference to the renderer command entry
-		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
-
 	public:
-
-		// creates the command pool
-		void CreateCommandPool();
-
-		// creates the swapchain commandbuffers
-		void CreateCommandBuffers();
 
 		// creates the swapchain render pass, a render pass containing the backbuffer
 		void CreateRenderPass();
@@ -125,9 +113,5 @@ namespace Cosmos
 		VkImage mDepthImage;
 		VkDeviceMemory mDepthMemory;
 		VkImageView mDepthView;
-
-		VkSampleCountFlagBits mMSAACount;
-
-		std::shared_ptr<CommandEntry> mCommandEntry;
 	};
 }

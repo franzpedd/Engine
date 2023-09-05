@@ -53,8 +53,8 @@ namespace Cosmos
 	UBO::UBO(std::shared_ptr<VKDevice>& device, VkRenderPass& renderPass, VkPipelineCache& pipelineCache)
 		: VKDrawable(device), mRenderPass(renderPass), mPipelineCache(pipelineCache)
 	{
-		mVertex = VKShader::Create(mDevice, VKShader::Vertex, "UBO Vertex", "Data/Shader/ubo.vert");
-		mFragment = VKShader::Create(mDevice, VKShader::Fragment, "UBO Fragment", "Data/Shader/ubo.frag");
+		mVertex = VKShader::Create(mDevice, VKShader::Vertex, "UBO Vertex", "Data/shaders/ubo.vert");
+		mFragment = VKShader::Create(mDevice, VKShader::Fragment, "UBO Fragment", "Data/shaders/ubo.frag");
 
 		CreateUniformBuffers();
 		CreateDescriptorPool();
@@ -252,11 +252,11 @@ namespace Cosmos
 			BufferCreate
 			(
 				mDevice,
-				bufferSize,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				mBuffers[i],
-				mBuffersMemory[i]
+				bufferSize,
+				&mBuffers[i],
+				&mBuffersMemory[i]
 			);
 
 			vkMapMemory(mDevice->Device(), mBuffersMemory[i], 0, bufferSize, 0, &mBuffersMapped[i]);

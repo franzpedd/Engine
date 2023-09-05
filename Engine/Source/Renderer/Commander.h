@@ -7,28 +7,29 @@
 
 namespace Cosmos
 {
-	// forward declaration
-	class VKDevice;
 
 	struct CommandEntry
 	{
 	public:
 
 		// returns a smart ptr of a new commander entry
-		static std::shared_ptr<CommandEntry> Create(std::shared_ptr<VKDevice>& device, std::string name);
+		static std::shared_ptr<CommandEntry> Create(VkDevice& device, std::string name);
 
 		// constructor
-		CommandEntry(std::shared_ptr<VKDevice>& device, std::string name);
+		CommandEntry(VkDevice& device, std::string name);
 
 		// destructor
-		~CommandEntry();
+		~CommandEntry() = default;
+
+		// free all used resources
+		void Destroy();
 
 		// returns the name of the command entry
 		inline std::string& Name() { return name; }
 
 	public:
 
-		std::shared_ptr<VKDevice>& device;
+		VkDevice& device;
 		std::string name;
 		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 		VkRenderPass renderPass = VK_NULL_HANDLE;

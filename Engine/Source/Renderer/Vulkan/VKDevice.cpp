@@ -29,10 +29,21 @@ namespace Cosmos
 		vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mFeatures);
 
 		CreateLogicalDevice();
+
+		mCommandEntry = CommandEntry::Create(mDevice, "Swapchain");
+		Commander::Get().Add(mCommandEntry);
+
+		CreateCommandPool();
+		CreateCommandBuffers();
+
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "Put MSAA on settings.ini");
+		mMSAACount = GetMaxUsableSamples();
 	}
 
 	VKDevice::~VKDevice()
 	{
+		mCommandEntry->Destroy();
+
 		vkDestroyDevice(mDevice, nullptr);
 		vkDestroySurfaceKHR(mInstance->Instance(), mSurface, nullptr);
 	}
@@ -219,5 +230,28 @@ namespace Cosmos
 		vkGetDeviceQueue(mDevice, indices.graphics.value(), 0, &mGraphicsQueue);
 		vkGetDeviceQueue(mDevice, indices.present.value(), 0, &mPresentQueue);
 		vkGetDeviceQueue(mDevice, indices.compute.value(), 0, &mComputeQueue);
+	}
+
+	void VKDevice::CreateCommandPool()
+	{
+		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice, mSurface);
+
+		VkCommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VK_ASSERT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
+	}
+
+	void VKDevice::CreateCommandBuffers()
+	{
+		mCommandEntry->commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.commandPool = mCommandEntry->commandPool;
+		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandEntry->commandBuffers.size();
+		VK_ASSERT(vkAllocateCommandBuffers(mDevice, &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to create command buffers");
 	}
 }

@@ -6,7 +6,7 @@ namespace Cosmos
 		: mUI(ui), mRenderer(renderer)
 
 	{
-		mCommandEntry = CommandEntry::Create(mRenderer->BackendDevice(), "Viewport");
+		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
 		Commander::Get().Add(mCommandEntry);
 
 		mSurfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -143,6 +143,8 @@ namespace Cosmos
 			vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemories[i], nullptr);
 			vkDestroyImage(mRenderer->BackendDevice()->Device(), mImages[i], nullptr);
 		}
+
+		mCommandEntry->Destroy();
 	}
 
 	void Viewport::OnUpdate()

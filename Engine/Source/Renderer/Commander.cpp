@@ -7,40 +7,40 @@ namespace Cosmos
 {
 	Commander* Commander::sCommander = nullptr;
 
-	std::shared_ptr<CommandEntry> CommandEntry::Create(std::shared_ptr<VKDevice>& device, std::string name)
+	std::shared_ptr<CommandEntry> CommandEntry::Create(VkDevice& device, std::string name)
 	{
 		return std::make_shared<CommandEntry>(device, name);
 	}
 
-	CommandEntry::CommandEntry(std::shared_ptr<VKDevice>& device, std::string name)
+	CommandEntry::CommandEntry(VkDevice& device, std::string name)
 		: device(device), name(name)
 	{
-		
+
 	}
 
-	CommandEntry::~CommandEntry()
+	void CommandEntry::Destroy()
 	{
-		vkDeviceWaitIdle(device->Device());
+		vkDeviceWaitIdle(device);
 
 		if (descriptorPool != VK_NULL_HANDLE)
 		{
-			vkDestroyDescriptorPool(device->Device(), descriptorPool, nullptr);
+			vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 		}
 
 		if (renderPass != VK_NULL_HANDLE)
 		{
-			vkDestroyRenderPass(device->Device(), renderPass, nullptr);
+			vkDestroyRenderPass(device, renderPass, nullptr);
 		}
 
 		if (commandPool != VK_NULL_HANDLE)
 		{
-			vkFreeCommandBuffers(device->Device(), commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
-			vkDestroyCommandPool(device->Device(), commandPool, nullptr);
+			vkFreeCommandBuffers(device, commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
+			vkDestroyCommandPool(device, commandPool, nullptr);
 		}
 
 		for (size_t i = 0; i < framebuffers.size(); i++)
 		{
-			vkDestroyFramebuffer(device->Device(), framebuffers[i], nullptr);
+			vkDestroyFramebuffer(device, framebuffers[i], nullptr);
 		}
 	}
 

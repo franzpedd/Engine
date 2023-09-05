@@ -9,8 +9,8 @@ namespace Cosmos
 	Editor::Editor()
 	{
 		mUI->ElementStack().Push(new Dockspace{});
-		mUI->ElementStack().Push(new Viewport{mUI, mRenderer});
-		mUI->ElementStack().Push(new Explorer{});
+		mUI->ElementStack().Push(new Viewport{ mUI, mRenderer });
+		mUI->ElementStack().Push(new Explorer{ mRenderer });
 	}
 
 	Editor::~Editor()

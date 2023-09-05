@@ -18,6 +18,7 @@ includelist["GLFW"] = "%{wks.location}/Thirdparty/glfw/include"
 includelist["GLI"] = "%{wks.location}/Thirdparty/gli"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["TinyGLTF"] = "%{wks.location}/Thirdparty/tinygltf"
+includelist["STB"] = "%{wks.location}/Thirdparty/stb"
 
 -- libraries used
 librarylist = {}

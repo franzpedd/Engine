@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include "Renderer/Commander.h"
 #include <vulkan/vulkan.h>
 #include <memory>
 #include <optional>
@@ -59,6 +61,14 @@ namespace Cosmos
 		// returns the compute queue
 		inline VkQueue& ComputeQueue() { return mComputeQueue; }
 
+		// returns the sampling in use
+		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
+
+	public:
+
+		// returns a reference to the renderer command entry
+		inline std::shared_ptr<CommandEntry>& MainCommandEntry() { return mCommandEntry; }
+
 	public:
 
 		// returns the queue indices for all available queues
@@ -78,10 +88,18 @@ namespace Cosmos
 		// creates a logical device out of the choosen physical device
 		void CreateLogicalDevice();
 
+		// creates the command pool
+		void CreateCommandPool();
+
+		// creates the swapchain commandbuffers
+		void CreateCommandBuffers();
+
 	private:
 
 		std::shared_ptr<VKInstance>& mInstance;
 		std::shared_ptr<Window>& mWindow;
+
+		std::shared_ptr<CommandEntry> mCommandEntry;
 
 		VkSurfaceKHR mSurface;
 		VkDevice mDevice;
@@ -92,5 +110,6 @@ namespace Cosmos
 		VkQueue mGraphicsQueue;
 		VkQueue mPresentQueue;
 		VkQueue mComputeQueue;
+		VkSampleCountFlagBits mMSAACount;
 	};
 }

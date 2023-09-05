@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include "Scene.h"
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
 #include "UI/UICore.h"
@@ -12,6 +13,7 @@ namespace Cosmos
 		// create objects
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
 		mRenderer = Renderer::Create(mWindow);
+		mScene = Scene::Create(mRenderer);
 		mUI = UICore::Create(mWindow, mRenderer);
 
 		// connect the UI to the renderer to handle resize events

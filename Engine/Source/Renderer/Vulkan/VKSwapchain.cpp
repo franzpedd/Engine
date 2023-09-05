@@ -23,14 +23,9 @@ namespace Cosmos
 	{
 		Logger() << "Creating VKSwapchain";
 
-		mCommandEntry = CommandEntry::Create(mDevice, "Swapchain");
-		Commander::Get().Add(mCommandEntry);
-
 		CreateSwapchain();
 		CreateImageViews();
 
-		CreateCommandPool();
-		CreateCommandBuffers();
 		CreateRenderPass();
 		CreateFramebuffers();
 	}
@@ -40,52 +35,27 @@ namespace Cosmos
 		vkDestroyImageView(mDevice->Device(), mDepthView, nullptr);
 		vkDestroyImage(mDevice->Device(), mDepthImage, nullptr);
 		vkFreeMemory(mDevice->Device(), mDepthMemory, nullptr);
-		
+
 		vkDestroyImageView(mDevice->Device(), mColorView, nullptr);
 		vkDestroyImage(mDevice->Device(), mColorImage, nullptr);
 		vkFreeMemory(mDevice->Device(), mColorMemory, nullptr);
-		
+
 		for (auto imageView : mImageViews)
 		{
 			vkDestroyImageView(mDevice->Device(), imageView, nullptr);
 		}
-		
+
 		vkDestroySwapchainKHR(mDevice->Device(), mSwapchain, nullptr);
-	}
-
-	void VKSwapchain::CreateCommandPool()
-	{
-		QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->PhysicalDevice(), mDevice->Surface());
-
-		VkCommandPoolCreateInfo cmdPoolInfo = {};
-		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
-		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_ASSERT(vkCreateCommandPool(mDevice->Device(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
-	}
-
-	void VKSwapchain::CreateCommandBuffers()
-	{
-		mCommandEntry->commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-		
-		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufferAllocInfo.commandPool = mCommandEntry->commandPool;
-		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandEntry->commandBuffers.size();
-		VK_ASSERT(vkAllocateCommandBuffers(mDevice->Device(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to create command buffers");
 	}
 
 	void VKSwapchain::CreateRenderPass()
 	{
-		mMSAACount = mDevice->GetMaxUsableSamples();
-
 		// attachments descriptions
 		std::array<VkAttachmentDescription, 3> attachments = {};
 
 		// color
 		attachments[0].format = mSurfaceFormat.format;
-		attachments[0].samples = mMSAACount;
+		attachments[0].samples = mDevice->MSAA();
 		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -95,7 +65,7 @@ namespace Cosmos
 
 		// depth
 		attachments[1].format = FindDepthFormat(mDevice);
-		attachments[1].samples = mMSAACount;
+		attachments[1].samples = mDevice->MSAA();
 		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -148,7 +118,7 @@ namespace Cosmos
 		renderPassCI.pSubpasses = &subpass;
 		renderPassCI.dependencyCount = 1;
 		renderPassCI.pDependencies = &dependency;
-		VK_ASSERT(vkCreateRenderPass(mDevice->Device(), &renderPassCI, nullptr, &mCommandEntry->renderPass), "Failed to create render pass");
+		VK_ASSERT(vkCreateRenderPass(mDevice->Device(), &renderPassCI, nullptr, &mDevice->MainCommandEntry()->renderPass), "Failed to create render pass");
 	}
 
 	void VKSwapchain::CreateSwapchain()
@@ -234,7 +204,7 @@ namespace Cosmos
 				mExtent.width,
 				mExtent.height,
 				1,
-				mMSAACount,
+				mDevice->MSAA(),
 				format,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -256,7 +226,7 @@ namespace Cosmos
 				mExtent.width,
 				mExtent.height,
 				1,
-				mMSAACount,
+				mDevice->MSAA(),
 				format,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -270,7 +240,7 @@ namespace Cosmos
 
 		// create frame buffers
 		{
-			mCommandEntry->framebuffers.resize(mImageViews.size());
+			mDevice->MainCommandEntry()->framebuffers.resize(mImageViews.size());
 
 			for (size_t i = 0; i < mImageViews.size(); i++)
 			{
@@ -278,13 +248,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = mCommandEntry->renderPass;
+				framebufferCI.renderPass = mDevice->MainCommandEntry()->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
 				framebufferCI.width = mExtent.width;
 				framebufferCI.height = mExtent.height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mDevice->MainCommandEntry()->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
@@ -299,9 +269,9 @@ namespace Cosmos
 		vkDestroyImage(mDevice->Device(), mColorImage, nullptr);
 		vkFreeMemory(mDevice->Device(), mColorMemory, nullptr);
 
-		for (uint32_t i = 0; i < mCommandEntry->framebuffers.size(); i++)
+		for (uint32_t i = 0; i < mDevice->MainCommandEntry()->framebuffers.size(); i++)
 		{
-			vkDestroyFramebuffer(mDevice->Device(), mCommandEntry->framebuffers[i], nullptr);
+			vkDestroyFramebuffer(mDevice->Device(), mDevice->MainCommandEntry()->framebuffers[i], nullptr);
 		}
 
 		for (auto imageView : mImageViews)

@@ -30,7 +30,7 @@ namespace Cosmos
 	UICore::UICore(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
 		: mWindow(window), mRenderer(renderer)
 	{
-		mCommandEntry = CommandEntry::Create(mRenderer->BackendDevice(), "UICore");
+		mCommandEntry = CommandEntry::Create(mRenderer->BackendDevice()->Device(), "UI");
 		Commander::Get().Add(mCommandEntry);
 
 		CreateResources();
@@ -39,6 +39,8 @@ namespace Cosmos
 
 	UICore::~UICore()
 	{
+		mCommandEntry->Destroy();
+
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -129,6 +131,7 @@ namespace Cosmos
 
 		io.Fonts->AddFontDefault();
 		io.IniFilename = "ui.ini";
+		io.WantCaptureMouse = true;
 
 		ImGui::StyleColorsDark();
 		SetupCustomStyle();
