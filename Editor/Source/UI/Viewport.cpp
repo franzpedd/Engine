@@ -1,5 +1,7 @@
 #include "Viewport.h"
 
+#include <array>
+
 namespace Cosmos
 {
 	Viewport::Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer)

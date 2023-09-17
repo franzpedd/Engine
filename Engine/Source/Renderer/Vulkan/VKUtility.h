@@ -24,6 +24,9 @@ namespace Cosmos
 	// creates a buffer on the gpu
 	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data = nullptr);
 
+	// copies a buffer from a src to a dst
+	void BufferCopy(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkBuffer src, VkBuffer dst, VkDeviceSize size);
+
 	// returns a optimal format given the specification
 	VkFormat FindSuitableFormat(std::shared_ptr<VKDevice>& device, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 

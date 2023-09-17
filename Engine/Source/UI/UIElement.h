@@ -35,7 +35,7 @@ namespace Cosmos
 		~UIElementStack();
 
 		// returns a reference to the elements vector
-		std::vector<UIElement*>& Elements() { return mElements; }
+		inline std::vector<UIElement*>& Elements() { return mElements; }
 
 	public:
 

@@ -12,8 +12,8 @@ namespace Cosmos
 	{
 		// create objects
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
-		mRenderer = Renderer::Create(mWindow);
-		mScene = Scene::Create(mRenderer);
+		mScene = Scene::Create();
+		mRenderer = Renderer::Create(mWindow, mScene);
 		mUI = UICore::Create(mWindow, mRenderer);
 
 		// connect the UI to the renderer to handle resize events
@@ -28,10 +28,12 @@ namespace Cosmos
 	{
 		while (!mWindow->ShouldQuit())
 		{
-			mWindow->OnUpdate();
-			//mGame->Update();
-			mUI->OnUpdate();
-			mRenderer->OnUpdate();
+			mWindow->OnUpdate();			// input events
+			mScene->OnUpdate();				// scene logic
+			mUI->OnUpdate();				// ui logic
+			mRenderer->OnUpdate();			// render frame
 		}
+
+		mScene->Destroy();
 	}
 }

@@ -4,7 +4,6 @@
 
 #include "Vulkan/VKInstance.h"
 #include "Vulkan/VKDevice.h"
-#include "Vulkan/VKDrawable.h"
 #include "Vulkan/VKSwapchain.h"
 #include "Vulkan/VKUtility.h"
 
@@ -16,16 +15,17 @@ namespace Cosmos
 	// forward declaration
 	class UICore;
 	class Window;
+	class Scene;
 
 	class Renderer
 	{
 	public:
 
 		// returns a smart poitner to a new renderer
-		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window);
+		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene);
 
 		// constructor
-		Renderer(std::shared_ptr<Window>& window);
+		Renderer(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene);
 
 		// destructor
 		~Renderer();
@@ -74,6 +74,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
+		std::shared_ptr<Scene>& mScene;
 		std::shared_ptr<VKInstance> mInstance;
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;

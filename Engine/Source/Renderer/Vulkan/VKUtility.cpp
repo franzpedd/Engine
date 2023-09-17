@@ -166,6 +166,40 @@ namespace Cosmos
 		return VK_SUCCESS;
 	}
 
+	void BufferCopy(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkBuffer src, VkBuffer dst, VkDeviceSize size)
+	{
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufferAllocInfo.commandPool = cmdPool;
+		cmdBufferAllocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &commandBuffer);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		VkBufferCopy copyRegion = {};
+		copyRegion.size = size;
+		vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
+
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device->GraphicsQueue());
+
+		vkFreeCommandBuffers(device->Device(), cmdPool, 1, &commandBuffer);
+	}
+
 	void BufferCopy(std::shared_ptr<VKDevice>& device, VkBuffer src, VkBuffer dst, VkDeviceSize size, VkCommandPool& commandPool)
 	{
 		// begin command buffer

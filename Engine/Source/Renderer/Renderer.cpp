@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+#include "Core/Scene.h"
 #include "Platform/Window.h"
 #include "UI/UICore.h"
 #include "Util/Logger.h"
@@ -8,13 +9,13 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<Renderer> Renderer::Create(std::shared_ptr<Window>& window)
+	std::shared_ptr<Renderer> Renderer::Create(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene)
 	{
-		return std::make_shared<Renderer>(window);
+		return std::make_shared<Renderer>(window, scene);
 	}
 
-	Renderer::Renderer(std::shared_ptr<Window>& window)
-		: mWindow(window)
+	Renderer::Renderer(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene)
+		: mWindow(window), mScene(scene)
 	{
 		mInstance = VKInstance::Create("Cosmos Application", "Cosmos", true);
 		mDevice = VKDevice::Create(mWindow, mInstance);
@@ -221,6 +222,7 @@ namespace Cosmos
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			// render scene
+			mScene->OnDraw();
 
 			vkCmdEndRenderPass(cmdBuffer);
 

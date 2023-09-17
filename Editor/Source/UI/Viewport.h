@@ -14,6 +14,9 @@ namespace Cosmos
 		// destructor
 		virtual ~Viewport();
 
+		// returns a reference to the command entry
+		inline std::shared_ptr<CommandEntry>& GetCommandEntry() { return mCommandEntry; }
+
 	public:
 
 		// updates the ui element

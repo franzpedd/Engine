@@ -33,7 +33,7 @@ namespace Cosmos
 		VKShader(std::shared_ptr<VKDevice>& device, ShaderType type, std::string name, std::string path);
 
 		// destructor
-		~VKShader();
+		~VKShader() = default;
 
 		// returns the shader type
 		inline ShaderType& Type() { return mType; }
@@ -51,6 +51,9 @@ namespace Cosmos
 		inline VkPipelineShaderStageCreateInfo& Stage() { return mShaderStageCI; }
 
 	public:
+
+		// free used resources
+		void Destroy();
 
 		// reads and returns shader's binary
 		std::vector<char> ReadSPIRV();

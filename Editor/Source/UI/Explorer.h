@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine.h>
+#include <array>
 #include <filesystem>
 
 namespace Cosmos

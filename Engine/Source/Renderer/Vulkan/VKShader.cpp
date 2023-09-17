@@ -49,7 +49,7 @@ namespace Cosmos
 		CreateShaderStage();
 	}
 
-	VKShader::~VKShader()
+	void VKShader::Destroy()
 	{
 		vkDestroyShaderModule(mDevice->Device(), mShaderModule, nullptr);
 	}
