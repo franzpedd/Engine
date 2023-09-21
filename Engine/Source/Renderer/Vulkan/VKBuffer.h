@@ -15,16 +15,17 @@ namespace Cosmos
 		enum Type
 		{
 			Vertex = 0,
-			Index
+			Index,
+			Uniform
 		};
 
 	public:
 
 		// returns a smart-ptr to a new vkbuffer
-		static std::shared_ptr<VKBuffer> Create(std::shared_ptr<VKDevice>& device, Type type, VkDeviceSize size, VkCommandPool& cmdPool, const void* data);
+		static std::shared_ptr<VKBuffer> Create(std::shared_ptr<VKDevice>& device, Type type, VkDeviceSize size, VkCommandPool& cmdPool, const void* data = 0);
 
 		// constructor
-		VKBuffer(std::shared_ptr<VKDevice>& device, Type type, VkDeviceSize size, VkCommandPool& cmdPool, const void* data);
+		VKBuffer(std::shared_ptr<VKDevice>& device, Type type, VkDeviceSize size, VkCommandPool& cmdPool, const void* data = 0);
 
 		// destructor
 		~VKBuffer() = default;
@@ -54,6 +55,10 @@ namespace Cosmos
 		VkDeviceSize mSize;
 		VkBuffer mBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory mBufferMemory = VK_NULL_HANDLE;
-		const void* mData = nullptr; // i.e: vertex, index data
+		const void* mData = nullptr; // i.e: vertex, index data, uniform data
 	};
+
+	// still used in texture and model class, when testing remove this and rework VKBuffer to support staging only when required
+	// creates a buffer on the gpu, used for buffers without staging (as VKBuffer class uses them)
+	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data = nullptr);
 }

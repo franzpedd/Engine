@@ -47,9 +47,9 @@ namespace Cosmos
 
 		struct UniformBufferObject
 		{
-			math::Mat4 model;
-			math::Mat4 view;
-			math::Mat4 proj;
+			alignas(16) math::Mat4 model;
+			alignas(16) math::Mat4 view;
+			alignas(16) math::Mat4 proj;
 		};
 
 	public:
@@ -87,6 +87,8 @@ namespace Cosmos
 		std::shared_ptr<VKShader> mFragmentShader;
 
 		VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
+		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> mDescriptorSets;
 		VkPipeline mGraphicsPipeline = VK_NULL_HANDLE;
 		VkPipelineLayout mPipelineLayout = VK_NULL_HANDLE;
 
@@ -99,5 +101,10 @@ namespace Cosmos
 		};
 
 		const std::vector<uint16_t> mIndices = { 0, 1, 2, 2, 3, 0 };
+
+		// move to renderer ?
+		std::vector<VkBuffer> mUniformBuffers;
+		std::vector<VkDeviceMemory> mUniformBuffersMemory;
+		std::vector<void*> mUniformBuffersMapped;
 	};
 }

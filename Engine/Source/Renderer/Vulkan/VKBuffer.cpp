@@ -32,6 +32,12 @@ namespace Cosmos
 			usageType |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 			break;
 		}
+
+		case Cosmos::VKBuffer::Uniform:
+		{
+			usageType |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+			break;
+		}
 		}
 
 		// create staging buffer
@@ -149,5 +155,53 @@ namespace Cosmos
 		vkQueueWaitIdle(mDevice->GraphicsQueue());
 
 		vkFreeCommandBuffers(mDevice->Device(), mCmdPool, 1, &commandBuffer);
+	}
+
+	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
+	{
+		// specify buffer
+		VkBufferCreateInfo bufferCI = {};
+		bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferCI.size = size;
+		bufferCI.usage = usage;
+		bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VK_ASSERT(vkCreateBuffer(device->Device(), &bufferCI, nullptr, buffer), "Failed to create buffer");
+
+		// alocate memory for specified buffer 
+		VkMemoryRequirements memoryReqs;
+		vkGetBufferMemoryRequirements(device->Device(), *buffer, &memoryReqs);
+
+		VkMemoryAllocateInfo memoryAllocInfo = {};
+		memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		memoryAllocInfo.pNext = nullptr;
+		memoryAllocInfo.allocationSize = memoryReqs.size;
+		memoryAllocInfo.memoryTypeIndex = device->GetMemoryType(memoryReqs.memoryTypeBits, properties);
+		VK_ASSERT(vkAllocateMemory(device->Device(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
+
+		// data is not null, must map the buffer and copy the data
+		if (data != nullptr)
+		{
+			void* mapped;
+			VK_ASSERT(vkMapMemory(device->Device(), *memory, 0, size, 0, &mapped), "Faled to map memory");
+			memcpy(mapped, data, size);
+
+			// if host coherency hasn't been requested, do a manual flush to make writes visible
+			if ((properties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+			{
+				VkMappedMemoryRange mappedRange = {};
+				mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+				mappedRange.memory = *memory;
+				mappedRange.offset = 0;
+				mappedRange.size = size;
+				vkFlushMappedMemoryRanges(device->Device(), 1, &mappedRange);
+			}
+
+			vkUnmapMemory(device->Device(), *memory);
+		}
+
+		// link buffer with allocated memory
+		VK_ASSERT(vkBindBufferMemory(device->Device(), *buffer, *memory, 0), "Failed to bind buffer with memory");
+
+		return VK_SUCCESS;
 	}
 }

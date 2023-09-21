@@ -1,5 +1,6 @@
 #include "VKTexture.h"
 
+#include "VKBuffer.h"
 #include "VKDevice.h"
 #include "VKUtility.h"
 

@@ -1,6 +1,7 @@
 #include "Model.h"
 
 #include "Renderer/Renderer.h"
+#include "Renderer/Vulkan/VKBuffer.h"
 #include "Util/Logger.h"
 
 namespace Cosmos

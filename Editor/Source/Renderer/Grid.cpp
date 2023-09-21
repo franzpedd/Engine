@@ -2,6 +2,8 @@
 
 #include "UI/Viewport.h"
 
+#include <chrono>
+
 namespace Cosmos
 {
 	Grid::Grid(std::shared_ptr<Renderer>& renderer, Viewport& viewport)
@@ -19,16 +21,39 @@ namespace Cosmos
 
 	void Grid::OnDraw()
 	{
-		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[mRenderer->CurrentFrame()];
+		// pre-drawing
+		{
+			static auto startTime = std::chrono::high_resolution_clock::now();
 
-		VkDeviceSize vSize = mVertexBuffer->GetSize();
-		VkDeviceSize iSize = mIndexBuffer->GetSize();
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+			float width = (float)mRenderer->BackendSwapchain()->Extent().width;
+			float height = (float)mRenderer->BackendSwapchain()->Extent().height;
 
-		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
-		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &mVertexBuffer->Buffer(), offsets);
-		vkCmdBindIndexBuffer(cmdBuffer, mIndexBuffer->Buffer(), 0, VK_INDEX_TYPE_UINT16);
-		vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
+			UniformBufferObject ubo = {};
+			ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			ubo.proj = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+			ubo.proj[1][1] *= -1;
+
+			memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
+		}
+
+		// drawing
+		{
+			uint32_t currentFrame = mRenderer->CurrentFrame();
+			VkDeviceSize offsets[] = { 0 };
+			VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[currentFrame];
+
+			VkDeviceSize vSize = mVertexBuffer->GetSize();
+			VkDeviceSize iSize = mIndexBuffer->GetSize();
+
+			vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+			vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &mVertexBuffer->Buffer(), offsets);
+			vkCmdBindIndexBuffer(cmdBuffer, mIndexBuffer->Buffer(), 0, VK_INDEX_TYPE_UINT16);
+			vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
+			vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
+		}
 	}
 
 	void Grid::OnUpdate()
@@ -43,6 +68,13 @@ namespace Cosmos
 		mVertexShader->Destroy();
 		mFragmentShader->Destroy();
 
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mUniformBuffers[i], nullptr);
+			vkFreeMemory(mRenderer->BackendDevice()->Device(), mUniformBuffersMemory[i], nullptr);
+		}
+
+		vkDestroyDescriptorPool(mRenderer->BackendDevice()->Device(), mDescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(mRenderer->BackendDevice()->Device(), mDescriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(mRenderer->BackendDevice()->Device(), mPipelineLayout, nullptr);
 		vkDestroyPipeline(mRenderer->BackendDevice()->Device(), mGraphicsPipeline, nullptr);
@@ -118,7 +150,7 @@ namespace Cosmos
 			RSCI.polygonMode = VK_POLYGON_MODE_FILL;
 			RSCI.lineWidth = 1.0f;
 			RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
-			RSCI.frontFace = VK_FRONT_FACE_CLOCKWISE;
+			RSCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			RSCI.depthBiasEnable = VK_FALSE;
 
 			VkPipelineMultisampleStateCreateInfo MSCI = {};
@@ -198,5 +230,71 @@ namespace Cosmos
 			mViewport.GetCommandEntry()->commandPool,
 			mIndices.data()
 		);
+
+		// create ubo (move to renderer if other instances appear?)
+		{
+			mUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+			mUniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+			mUniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			{
+				BufferCreate
+				(
+					mRenderer->BackendDevice(),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					sizeof(UniformBufferObject),
+					&mUniformBuffers[i],
+					&mUniformBuffersMemory[i]
+				);
+
+				vkMapMemory(mRenderer->BackendDevice()->Device(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+			}
+		}
+
+		// create descriptor pool and descriptor sets
+		{
+			VkDescriptorPoolSize poolSize = {};
+			poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSize.descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+			VkDescriptorPoolCreateInfo descPoolCI = {};
+			descPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			descPoolCI.poolSizeCount = 1;
+			descPoolCI.pPoolSizes = &poolSize;
+			descPoolCI.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+			VK_ASSERT(vkCreateDescriptorPool(mRenderer->BackendDevice()->Device(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
+
+			std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
+			
+			VkDescriptorSetAllocateInfo descSetAllocInfo = {};
+			descSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descSetAllocInfo.descriptorPool = mDescriptorPool;
+			descSetAllocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+			descSetAllocInfo.pSetLayouts = layouts.data();
+
+			mDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+			VK_ASSERT(vkAllocateDescriptorSets(mRenderer->BackendDevice()->Device(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
+		
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			{
+				VkDescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = mUniformBuffers[i];
+				bufferInfo.offset = 0;
+				bufferInfo.range = sizeof(UniformBufferObject);
+				
+				VkWriteDescriptorSet descriptorWrite{};
+				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet = mDescriptorSets[i];
+				descriptorWrite.dstBinding = 0;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo = &bufferInfo;
+				
+				vkUpdateDescriptorSets(mRenderer->BackendDevice()->Device(), 1, &descriptorWrite, 0, nullptr);
+			}
+		}
 	}
 }
