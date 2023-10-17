@@ -95,10 +95,10 @@ namespace Cosmos
 
 		struct Extension // specular/glossiness extension (using metallicRoughness as default)
 		{
-			math::Vec4 specularFactor = math::Vec4(0.0f);
+			glm::vec4 specularFactor = glm::vec4(0.0f);
 			Texture* specularGlossiness;
 
-			math::Vec4 diffuseFactor = math::Vec4(1.0f);
+			glm::vec4 diffuseFactor = glm::vec4(1.0f);
 			Texture* diffuse;
 		};
 
@@ -131,10 +131,10 @@ namespace Cosmos
 		inline float& RoughnessFactor() { return mRoughnessFactor; }
 
 		// returns a reference to the base color
-		inline math::Vec4& BaseColor() { return mBaseColor; }
+		inline glm::vec4& BaseColor() { return mBaseColor; }
 
 		// returns a reference to the emissive factor
-		inline math::Vec4& EmissiveFactor() { return mEmissiveFactor; }
+		inline glm::vec4& EmissiveFactor() { return mEmissiveFactor; }
 
 		// returns a reference to the base texture
 		inline Texture*& BaseTexture() { return mBase; }
@@ -172,8 +172,8 @@ namespace Cosmos
 		float mAlphaCutoff = 1.0f;
 		float mMetallicFactor = 1.0f;
 		float mRoughnessFactor = 1.0f;
-		math::Vec4 mBaseColor = math::Vec4(1.0f);
-		math::Vec4 mEmissiveFactor = math::Vec4(1.0f);
+		glm::vec4 mBaseColor = glm::vec4(1.0f);
+		glm::vec4 mEmissiveFactor = glm::vec4(1.0f);
 		Texture* mBase = nullptr;
 		Texture* mMetallicRoughness = nullptr;
 		Texture* mNormal = nullptr;
@@ -197,7 +197,7 @@ namespace Cosmos
 		~Primitive() = default;
 
 		// sets the primitive's bounding box
-		void SetBoundingBox(math::Vec3 min, math::Vec3 max);
+		void SetBoundingBox(glm::vec3 min, glm::vec3 max);
 
 		// returns the primitive's bounding box
 		inline BoundingBox& BB() { return mBB; }
@@ -236,21 +236,21 @@ namespace Cosmos
 
 		struct UniformBlock
 		{
-			math::Mat4 matrix = {};
-			math::Mat4 jointMatrix[MAX_NUM_JOINTS] = {};
+			glm::mat4 matrix = {};
+			glm::mat4 jointMatrix[MAX_NUM_JOINTS] = {};
 			float jointCount = 0.0f;
 		};
 
 	public:
 
 		// constructor
-		Mesh(std::shared_ptr<Renderer>& renderer, math::Mat4 matrix);
+		Mesh(std::shared_ptr<Renderer>& renderer, glm::mat4 matrix);
 
 		// destructor
 		~Mesh();
 
 		// sets the meshe's bounding box
-		void SetBoundingBox(math::Vec3 min, math::Vec3 max);
+		void SetBoundingBox(glm::vec3 min, glm::vec3 max);
 
 		// returns a reference to the uniform block
 		inline UniformBlock& GetUniformBlock() { return mUniformBlock; }
@@ -294,7 +294,7 @@ namespace Cosmos
 		inline GLTFNode*& Root() { return mRoot; }
 
 		// returns a reference to the skin inverse matrices
-		inline std::vector<math::Mat4>& InverseBindMatrices() { return mInverseBindMatrices; }
+		inline std::vector<glm::mat4>& InverseBindMatrices() { return mInverseBindMatrices; }
 
 		// returns a reference to the vector of joints nodes
 		inline std::vector<GLTFNode*>& JointNodes() { return mJoints; }
@@ -303,7 +303,7 @@ namespace Cosmos
 
 		std::string mName = {};
 		GLTFNode* mRoot = nullptr;
-		std::vector<math::Mat4> mInverseBindMatrices = {};
+		std::vector<glm::mat4> mInverseBindMatrices = {};
 		std::vector<GLTFNode*> mJoints = {};
 	};
 
@@ -321,10 +321,10 @@ namespace Cosmos
 		void Update();
 
 		// calculates and returns the node matrix
-		math::Mat4 LocalMatrix();
+		glm::mat4 LocalMatrix();
 
 		// returns the node matrix
-		math::Mat4 GetMatrix();
+		glm::mat4 GetMatrix();
 
 	public:
 
@@ -341,7 +341,7 @@ namespace Cosmos
 		inline std::vector<GLTFNode*>& Children() { return mChildren; }
 
 		// returns a reference to the node's matrix
-		inline math::Mat4& Matrix() { return mMatrix; }
+		inline glm::mat4& Matrix() { return mMatrix; }
 
 		// returns a reference to the pointer for the node's mesh
 		inline Mesh*& GetMesh() { return mMesh; }
@@ -353,13 +353,13 @@ namespace Cosmos
 		inline int32_t& SkinIndex() { return mSkinIndex; }
 
 		// returns a reference to the node's translation vector
-		inline math::Vec3& Translation() { return mTranslation; }
+		inline glm::vec3& Translation() { return mTranslation; }
 
 		// returns a reference to the node's scale vector
-		inline math::Vec3& Scale() { return mScale; }
+		inline glm::vec3& Scale() { return mScale; }
 
 		// returns a reference to the rotation quaternion
-		inline math::Quat Rotation() { return mRotation; }
+		inline glm::quat Rotation() { return mRotation; }
 
 		// returns a reference to the model's bvh
 		inline BoundingBox& BVH() { return mBVH; }
@@ -373,13 +373,13 @@ namespace Cosmos
 		GLTFNode* mParent = nullptr;
 		int32_t mIndex = 0;
 		std::vector<GLTFNode*> mChildren = {};
-		math::Mat4 mMatrix = {};
+		glm::mat4 mMatrix = {};
 		Mesh* mMesh = nullptr;
 		Skin* mSkin = nullptr;
 		int32_t mSkinIndex = -1;
-		math::Vec3 mTranslation = {};
-		math::Vec3 mScale = {1.0f, 1.0f, 1.0f};
-		math::Quat mRotation = {};
+		glm::vec3 mTranslation = {};
+		glm::vec3 mScale = {1.0f, 1.0f, 1.0f};
+		glm::quat mRotation = {};
 		BoundingBox mBVH = {};
 		BoundingBox mAABB = {};
 	};
@@ -413,7 +413,7 @@ namespace Cosmos
 
 			InterpolationType interpolationType = INTERPOLATION_TYPE_LINEAR;
 			std::vector<float> inputs = {};
-			std::vector<math::Vec4> outputs = {};
+			std::vector<glm::vec4> outputs = {};
 		};
 
 	public:
@@ -460,13 +460,13 @@ namespace Cosmos
 
 		struct Vertex
 		{
-			math::Vec3 pos = {};
-			math::Vec3 normal = {};
-			math::Vec2 uv0 = {};
-			math::Vec2 uv1 = {};
-			math::Vec4 joint0 = {};
-			math::Vec4 weight0 = {};
-			math::Vec4 color = {};
+			glm::vec3 pos = {};
+			glm::vec3 normal = {};
+			glm::vec2 uv0 = {};
+			glm::vec2 uv1 = {};
+			glm::vec4 joint0 = {};
+			glm::vec4 weight0 = {};
+			glm::vec4 color = {};
 		};
 
 		struct Vertices
@@ -483,8 +483,8 @@ namespace Cosmos
 
 		struct Dimension
 		{
-			math::Vec3 min = math::Vec3(FLT_MIN);
-			math::Vec3 max = math::Vec3(FLT_MAX);
+			glm::vec3 min = glm::vec3(FLT_MIN);
+			glm::vec3 max = glm::vec3(FLT_MAX);
 		};
 
 		struct LoaderInfo
@@ -564,7 +564,7 @@ namespace Cosmos
 		std::shared_ptr<Renderer>& mRenderer;
 		Vertices mVertices = {};
 		Indices mIndices = {};
-		math::Mat4 mAABB = {};
+		glm::mat4 mAABB = {};
 		std::vector<GLTFNode*> mNodes = {};
 		std::vector<GLTFNode*> mLinearNodes = {};
 		std::vector<Skin*> mSkins = {};

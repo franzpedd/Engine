@@ -1,5 +1,6 @@
 #include "Window.h"
 
+#include "Core/Application.h"
 #include "Util/Logger.h"
 
 #define GLFW_INCLUDE_NONE
@@ -7,6 +8,9 @@
 #include <glfw/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
+
+#include <chrono>
+#include <thread>
 
 namespace Cosmos
 {
@@ -38,6 +42,11 @@ namespace Cosmos
 	{
 		glfwDestroyWindow(mWindow);
 		glfwTerminate();
+	}
+
+	double Window::GetTime()
+	{
+		return glfwGetTime();
 	}
 
 	const char* Window::GetTitle()
@@ -73,6 +82,16 @@ namespace Cosmos
 		mHeight = height;
 	}
 
+	bool Window::IsKeyDown(Keycode key)
+	{
+		return glfwGetKey(mWindow, (int)key);
+	}
+
+	bool Window::IsButtonDown(Buttoncode button)
+	{
+		return glfwGetMouseButton(mWindow, (int)button);
+	}
+
 	void Window::OnUpdate()
 	{
 		glfwPollEvents();
@@ -91,6 +110,21 @@ namespace Cosmos
 	void Window::HintResizeWindow(bool value)
 	{
 		mShouldResizeWindow = value;
+	}
+
+	void Window::ToogleCursorMode(bool hide)
+	{
+		if(hide)
+		{
+			mData.lockMousePos = true;
+			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+
+		else
+		{
+			mData.lockMousePos = false;
+			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
 	}
 
 	int Window::CreateWindowSurface(void* instance, void* surface, const void* allocator)
@@ -138,6 +172,7 @@ namespace Cosmos
 		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+				Application::Get()->OnKeyboardPress((Keycode)key);
 			});
 
 		// mouse button pressed
@@ -150,12 +185,38 @@ namespace Cosmos
 		glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double x, double y)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+
+				Application::Get()->OnMouseScroll((float)y);
 			});
 
 		// mouse moved
 		glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double x, double y)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+
+				float xPos = (float)x;
+				float yPos = (float)y;
+
+				if (win->GetData().mouseFirstMoved)
+				{
+					win->GetData().mouseLastX = xPos;
+					win->GetData().mouseLastY = yPos;
+					win->GetData().mouseFirstMoved = false;
+				}
+
+				float xOffset = xPos - win->GetData().mouseLastX;
+				float yOffset = yPos - win->GetData().mouseLastY; // check reversed order also
+
+				win->GetData().mouseLastX = xPos;
+				win->GetData().mouseLastY = yPos;
+				
+				Application::Get()->OnMouseMove(xPos, yPos, xOffset, yOffset);
+
+				// should lock cursor ?
+				if (win->GetData().lockMousePos)
+				{
+					glfwSetCursorPos(win->NativeWindow(), 0, 0);
+				}
 			});
 	}
 }

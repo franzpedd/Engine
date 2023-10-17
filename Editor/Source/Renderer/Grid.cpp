@@ -6,8 +6,8 @@
 
 namespace Cosmos
 {
-	Grid::Grid(std::shared_ptr<Renderer>& renderer, Viewport& viewport)
-		: Entity("Grid"), mRenderer(renderer), mViewport(viewport)
+	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera& camera, Viewport& viewport)
+		: Entity("Grid"), mRenderer(renderer), mCamera(camera), mViewport(viewport)
 	{
 		Logger() << "Creating Grid";
 
@@ -21,44 +21,41 @@ namespace Cosmos
 
 	void Grid::OnDraw()
 	{
-		// pre-drawing
-		{
-			static auto startTime = std::chrono::high_resolution_clock::now();
+		uint32_t currentFrame = mRenderer->CurrentFrame();
+		VkDeviceSize offsets[] = { 0 };
+		VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[currentFrame];
 
-			auto currentTime = std::chrono::high_resolution_clock::now();
-			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-			float width = (float)mRenderer->BackendSwapchain()->Extent().width;
-			float height = (float)mRenderer->BackendSwapchain()->Extent().height;
+		VkDeviceSize vSize = mVertexBuffer->GetSize();
+		VkDeviceSize iSize = mIndexBuffer->GetSize();
 
-			UniformBufferObject ubo = {};
-			ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.proj = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
-			ubo.proj[1][1] *= -1;
-
-			memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
-		}
-
-		// drawing
-		{
-			uint32_t currentFrame = mRenderer->CurrentFrame();
-			VkDeviceSize offsets[] = { 0 };
-			VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[currentFrame];
-
-			VkDeviceSize vSize = mVertexBuffer->GetSize();
-			VkDeviceSize iSize = mIndexBuffer->GetSize();
-
-			vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
-			vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &mVertexBuffer->Buffer(), offsets);
-			vkCmdBindIndexBuffer(cmdBuffer, mIndexBuffer->Buffer(), 0, VK_INDEX_TYPE_UINT16);
-			vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
-			vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
-		}
+		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &mVertexBuffer->Buffer(), offsets);
+		vkCmdBindIndexBuffer(cmdBuffer, mIndexBuffer->Buffer(), 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
+		vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
 	}
 
-	void Grid::OnUpdate()
+	void Grid::OnUpdate(Timestep ts)
 	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
 
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		float width = (float)mRenderer->BackendSwapchain()->Extent().width;
+		float height = (float)mRenderer->BackendSwapchain()->Extent().height;
+
+		//UniformBufferObject ubo = {};
+		//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(10.0f),  glm::vec3(5.0f, 5.0f, 1.0f));
+		//ubo.view = glm::lookAt(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.proj = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
+		//ubo.proj[1][1] *= -1;
+
+		UniformBufferObject ubo = {};
+		ubo.model = glm::mat4(1.0f);
+		ubo.view = mCamera.GetView();
+		ubo.proj = mCamera.GetProjection();
+		
+		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}
 
 	void Grid::OnDrestroy()
@@ -149,7 +146,7 @@ namespace Cosmos
 			RSCI.rasterizerDiscardEnable = VK_FALSE;
 			RSCI.polygonMode = VK_POLYGON_MODE_FILL;
 			RSCI.lineWidth = 1.0f;
-			RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
+			RSCI.cullMode = VK_CULL_MODE_NONE;
 			RSCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			RSCI.depthBiasEnable = VK_FALSE;
 

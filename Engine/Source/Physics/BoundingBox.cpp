@@ -6,7 +6,7 @@ namespace Cosmos
 	{
 	}
 
-	BoundingBox::BoundingBox(math::Vec3 min, math::Vec3 max)
+	BoundingBox::BoundingBox(glm::vec3 min, glm::vec3 max)
 		: mMin(min), mMax(max)
 	{
 	}
@@ -15,33 +15,33 @@ namespace Cosmos
 	{
 	}
 
-	BoundingBox BoundingBox::AABB(math::Mat4 mat)
+	BoundingBox BoundingBox::AABB(glm::mat4 mat)
 	{
-		math::Vec3 min = math::Vec3(mat[3]);
-		math::Vec3 max = min;
-		math::Vec3 v0;
-		math::Vec3 v1;
+		glm::vec3 min = glm::vec3(mat[3]);
+		glm::vec3 max = min;
+		glm::vec3 v0;
+		glm::vec3 v1;
 
 		// calculate side
-		math::Vec3 side = math::Vec3(mat[0]);
+		glm::vec3 side = glm::vec3(mat[0]);
 		v0 = side * mMin.x;
 		v1 = side * mMax.x;
-		min += math::Min(v0, v1);
-		max += math::Max(v0, v1);
+		min += glm::min(v0, v1);
+		max += glm::max(v0, v1);
 
 		// calculate up
-		math::Vec3 up = math::Vec3(mat[1]);
+		glm::vec3 up = glm::vec3(mat[1]);
 		v0 = up * mMin.y;
 		v1 = up * mMax.y;
-		min += math::Min(v0, v1);
-		max += math::Max(v0, v1);
+		min += glm::min(v0, v1);
+		max += glm::max(v0, v1);
 
 		// calculate back
-		math::Vec3 back = math::Vec3(mat[2]);
+		glm::vec3 back = glm::vec3(mat[2]);
 		v0 = back * mMin.z;
 		v1 = back * mMax.z;
-		min += math::Min(v0, v1);
-		max += math::Max(v0, v1);
+		min += glm::min(v0, v1);
+		max += glm::max(v0, v1);
 
 		return BoundingBox(min, max);
 	}

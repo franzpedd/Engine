@@ -355,14 +355,14 @@ namespace Cosmos
 		mHasIndices = indexCount > 0 ? true : false;
 	}
 
-	void Primitive::SetBoundingBox(math::Vec3 min, math::Vec3 max)
+	void Primitive::SetBoundingBox(glm::vec3 min, glm::vec3 max)
 	{
 		mBB.SetMin(min);
 		mBB.SetMax(max);
 		mBB.SetValid(true);
 	}
 
-	Mesh::Mesh(std::shared_ptr<Renderer>& renderer, math::Mat4 matrix)
+	Mesh::Mesh(std::shared_ptr<Renderer>& renderer, glm::mat4 matrix)
 		: mRenderer(renderer)
 	{
 		mUniformBlock.matrix = matrix;
@@ -388,7 +388,7 @@ namespace Cosmos
 		}
 	}
 
-	void Mesh::SetBoundingBox(math::Vec3 min, math::Vec3 max)
+	void Mesh::SetBoundingBox(glm::vec3 min, glm::vec3 max)
 	{
 		mBB.SetMin(min);
 		mBB.SetMax(max);
@@ -412,20 +412,20 @@ namespace Cosmos
 	{
 		if (mMesh != nullptr)
 		{
-			math::Mat4 m = GetMatrix();
+			glm::mat4 m = GetMatrix();
 
 			if (mSkin != nullptr)
 			{
 				mMesh->GetUniformBlock();
 
 				// update join matrices
-				math::Mat4 inverseTransform = math::Inverse(m);
+				glm::mat4 inverseTransform = glm::inverse(m);
 				size_t numJoints = std::min((uint32_t)mSkin->JointNodes().size(), MAX_NUM_JOINTS);
 
 				for (size_t i = 0; i < numJoints; i++)
 				{
 					GLTFNode* jointNode = mSkin->JointNodes()[i];
-					math::Mat4 jointMat = jointNode->GetMatrix() * mSkin->InverseBindMatrices()[i];
+					glm::mat4 jointMat = jointNode->GetMatrix() * mSkin->InverseBindMatrices()[i];
 					jointMat = inverseTransform * jointMat;
 					mMesh->GetUniformBlock().jointMatrix[i] = jointMat;
 				}
@@ -436,7 +436,7 @@ namespace Cosmos
 
 			else
 			{
-				memcpy(mMesh->GetUBO().mapped, &m, sizeof(math::Mat4));
+				memcpy(mMesh->GetUBO().mapped, &m, sizeof(glm::mat4));
 			}
 		}
 
@@ -446,14 +446,14 @@ namespace Cosmos
 		}
 	}
 
-	math::Mat4 GLTFNode::LocalMatrix()
+	glm::mat4 GLTFNode::LocalMatrix()
 	{
-		return math::Translate(glm::mat4(1.0f), mTranslation) * math::Mat4(mRotation) * math::Scale(math::Mat4(1.0f), mScale) * mMatrix;
+		return glm::translate(glm::mat4(1.0f), mTranslation) * glm::mat4(mRotation) * glm::scale(glm::mat4(1.0f), mScale) * mMatrix;
 	}
 
-	math::Mat4 GLTFNode::GetMatrix()
+	glm::mat4 GLTFNode::GetMatrix()
 	{
-		math::Mat4 m = LocalMatrix();
+		glm::mat4 m = LocalMatrix();
 
 		GLTFNode* p = mParent;
 
@@ -545,15 +545,15 @@ namespace Cosmos
 
 						case Animation::Channel::PathType::PATH_TYPE_TRANSLATION:
 						{
-							glm::vec4 trans = math::Mix(sampler.outputs[i], sampler.outputs[i + 1], u);
-							channel.node->Translation() = math::Vec3(trans);
+							glm::vec4 trans = glm::mix(sampler.outputs[i], sampler.outputs[i + 1], u);
+							channel.node->Translation() = glm::vec3(trans);
 							break;
 						}
 
 						case Animation::Channel::PathType::PATH_TYPE_SCALE:
 						{
-							glm::vec4 trans = math::Mix(sampler.outputs[i], sampler.outputs[i + 1], u);
-							channel.node->Scale() = math::Vec3(trans);
+							glm::vec4 trans = glm::mix(sampler.outputs[i], sampler.outputs[i + 1], u);
+							channel.node->Scale() = glm::vec3(trans);
 							break;
 						}
 
@@ -847,21 +847,21 @@ namespace Cosmos
 		glm::vec3 translation = glm::vec3(0.0f);
 		if (node.translation.size() == 3)
 		{
-			translation = math::MakeVec3(node.translation.data());
+			translation = glm::make_vec3(node.translation.data());
 			newNode->Translation() = translation;
 		}
 
 		glm::mat4 rotation = glm::mat4(1.0f);
 		if (node.rotation.size() == 4)
 		{
-			glm::quat q = math::MakeQuat(node.rotation.data());
-			newNode->Rotation() = math::Mat4(q);
+			glm::quat q = glm::make_quat(node.rotation.data());
+			newNode->Rotation() = glm::mat4(q);
 		}
 
 		glm::vec3 scale = glm::vec3(1.0f);
 		if (node.scale.size() == 3)
 		{
-			scale = math::MakeVec3(node.scale.data());
+			scale = glm::make_vec3(node.scale.data());
 			newNode->Scale() = scale;
 		}
 
@@ -893,8 +893,8 @@ namespace Cosmos
 				uint32_t indexStart = (uint32_t)loaderInfo.indexPos;
 				uint32_t indexCount = 0;
 				uint32_t vertexCount = 0;
-				math::Vec3 posMin = {};
-				math::Vec3 posMax = {};
+				glm::vec3 posMin = {};
+				glm::vec3 posMax = {};
 				bool hasSkin = false;
 				bool hasIndices = primitive.indices > -1;
 
@@ -925,8 +925,8 @@ namespace Cosmos
 					const tinygltf::BufferView& posView = mdl.bufferViews[posAccessor.bufferView];
 
 					bufferPos = reinterpret_cast<const float*>(&(mdl.buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
-					posMin = math::Vec3(posAccessor.minValues[0], posAccessor.minValues[1], posAccessor.minValues[2]);
-					posMax = math::Vec3(posAccessor.maxValues[0], posAccessor.maxValues[1], posAccessor.maxValues[2]);
+					posMin = glm::vec3(posAccessor.minValues[0], posAccessor.minValues[1], posAccessor.minValues[2]);
+					posMax = glm::vec3(posAccessor.maxValues[0], posAccessor.maxValues[1], posAccessor.maxValues[2]);
 					vertexCount = static_cast<uint32_t>(posAccessor.count);
 					posByteStride = posAccessor.ByteStride(posView) ? (posAccessor.ByteStride(posView) / sizeof(float)) : tinygltf::GetNumComponentsInType(TINYGLTF_TYPE_VEC3);
 
@@ -989,12 +989,12 @@ namespace Cosmos
 					for (size_t v = 0; v < posAccessor.count; v++)
 					{
 						Vertex& vert = loaderInfo.vertexBuffer[loaderInfo.vertexPos];
-						vert.pos = math::Vec4(math::MakeVec3(&bufferPos[v * posByteStride]), 1.0f);
+						vert.pos = glm::vec4(glm::make_vec3(&bufferPos[v * posByteStride]), 1.0f);
 
-						vert.normal = math::Normalize(math::Vec3(bufferNormals ? math::MakeVec3(&bufferNormals[v * normByteStride]) : math::Vec3(0.0f)));
-						vert.uv0 = bufferTexCoordSet0 ? math::MakeVec2(&bufferTexCoordSet0[v * uv0ByteStride]) : math::Vec3(0.0f);
-						vert.uv1 = bufferTexCoordSet1 ? math::MakeVec2(&bufferTexCoordSet1[v * uv1ByteStride]) : math::Vec3(0.0f);
-						vert.color = bufferColorSet0 ? math::MakeVec4(&bufferColorSet0[v * color0ByteStride]) : math::Vec4(1.0f);
+						vert.normal = glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * normByteStride]) : glm::vec3(0.0f)));
+						vert.uv0 = bufferTexCoordSet0 ? glm::make_vec2(&bufferTexCoordSet0[v * uv0ByteStride]) : glm::vec3(0.0f);
+						vert.uv1 = bufferTexCoordSet1 ? glm::make_vec2(&bufferTexCoordSet1[v * uv1ByteStride]) : glm::vec3(0.0f);
+						vert.color = bufferColorSet0 ? glm::make_vec4(&bufferColorSet0[v * color0ByteStride]) : glm::vec4(1.0f);
 
 						if (hasSkin)
 						{
@@ -1003,14 +1003,14 @@ namespace Cosmos
 							case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
 							{
 								const uint16_t* buf = (const uint16_t*)bufferJoints;
-								vert.joint0 = math::Vec4(math::MakeVec4(&buf[v * jointByteStride]));
+								vert.joint0 = glm::vec4(glm::make_vec4(&buf[v * jointByteStride]));
 								break;
 							}
 
 							case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 							{
 								const uint8_t* buf = (const uint8_t*)bufferJoints;
-								vert.joint0 = math::Vec4(math::MakeVec4(&buf[v * jointByteStride]));
+								vert.joint0 = glm::vec4(glm::make_vec4(&buf[v * jointByteStride]));
 								break;
 							}
 
@@ -1024,15 +1024,15 @@ namespace Cosmos
 
 						else
 						{
-							vert.joint0 = math::Vec4(0.0f);
+							vert.joint0 = glm::vec4(0.0f);
 						}
 
-						vert.weight0 = hasSkin ? math::MakeVec4(&bufferWeights[v * weightByteStride]) : math::Vec4(0.0f);
+						vert.weight0 = hasSkin ? glm::make_vec4(&bufferWeights[v * weightByteStride]) : glm::vec4(0.0f);
 
 						// fix for all zero weights
-						if (math::Length(vert.weight0) == 0.0f)
+						if (glm::length(vert.weight0) == 0.0f)
 						{
-							vert.weight0 = math::Vec4(1.0f, 0.0f, 0.0f, 0.0f);
+							vert.weight0 = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 						}
 
 						loaderInfo.vertexPos++;
@@ -1112,8 +1112,8 @@ namespace Cosmos
 					newMesh->BB().SetValid(true);
 				}
 
-				newMesh->BB().SetMin(math::Min(newMesh->BB().GetMin(), p->BB().GetMin()));
-				newMesh->BB().SetMax(math::Max(newMesh->BB().GetMax(), p->BB().GetMax()));
+				newMesh->BB().SetMin(glm::min(newMesh->BB().GetMin(), p->BB().GetMin()));
+				newMesh->BB().SetMax(glm::max(newMesh->BB().GetMax(), p->BB().GetMax()));
 			}
 
 			newNode->GetMesh() = newMesh;
@@ -1164,7 +1164,7 @@ namespace Cosmos
 				const tinygltf::BufferView& bufferView = mdl.bufferViews[accessor.bufferView];
 				const tinygltf::Buffer& buffer = mdl.buffers[bufferView.buffer];
 				newSkin->InverseBindMatrices().resize(accessor.count);
-				memcpy(newSkin->InverseBindMatrices().data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(math::Mat4));
+				memcpy(newSkin->InverseBindMatrices().data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 			}
 
 			mSkins.push_back(newSkin);
@@ -1244,7 +1244,7 @@ namespace Cosmos
 
 			if (mat.values.find("baseColorFactor") != mat.values.end())
 			{
-				material.BaseColor() = math::MakeVec4(mat.values["baseColorFactor"].ColorFactor().data());
+				material.BaseColor() = glm::make_vec4(mat.values["baseColorFactor"].ColorFactor().data());
 			}
 
 			if (mat.additionalValues.find("normalTexture") != mat.additionalValues.end())
@@ -1288,7 +1288,7 @@ namespace Cosmos
 
 			if (mat.additionalValues.find("emissiveFactor") != mat.additionalValues.end())
 			{
-				material.EmissiveFactor() = math::Vec4(math::MakeVec3(mat.additionalValues["emissiveFactor"].ColorFactor().data()), 1.0);
+				material.EmissiveFactor() = glm::vec4(glm::make_vec3(mat.additionalValues["emissiveFactor"].ColorFactor().data()), 1.0);
 			}
 
 			// extensions
@@ -1420,7 +1420,7 @@ namespace Cosmos
 
 						for (size_t index = 0; index < accessor.count; index++)
 						{
-							sampler.outputs.push_back(math::Vec4(buf[index], 0.0f));
+							sampler.outputs.push_back(glm::vec4(buf[index], 0.0f));
 						}
 
 						break;
@@ -1593,20 +1593,20 @@ namespace Cosmos
 			CalculateBoundingBox(node, nullptr);
 		}
 
-		mDimension.min = math::Vec3(FLT_MAX);
-		mDimension.max = math::Vec3(-FLT_MAX);
+		mDimension.min = glm::vec3(FLT_MAX);
+		mDimension.max = glm::vec3(-FLT_MAX);
 
 		for (auto node : mLinearNodes)
 		{
 			if (node->BVH().IsValid())
 			{
-				mDimension.min = math::Min(mDimension.min, node->BVH().GetMin());
-				mDimension.max = math::Max(mDimension.max, node->BVH().GetMax());
+				mDimension.min = glm::min(mDimension.min, node->BVH().GetMin());
+				mDimension.max = glm::max(mDimension.max, node->BVH().GetMax());
 			}
 		}
 
 		// calculate scene aabb
-		mAABB = math::Scale(math::Mat4(1.0f), math::Vec3(mDimension.max[0] - mDimension.min[0], mDimension.max[1] - mDimension.min[1], mDimension.max[2] - mDimension.min[2]));
+		mAABB = glm::scale(glm::mat4(1.0f), glm::vec3(mDimension.max[0] - mDimension.min[0], mDimension.max[1] - mDimension.min[1], mDimension.max[2] - mDimension.min[2]));
 		mAABB[3][0] = mDimension.min[0];
 		mAABB[3][1] = mDimension.min[1];
 		mAABB[3][2] = mDimension.min[2];

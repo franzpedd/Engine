@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Util/Keycodes.h"
 #include <memory>
 
 // forward declaration
@@ -9,6 +10,16 @@ namespace Cosmos
 {
 	class Window
 	{
+	public:
+
+		struct Data
+		{
+			bool lockMousePos = false;
+			bool mouseFirstMoved = true;
+			float mouseLastX = 0.0f;
+			float mouseLastY = 0.0f;
+		};
+
 	public:
 
 		// returns a smart pointer to a new window
@@ -24,6 +35,12 @@ namespace Cosmos
 		inline GLFWwindow* NativeWindow() { return mWindow; }
 
 	public:
+
+		// returns private members
+		inline Data& GetData() { return mData; }
+
+		// returns current time
+		double GetTime();
 
 		// return window's title
 		const char* GetTitle();
@@ -43,6 +60,12 @@ namespace Cosmos
 		// sets a new window height
 		void SetHeight(int height);
 
+		// returns if a key is pressed
+		bool IsKeyDown(Keycode key);
+
+		// returns if a button is pressed
+		bool IsButtonDown(Buttoncode button);
+
 	public:
 
 		// updates the window
@@ -56,6 +79,9 @@ namespace Cosmos
 
 		// sets the window should resize flag
 		void HintResizeWindow(bool value);
+
+		// hides/unhides cursor
+		void ToogleCursorMode(bool hide);
 
 		// creates a window surface for vulkan
 		int CreateWindowSurface(void* instance, void* surface, const void* allocator);
@@ -83,5 +109,6 @@ namespace Cosmos
 		int mHeight;
 		GLFWwindow* mWindow;
 		bool mShouldResizeWindow = false;
+		Data mData;
 	};
 }

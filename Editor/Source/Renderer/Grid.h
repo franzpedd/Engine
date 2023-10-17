@@ -14,8 +14,8 @@ namespace Cosmos
 
 		struct Vertex
 		{
-			math::Vec2 pos;
-			math::Vec3 color;
+			glm::vec3 pos;
+			glm::vec3 color;
 
 			static std::array<VkVertexInputBindingDescription, 1> GetBindingDescription()
 			{
@@ -33,7 +33,7 @@ namespace Cosmos
 
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
-				attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+				attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 				attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
 				attributeDescriptions[1].binding = 0;
@@ -47,15 +47,15 @@ namespace Cosmos
 
 		struct UniformBufferObject
 		{
-			alignas(16) math::Mat4 model;
-			alignas(16) math::Mat4 view;
-			alignas(16) math::Mat4 proj;
+			alignas(16) glm::mat4 model;
+			alignas(16) glm::mat4 view;
+			alignas(16) glm::mat4 proj;
 		};
 
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Viewport& viewport);
+		Grid(std::shared_ptr<Renderer>& renderer, Camera& camera, Viewport& viewport);
 
 		// destructor
 		virtual ~Grid();
@@ -66,7 +66,7 @@ namespace Cosmos
 		virtual void OnDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
-		virtual void OnUpdate() override;
+		virtual void OnUpdate(Timestep ts) override;
 
 		// called before destructor, for freeing resources
 		virtual void OnDrestroy() override;
@@ -79,6 +79,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
+		Camera& mCamera;
 		Viewport& mViewport;
 		
 		std::shared_ptr<VKBuffer> mVertexBuffer;
@@ -94,10 +95,10 @@ namespace Cosmos
 
 		const std::vector<Vertex> mVertices =
 		{
-			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+			{{-0.5f, -0.5f, 0.0f,}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f, 0.0f,}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.0f,}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.0f,}, {1.0f, 1.0f, 1.0f}}
 		};
 
 		const std::vector<uint16_t> mIndices = { 0, 1, 2, 2, 3, 0 };

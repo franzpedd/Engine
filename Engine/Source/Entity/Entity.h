@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Util/Timestep.h"
 #include <vector>
 
 namespace Cosmos
@@ -23,7 +24,7 @@ namespace Cosmos
 		virtual void OnDraw() = 0;
 
 		// updates the entity (leave empty if doesnt required)
-		virtual void OnUpdate() = 0;
+		virtual void OnUpdate(Timestep ts) = 0;
 
 		// called before destructor, for freeing resources
 		virtual void OnDrestroy() = 0;

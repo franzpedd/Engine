@@ -1,21 +1,24 @@
 #pragma once
 
+#include "Camera.h"
 #include "Entity/Entity.h"
+#include "Util/Timestep.h"
 #include <memory>
 
 namespace Cosmos
 {
 	// forward declarations
+	class Window;
 
 	class Scene
 	{
 	public:
 
 		// returns a smart pointer to a new scene
-		static std::shared_ptr<Scene> Create();
+		static std::shared_ptr<Scene> Create(std::shared_ptr<Window>& window);
 
 		// constructor
-		Scene();
+		Scene(std::shared_ptr<Window>& window);
 
 		// destructor
 		~Scene();
@@ -25,8 +28,13 @@ namespace Cosmos
 
 	public:
 
+		// returns the camera
+		inline Camera& GetCamera() { return mCamera; }
+
+	public:
+
 		// updates the scene objects
-		void OnUpdate();
+		void OnUpdate(Timestep ts);
 
 		// draws the scene drawables
 		void OnDraw();
@@ -36,6 +44,8 @@ namespace Cosmos
 
 	private:
 
+		std::shared_ptr<Window>& mWindow;
 		EntityStack mEntities;
+		Camera mCamera;
 	};
 }

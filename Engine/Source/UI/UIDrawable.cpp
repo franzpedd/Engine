@@ -33,12 +33,12 @@ namespace Cosmos::ui
 		ImGui::EndChild();
 	}
 
-	math::Vec2 GetCursorPos()
+	glm::vec2 GetCursorPos()
 	{
 		return { ImGui::GetCursorPos().x, ImGui::GetCursorPos().y };
 	}
 
-	void SetCursonPos(const math::Vec2& pos)
+	void SetCursonPos(const glm::vec2& pos)
 	{
 		ImGui::SetCursorPos(ImVec2{ pos.x, pos.y });
 	}
@@ -79,7 +79,7 @@ namespace Cosmos::ui
 		return descriptorSet;
 	}
 
-	void Image(VkDescriptorSet image, math::Vec2& size)
+	void Image(VkDescriptorSet image, glm::vec2& size)
 	{
 		ImGui::Image((ImTextureID)image, ImVec2{ size.x, size.y });
 	}
@@ -106,12 +106,12 @@ namespace Cosmos::ui
 
 	}
 
-	math::Vec2 GetContentRegionAvail()
+	glm::vec2 GetContentRegionAvail()
 	{
-		return math::Vec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+		return glm::vec2{ ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 	}
 
-	bool ButtonImage(const char* strId, VkDescriptorSet idTexture, const math::Vec2& size)
+	bool ButtonImage(const char* strId, VkDescriptorSet idTexture, const glm::vec2& size)
 	{
 		return ImGui::ImageButton(strId, (ImTextureID)idTexture, { size.x, size.y });
 	}

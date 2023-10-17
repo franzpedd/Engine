@@ -18,25 +18,25 @@ namespace Cosmos::ui
 	void EndChild();
 
 	// returns the current ui cursor position, used for inserting next widget
-	math::Vec2 GetCursorPos();
+	glm::vec2 GetCursorPos();
 
 	// sets the new ui cursor positino, used for inserting next widget
-	void SetCursonPos(const math::Vec2& pos);
+	void SetCursonPos(const glm::vec2& pos);
 
 	// adds a texture in the user interface for later usage
 	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout);
 
 	// shows an image to the bound ui window
-	void Image(VkDescriptorSet image, math::Vec2& size);
+	void Image(VkDescriptorSet image, glm::vec2& size);
 
 	// enables the dockspace over the window drawable area
 	void DockspaceOverEverything();
 
 	// returns the window size of currently bound window
-	math::Vec2 GetContentRegionAvail();
+	glm::vec2 GetContentRegionAvail();
 
 	// image button
-	bool ButtonImage(const char* strId, VkDescriptorSet idTexture, const math::Vec2& size);
+	bool ButtonImage(const char* strId, VkDescriptorSet idTexture, const glm::vec2& size);
 
 	// signals to put the next widget in the same line as the previous
 	void SameLine();

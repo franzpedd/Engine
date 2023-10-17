@@ -12,25 +12,25 @@ namespace Cosmos
 		BoundingBox();
 
 		// constructor with params
-		BoundingBox(math::Vec3 min, math::Vec3 max);
+		BoundingBox(glm::vec3 min, glm::vec3 max);
 
 		// destructor
 		~BoundingBox();
 
 		// returns the colision box dimension
-		BoundingBox AABB(math::Mat4 mat);
+		BoundingBox AABB(glm::mat4 mat);
 
 		// returns a reference to the minimum value
-		inline math::Vec3& GetMin() { return mMin; }
+		inline glm::vec3& GetMin() { return mMin; }
 
 		// sets a new min value
-		inline void SetMin(math::Vec3& value) { mMin = value; }
+		inline void SetMin(glm::vec3& value) { mMin = value; }
 
 		// returns a reference to the maximum value
-		inline math::Vec3& GetMax() { return mMax; }
+		inline glm::vec3& GetMax() { return mMax; }
 
 		// sets a new max value
-		inline void SetMax(math::Vec3& value) { mMax = value; }
+		inline void SetMax(glm::vec3& value) { mMax = value; }
 
 		// returns either if the bounding box is valid or not
 		inline bool IsValid() { return mValid; }
@@ -40,8 +40,8 @@ namespace Cosmos
 
 	private:
 
-		math::Vec3 mMin;
-		math::Vec3 mMax;
+		glm::vec3 mMin;
+		glm::vec3 mMax;
 		bool mValid = false;
 
 	};

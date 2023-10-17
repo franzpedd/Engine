@@ -16,8 +16,8 @@ namespace Cosmos
 	void Explorer::OnUpdate()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
-		math::Vec2 buttonSize = { 50, 50 };
-		math::Vec2 currentPos = {};
+		glm::vec2 buttonSize = { 50, 50 };
+		glm::vec2 currentPos = {};
 		float offSet = 5.0f;
 
 		std::filesystem::path parentPath = mRoot;

@@ -8,11 +8,16 @@
 
 namespace Cosmos
 {
+	Application* Application::sApplication = nullptr;
+
 	Application::Application()
 	{
+		LOG_ASSERT(sApplication == nullptr, "Application already created");
+		sApplication = this;
+
 		// create objects
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
-		mScene = Scene::Create();
+		mScene = Scene::Create(mWindow);
 		mRenderer = Renderer::Create(mWindow, mScene);
 		mUI = UICore::Create(mWindow, mRenderer);
 
@@ -20,18 +25,19 @@ namespace Cosmos
 		mRenderer->ConnectUI(mUI);
 	}
 
-	Application::~Application()
-	{
-	}
-
 	void Application::Run()
 	{
 		while (!mWindow->ShouldQuit())
 		{
-			mWindow->OnUpdate();			// input events
-			mScene->OnUpdate();				// scene logic
+			// start clock
+			float time = (float)mWindow->GetTime();
+			mTs = time - mLastFrameTime;
+			mLastFrameTime = time;
+
+			mScene->OnUpdate(mTs);			// scene logic
 			mUI->OnUpdate();				// ui logic
 			mRenderer->OnUpdate();			// render frame
+			mWindow->OnUpdate();			// input events
 		}
 
 		mScene->Destroy();

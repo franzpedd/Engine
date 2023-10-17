@@ -13,7 +13,7 @@ namespace Cosmos
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer);
-		mGrid = new Grid(mRenderer, *mViewport);
+		mGrid = new Grid(mRenderer, mScene->GetCamera(), *mViewport);
 
 		mUI->ElementStack().Push(mDockspace);
 		mUI->ElementStack().Push(mViewport);
@@ -25,5 +25,20 @@ namespace Cosmos
 	Editor::~Editor()
 	{
 
+	}
+
+	void Editor::OnMouseMove(float xPos, float yPos, float xOffset, float yOffset)
+	{
+		mScene->GetCamera().OnMouseMove(xOffset, yOffset);
+	}
+
+	void Editor::OnMouseScroll(float yOffset)
+	{
+		mScene->GetCamera().OnMouseScroll(yOffset);
+	}
+
+	void Editor::OnKeyboardPress(Keycode key)
+	{
+		mScene->GetCamera().OnKeyboardPress(key);
 	}
 }

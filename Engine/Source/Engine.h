@@ -12,5 +12,6 @@
 #include "UI/UIDrawable.h"
 #include "UI/UIElement.h"
 
+#include "Util/Keycodes.h"
 #include "Util/Logger.h"
 #include "Util/Math.h"

@@ -1,15 +1,17 @@
 #include "Scene.h"
 
+#include "Platform/Window.h"
 #include "Util/Logger.h"
 
 namespace Cosmos
 {
-	std::shared_ptr<Scene> Scene::Create()
+	std::shared_ptr<Scene> Scene::Create(std::shared_ptr<Window>& window)
 	{
-		return std::make_shared<Scene>();
+		return std::make_shared<Scene>(window);
 	}
 
-	Scene::Scene()
+	Scene::Scene(std::shared_ptr<Window>& window)
+		: mCamera(window), mWindow(window)
 	{
 		Logger() << "Creating Scene";
 	}
@@ -19,11 +21,13 @@ namespace Cosmos
 
 	}
 
-	void Scene::OnUpdate()
+	void Scene::OnUpdate(Timestep ts)
 	{
+		mCamera.OnUpdate(ts);
+
 		for (auto& ent : mEntities)
 		{
-			ent->OnUpdate();
+			ent->OnUpdate(ts);
 		}
 	}
 
