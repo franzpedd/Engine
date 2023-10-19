@@ -116,13 +116,11 @@ namespace Cosmos
 	{
 		if(hide)
 		{
-			mData.lockMousePos = true;
 			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 
 		else
 		{
-			mData.lockMousePos = false;
 			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
@@ -172,13 +170,32 @@ namespace Cosmos
 		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-				Application::Get()->OnKeyboardPress((Keycode)key);
+
+				if (action == GLFW_PRESS)
+				{
+					Application::Get()->OnKeyboardPress((Keycode)key);
+				}
+
+				else if (action == GLFW_RELEASE)
+				{
+					Application::Get()->OnKeyboardRelease((Keycode)key);
+				}
 			});
 
 		// mouse button pressed
 		glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods)
 			{
 				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+
+				if (action == GLFW_PRESS)
+				{
+					Application::Get()->OnMousePress((Buttoncode)button);
+				}
+				
+				else if (action == GLFW_RELEASE)
+				{
+					Application::Get()->OnMouseRelease((Buttoncode)button);
+				}
 			});
 
 		// mouse scrolled
@@ -211,12 +228,6 @@ namespace Cosmos
 				win->GetData().mouseLastY = yPos;
 				
 				Application::Get()->OnMouseMove(xPos, yPos, xOffset, yOffset);
-
-				// should lock cursor ?
-				if (win->GetData().lockMousePos)
-				{
-					glfwSetCursorPos(win->NativeWindow(), 0, 0);
-				}
 			});
 	}
 }

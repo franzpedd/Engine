@@ -143,4 +143,19 @@ namespace Cosmos::ui
 	{
 		ImGui::EndGroup();
 	}
+
+	void ToogleMouseCursor(bool hide)
+	{
+		if (hide)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+		}
+		
+		else
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags ^= ImGuiConfigFlags_NoMouse;
+		}
+	}
 }

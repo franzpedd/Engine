@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Platform/Window.h"
+#include "UI/UIDrawable.h"
 #include "Util/Keycodes.h"
 #include "Util/Math.h"
 #include "Util/Timestep.h"
@@ -40,7 +41,7 @@ namespace Cosmos
 		// mouse was recently scrolled
 		void OnMouseScroll(float yOffset);
 
-		// called when a key was pressed
+		// keyboard key was recrently pressed
 		void OnKeyboardPress(Keycode key);
 
 	public:
@@ -63,7 +64,7 @@ namespace Cosmos
 
 		Type mType = Type::FIRST_PERSON;
 		bool mFlipY = true;
-		bool mMoving = false;
+		bool mShouldMove = false;
 		float mFov = 45.0f;
 		float mZnear = 0.1f;
 		float mZfar = 256.0f;
@@ -73,6 +74,5 @@ namespace Cosmos
 		glm::mat4 mView = glm::mat4();
 		glm::vec3 mRotation = glm::vec3();
 		glm::vec3 mPosition = glm::vec3();
-		glm::vec4 mViewPos = glm::vec4();
 	};
 }

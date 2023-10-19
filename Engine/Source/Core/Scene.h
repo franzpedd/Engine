@@ -28,11 +28,6 @@ namespace Cosmos
 
 	public:
 
-		// returns the camera
-		inline Camera& GetCamera() { return mCamera; }
-
-	public:
-
 		// updates the scene objects
 		void OnUpdate(Timestep ts);
 
@@ -46,6 +41,5 @@ namespace Cosmos
 
 		std::shared_ptr<Window>& mWindow;
 		EntityStack mEntities;
-		Camera mCamera;
 	};
 }

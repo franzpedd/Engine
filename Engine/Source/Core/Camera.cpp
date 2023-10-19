@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include "Util/Logger.h"
+
 namespace Cosmos
 {
 	Camera::Camera(std::shared_ptr<Window>& window)
@@ -29,34 +31,43 @@ namespace Cosmos
 
 	void Camera::OnMouseMove(float xOffset, float yOffset)
 	{
-		if (mWindow->IsButtonDown(BUTTON_LEFT))
-		{
-			Rotate(glm::vec3(yOffset * mRotationSpeed, -xOffset * mRotationSpeed, 0.0f));
-		}
+		if (!mShouldMove) return;
 
-		if (mWindow->IsButtonDown(BUTTON_RIGHT))
-		{
-			Translate(glm::vec3(-0.0f, 0.0f, yOffset * .005f));
-		}
+		Rotate(glm::vec3(-yOffset * mRotationSpeed * 0.5f, xOffset * mRotationSpeed * 0.5f, 0.0f));
 
-		if (mWindow->IsButtonDown(BUTTON_MIDDLE))
-		{
-			Translate(glm::vec3(-xOffset * 0.005f, -yOffset * 0.005f, 0.0f));
-		}
+		// axis move and zooming
+		// Translate(glm::vec3(-0.0f, 0.0f, yOffset * .005f));
+		// Translate(glm::vec3(-xOffset * 0.005f, -yOffset * 0.005f, 0.0f));
 	}
 
 	void Camera::OnMouseScroll(float yOffset)
 	{
+		if (!mShouldMove) return;
+
 		Translate(glm::vec3(0.0f, 0.0f, yOffset * 0.005f));
 	}
 
 	void Camera::OnKeyboardPress(Keycode key)
 	{
+		if (key == KEY_Z && mShouldMove)
+		{
+			mShouldMove = false;
+			mWindow->ToogleCursorMode(false);
+			ui::ToogleMouseCursor(false);
+		}
 
+		else if (key == KEY_Z && !mShouldMove)
+		{
+			mShouldMove = true;
+			mWindow->ToogleCursorMode(true);
+			ui::ToogleMouseCursor(true);
+		}
 	}
 
 	void Camera::OnUpdate(Timestep ts)
 	{
+		if (!mShouldMove) return;
+
 		glm::vec3 camFront;
 		camFront.x = -cos(glm::radians(mRotation.x)) * sin(glm::radians(mRotation.y));
 		camFront.y = sin(glm::radians(mRotation.x));
@@ -89,8 +100,6 @@ namespace Cosmos
 		
 		if (mType == Type::FIRST_PERSON) mView = rotM * transM;
 		else mView = transM * rotM;
-		
-		mViewPos = glm::vec4(mPosition, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 	}
 
 	void Camera::Translate(glm::vec3 delta)

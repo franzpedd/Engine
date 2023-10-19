@@ -11,7 +11,7 @@ namespace Cosmos
 	}
 
 	Scene::Scene(std::shared_ptr<Window>& window)
-		: mCamera(window), mWindow(window)
+		: mWindow(window)
 	{
 		Logger() << "Creating Scene";
 	}
@@ -23,8 +23,6 @@ namespace Cosmos
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		mCamera.OnUpdate(ts);
-
 		for (auto& ent : mEntities)
 		{
 			ent->OnUpdate(ts);

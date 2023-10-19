@@ -9,11 +9,12 @@
 namespace Cosmos
 {
 	Editor::Editor()
+		: mCamera(mWindow)
 	{
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer);
-		mGrid = new Grid(mRenderer, mScene->GetCamera(), *mViewport);
+		mGrid = new Grid(mRenderer, mCamera, *mViewport);
 
 		mUI->ElementStack().Push(mDockspace);
 		mUI->ElementStack().Push(mViewport);
@@ -27,18 +28,38 @@ namespace Cosmos
 
 	}
 
+	void Editor::OnUpdate(Timestep ts)
+	{
+		mCamera.OnUpdate(ts);
+	}
+
 	void Editor::OnMouseMove(float xPos, float yPos, float xOffset, float yOffset)
 	{
-		mScene->GetCamera().OnMouseMove(xOffset, yOffset);
+		mCamera.OnMouseMove(xOffset, yOffset);
 	}
 
 	void Editor::OnMouseScroll(float yOffset)
 	{
-		mScene->GetCamera().OnMouseScroll(yOffset);
+		mCamera.OnMouseScroll(yOffset);
+	}
+
+	void Editor::OnMousePress(Buttoncode button)
+	{
+		
+	}
+
+	void Editor::OnMouseRelease(Buttoncode button)
+	{
+		
 	}
 
 	void Editor::OnKeyboardPress(Keycode key)
 	{
-		mScene->GetCamera().OnKeyboardPress(key);
+		mCamera.OnKeyboardPress(key);
+	}
+
+	void Editor::OnKeyboardRelease(Keycode key)
+	{
+
 	}
 }

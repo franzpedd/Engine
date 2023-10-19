@@ -34,6 +34,7 @@ namespace Cosmos
 			mTs = time - mLastFrameTime;
 			mLastFrameTime = time;
 
+			OnUpdate(mTs);					// updates the client
 			mScene->OnUpdate(mTs);			// scene logic
 			mUI->OnUpdate();				// ui logic
 			mRenderer->OnUpdate();			// render frame

@@ -52,4 +52,7 @@ namespace Cosmos::ui
 
 	// ends the group context
 	void EndGroup();
+
+	// hidens or unhides the mouse iteraction with mouse and ui
+	void ToogleMouseCursor(bool hide);
 }
