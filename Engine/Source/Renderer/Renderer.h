@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Defines.h"
 #include "Commander.h"
 
 #include "Vulkan/VKInstance.h"
 #include "Vulkan/VKDevice.h"
 #include "Vulkan/VKSwapchain.h"
-#include "Vulkan/VKUtility.h"
 
 #include <vulkan/vulkan.h>
 #include <memory>

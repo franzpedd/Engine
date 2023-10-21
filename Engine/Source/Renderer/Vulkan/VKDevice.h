@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "Defines.h"
 #include "Renderer/Commander.h"
 #include <vulkan/vulkan.h>
 #include <memory>

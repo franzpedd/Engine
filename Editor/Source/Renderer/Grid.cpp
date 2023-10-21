@@ -25,14 +25,9 @@ namespace Cosmos
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[currentFrame];
 
-		VkDeviceSize vSize = mVertexBuffer->GetSize();
-		VkDeviceSize iSize = mIndexBuffer->GetSize();
-
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
-		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &mVertexBuffer->Buffer(), offsets);
-		vkCmdBindIndexBuffer(cmdBuffer, mIndexBuffer->Buffer(), 0, VK_INDEX_TYPE_UINT16);
 		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
-		vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
+		vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
 	}
 
 	void Grid::OnUpdate(Timestep ts)
@@ -44,13 +39,9 @@ namespace Cosmos
 		float width = (float)mRenderer->BackendSwapchain()->Extent().width;
 		float height = (float)mRenderer->BackendSwapchain()->Extent().height;
 
-		//UniformBufferObject ubo = {};
-		//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(10.0f),  glm::vec3(5.0f, 5.0f, 1.0f));
-		//ubo.view = glm::lookAt(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//ubo.proj = glm::perspective(glm::radians(45.0f), width / (float)height, 0.1f, 10.0f);
-		//ubo.proj[1][1] *= -1;
-
 		UniformBufferObject ubo = {};
+		ubo.near = mCamera.GetNear();
+		ubo.far = mCamera.GetFar();
 		ubo.model = glm::mat4(1.0f);
 		ubo.view = mCamera.GetView();
 		ubo.proj = mCamera.GetProjection();
@@ -65,7 +56,7 @@ namespace Cosmos
 		mVertexShader->Destroy();
 		mFragmentShader->Destroy();
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mUniformBuffers[i], nullptr);
 			vkFreeMemory(mRenderer->BackendDevice()->Device(), mUniformBuffersMemory[i], nullptr);
@@ -75,9 +66,6 @@ namespace Cosmos
 		vkDestroyDescriptorSetLayout(mRenderer->BackendDevice()->Device(), mDescriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(mRenderer->BackendDevice()->Device(), mPipelineLayout, nullptr);
 		vkDestroyPipeline(mRenderer->BackendDevice()->Device(), mGraphicsPipeline, nullptr);
-
-		mIndexBuffer->Destroy();
-		mVertexBuffer->Destroy();
 	}
 
 	void Grid::CreateResources()
@@ -89,14 +77,12 @@ namespace Cosmos
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { mVertexShader->Stage(), mFragmentShader->Stage() };
-			const std::array<VkVertexInputBindingDescription, 1> bindings = Vertex::GetBindingDescription();
-			const std::array<VkVertexInputAttributeDescription, 2> attributes = Vertex::GetAttributeDescriptions();
 
 			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 			uboLayoutBinding.binding = 0;
 			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 			uboLayoutBinding.pImmutableSamplers = nullptr;
 
 			VkDescriptorSetLayoutCreateInfo descSetLayoutCI = {};
@@ -119,10 +105,10 @@ namespace Cosmos
 			VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			VISCI.pNext = nullptr;
 			VISCI.flags = 0;
-			VISCI.vertexBindingDescriptionCount = (uint32_t)bindings.size();
-			VISCI.pVertexBindingDescriptions = bindings.data();
-			VISCI.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
-			VISCI.pVertexAttributeDescriptions = attributes.data();
+			VISCI.vertexAttributeDescriptionCount = 0;
+			VISCI.pVertexAttributeDescriptions = nullptr;
+			VISCI.vertexBindingDescriptionCount = 0;
+			VISCI.pVertexBindingDescriptions = nullptr;
 
 			VkPipelineInputAssemblyStateCreateInfo IASCI = {};
 			IASCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -208,33 +194,13 @@ namespace Cosmos
 			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->BackendDevice()->Device(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 		}
 
-		// create vertex buffer
-		mVertexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Vertex,
-			sizeof(mVertices[0]) * mVertices.size(),
-			mViewport.GetCommandEntry()->commandPool,
-			mVertices.data()
-		);
-
-		// create index buffer
-		mIndexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Index,
-			sizeof(mIndices[0]) * mIndices.size(),
-			mViewport.GetCommandEntry()->commandPool,
-			mIndices.data()
-		);
-
 		// create ubo (move to renderer if other instances appear?)
 		{
-			mUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-			mUniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-			mUniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+			mUniformBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mUniformBuffersMemory.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mUniformBuffersMapped.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
-			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				BufferCreate
 				(
@@ -254,27 +220,27 @@ namespace Cosmos
 		{
 			VkDescriptorPoolSize poolSize = {};
 			poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSize.descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+			poolSize.descriptorCount = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
 
 			VkDescriptorPoolCreateInfo descPoolCI = {};
 			descPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			descPoolCI.poolSizeCount = 1;
 			descPoolCI.pPoolSizes = &poolSize;
-			descPoolCI.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+			descPoolCI.maxSets = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
 			VK_ASSERT(vkCreateDescriptorPool(mRenderer->BackendDevice()->Device(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
-			std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
+			std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
 			
 			VkDescriptorSetAllocateInfo descSetAllocInfo = {};
 			descSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			descSetAllocInfo.descriptorPool = mDescriptorPool;
-			descSetAllocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+			descSetAllocInfo.descriptorSetCount = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
 			descSetAllocInfo.pSetLayouts = layouts.data();
 
-			mDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+			mDescriptorSets.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 			VK_ASSERT(vkAllocateDescriptorSets(mRenderer->BackendDevice()->Device(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
 		
-			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				VkDescriptorBufferInfo bufferInfo{};
 				bufferInfo.buffer = mUniformBuffers[i];

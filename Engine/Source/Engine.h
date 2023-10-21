@@ -6,7 +6,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
-#include "Renderer/Vulkan/VKTexture.h"
+#include "Renderer/Vulkan/VKImage.h"
 
 #include "UI/UICore.h"
 #include "UI/UIDrawable.h"

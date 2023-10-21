@@ -2,7 +2,7 @@
 
 #include "VKDevice.h"
 #include "VKInstance.h"
-#include "VKUtility.h"
+#include "VKImage.h"
 #include "Platform/Window.h"
 #include "Renderer/Commander.h"
 #include "Util/Logger.h"

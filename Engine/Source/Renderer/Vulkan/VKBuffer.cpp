@@ -204,4 +204,100 @@ namespace Cosmos
 
 		return VK_SUCCESS;
 	}
+
+	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool)
+	{
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufferAllocInfo.commandPool = commandPool;
+		cmdBufferAllocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &commandBuffer);
+
+		VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
+		cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(commandBuffer, &cmdBufferBeginInfo);
+
+		return commandBuffer;
+	}
+
+	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer)
+	{
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device->GraphicsQueue());
+
+		vkFreeCommandBuffers(device->Device(), commandPool, 1, &commandBuffer);
+	}
+
+	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
+	{
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.pNext = nullptr;
+		cmdBufferAllocInfo.commandBufferCount = 1;
+		cmdBufferAllocInfo.commandPool = cmdPool;
+		cmdBufferAllocInfo.level = level;
+
+		VkCommandBuffer cmdBuffer;
+		VK_ASSERT(vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &cmdBuffer), "Failed to allocate command buffers");
+
+		if (begin)
+		{
+			VkCommandBufferBeginInfo cmdBufferBI = {};
+			cmdBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufferBI.pNext = nullptr;
+			cmdBufferBI.flags = 0;
+			VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBI), "Failed to initialize command buffer");
+		}
+
+		return cmdBuffer;
+	}
+
+	void BeginCommandBuffer(VkCommandBuffer cmdBuffer)
+	{
+		VkCommandBufferBeginInfo cmdBufferBI = {};
+		cmdBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufferBI.pNext = nullptr;
+		cmdBufferBI.flags = 0;
+		VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBI), "Failed to initialize command buffer");
+	}
+
+	void FlushCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free)
+	{
+		VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end the recording of the command buffer");
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmdBuffer;
+
+		VkFenceCreateInfo fenceCI = {};
+		fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCI.pNext = nullptr;
+		fenceCI.flags = 0;
+
+		VkFence fence;
+		VK_ASSERT(vkCreateFence(device->Device(), &fenceCI, nullptr, &fence), "Failed to create fence for command buffer submission");
+		VK_ASSERT(vkQueueSubmit(queue, 1, &submitInfo, fence), "Failed to submit command buffer");
+		VK_ASSERT(vkWaitForFences(device->Device(), 1, &fence, VK_TRUE, 100000000000), "Failed to wait for fences");
+
+		vkDestroyFence(device->Device(), fence, nullptr);
+
+		if (free)
+		{
+			vkFreeCommandBuffers(device->Device(), cmdPool, 1, &cmdBuffer);
+		}
+	}
 }

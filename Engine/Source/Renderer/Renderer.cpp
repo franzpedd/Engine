@@ -30,7 +30,7 @@ namespace Cosmos
 
 		vkDestroyPipelineCache(mDevice->Device(), mPipelineCache, nullptr);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vkDestroyFence(mDevice->Device(), mInFlightFences[i], nullptr);
 			vkDestroySemaphore(mDevice->Device(), mRenderFinishedSemaphores[i], nullptr);
@@ -124,7 +124,7 @@ namespace Cosmos
 			}
 		}
 
-		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		mCurrentFrame = (mCurrentFrame + 1) % RENDERER_MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void Renderer::ManageRenderPasses(uint32_t& imageIndex)
@@ -268,9 +268,9 @@ namespace Cosmos
 	{
 		// sync objects
 		{
-			mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-			mRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-			mInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+			mImageAvailableSemaphores.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mRenderFinishedSemaphores.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mInFlightFences.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 			VkSemaphoreCreateInfo semaphoreCI = {};
 			semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -282,7 +282,7 @@ namespace Cosmos
 			fenceCI.pNext = nullptr;
 			fenceCI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				VK_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mImageAvailableSemaphores[i]), "Failed to create image available semaphore");
 				VK_ASSERT(vkCreateSemaphore(mDevice->Device(), &semaphoreCI, nullptr, &mRenderFinishedSemaphores[i]), "Failed to create render finished semaphore");

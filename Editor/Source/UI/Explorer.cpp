@@ -99,7 +99,7 @@ namespace Cosmos
 			texturePath /= "textures";
 			texturePath /= "editor";
 			texturePath /= "folder.png";
-			mFolderTexture = VKTexture::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
+			mFolderTexture = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
 			mFolderDescriptorSet = ui::AddTexture(mFolderTexture->Sampler(), mFolderTexture->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 
@@ -111,7 +111,7 @@ namespace Cosmos
 				texturePath /= "textures";
 				texturePath /= "editor";
 				texturePath /= mExtensionTexturePaths[i];
-				mExtensionTexture[i] = VKTexture::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
+				mExtensionTexture[i] = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
 				mExtensionDescriptors[i] = ui::AddTexture(mExtensionTexture[i]->Sampler(), mExtensionTexture[i]->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}

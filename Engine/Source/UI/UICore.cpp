@@ -2,6 +2,7 @@
 
 #include "Platform/Window.h"
 #include "Renderer/Commander.h"
+#include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
 #include "Util/Logger.h"
 
@@ -243,7 +244,7 @@ namespace Cosmos
 
 		// command buffers
 		{
-			mCommandEntry->commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+			mCommandEntry->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 			VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 			cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

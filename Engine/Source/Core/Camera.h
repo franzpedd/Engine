@@ -33,6 +33,12 @@ namespace Cosmos
 		// returns the view matrix
 		glm::mat4& GetView();
 
+		// returns near value
+		float GetNear() { return mZnear; }
+
+		// returns far value
+		float GetFar() { return mZfar; }
+
 	public:
 
 		// mouse was recently moved

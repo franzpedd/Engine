@@ -4,15 +4,52 @@
 #include <memory>
 #include <vector>
 
-// how many frames are simultaneosly rendered
-#define MAX_FRAMES_IN_FLIGHT 2
-
 namespace Cosmos
 {
-	// forward declaration
+	// forward declarations
 	class VKDevice;
 
-	// images
+	class VKTexture2D
+	{
+	public:
+
+		// creates a texture from an input file
+		static std::shared_ptr<VKTexture2D> Create(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
+
+		// constructor
+		VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
+
+		// destructor
+		~VKTexture2D();
+
+	public:
+
+		// returns a reference to the image view
+		inline VkImageView View() { return mView; }
+
+		// returns a reference to the image sampler
+		inline VkSampler& Sampler() { return mSampler; }
+
+	private:
+
+		// loads the texture
+		void LoadTexture();
+
+		// creates the vulkan resources for the image
+		void CreateResources();
+
+	private:
+
+		std::shared_ptr<VKDevice>& mDevice;
+		const char* mPath = nullptr;
+		VkSampleCountFlagBits mMSAA = VK_SAMPLE_COUNT_1_BIT;
+		bool mKTX = false;
+
+		VkImage mImage = VK_NULL_HANDLE;
+		VkDeviceMemory mMemory = VK_NULL_HANDLE;
+		VkImageView mView = VK_NULL_HANDLE;
+		VkSampler mSampler = VK_NULL_HANDLE;
+	};
 
 	// creates an image
 	void CreateImage(std::shared_ptr<VKDevice>& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory);
@@ -31,21 +68,4 @@ namespace Cosmos
 
 	// returns the optimal depth format
 	VkFormat FindDepthFormat(std::shared_ptr<VKDevice>& device);
-
-	// command buffers
-
-	// starts the recording of a once-used command buffer
-	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool);
-
-	// ends the recording of a once-used command buffer
-	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer);
-
-	// creates a command buffer given a command pool (usefull while using swapchain's command buffer)
-	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin = false);
-
-	// initializes the command buffer
-	void BeginCommandBuffer(VkCommandBuffer cmdBuffer);
-
-	// finishes the recording of a command buffer and send it to the queue
-	void FlushCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free = false);
 }
