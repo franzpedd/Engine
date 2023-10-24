@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Util/Keycodes.h"
-#include "Util/Timestep.h"
 #include <chrono>
 #include <memory>
 
@@ -26,13 +25,19 @@ namespace Cosmos
 		// returns the singleton
 		static inline Application* Get() { return sApplication; }
 
+		// returns the average fps calculated
+		inline uint32_t GetCurrentAverageFPS() { return mLastFPS; }
+
+		// returns the logic timestep to update logic
+		inline float GetTimestep() { return mTimestep; }
+
 	public:
 
 		// initializes main loop
 		void Run();
 
 		// updates the application client
-		virtual void OnUpdate(Timestep ts) = 0;
+		virtual void OnUpdate(float timestep) = 0;
 
 	public:
 
@@ -61,8 +66,14 @@ namespace Cosmos
 		std::shared_ptr<Scene> mScene;
 		std::shared_ptr<Renderer> mRenderer;
 		std::shared_ptr<UICore> mUI;
-		Timestep mTs;
 
-		float mLastFrameTime = 0.0f;
+		// fps system
+		std::chrono::steady_clock::time_point mStart = {};
+		std::chrono::steady_clock::time_point mEnd = {};
+		double mTimeDifference = 0.0f;
+		float mFpsTimer = 0.0f;
+		uint32_t mFrameCount = 0; // renderer current fps
+		float mTimestep = 1.0f; // timestep/delta time (used to update logic)
+		uint32_t mLastFPS = 0;
 	};
 }

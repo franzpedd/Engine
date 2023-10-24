@@ -2,6 +2,16 @@
 
 #include "UIElement.h"
 #include <vulkan/vulkan.h>
+
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 26451 )
+#endif
+#include <imgui.h>
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #include <memory>
 
 namespace Cosmos
@@ -14,6 +24,15 @@ namespace Cosmos
 
 	class UICore
 	{
+	public:
+
+		struct Fonts
+		{
+			ImFont* imgui;
+			ImFont* vera;
+			ImFont* icons;
+		};
+
 	public:
 
 		// returns a smart pointer to a new user interface
@@ -30,6 +49,9 @@ namespace Cosmos
 
 		// returns a reference to the renderer command entries
 		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
+
+		// returns the fonts
+		inline Fonts& GetFonts() { return mFonts; }
 
 	public:
 
@@ -63,5 +85,13 @@ namespace Cosmos
 		std::shared_ptr<CommandEntry> mCommandEntry;
 
 		UIElementStack mUIElements;
+
+		Fonts mFonts;
 	};
+
+	// adds a texture in the user interface for later usage
+	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout);
+
+	// hidens or unhides the mouse iteraction with mouse and ui
+	void ToogleMouseCursor(bool hide);
 }

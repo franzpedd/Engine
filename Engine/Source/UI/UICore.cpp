@@ -1,5 +1,6 @@
 #include "UICore.h"
 
+#include "Icons.h"
 #include "Platform/Window.h"
 #include "Renderer/Commander.h"
 #include "Renderer/Vulkan/VKBuffer.h"
@@ -13,7 +14,7 @@
 #endif
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.cpp>
-#include <backends/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_vulkan.cpp>
 #if defined(_MSC_VER)
 # pragma warning(pop)
 #endif
@@ -58,8 +59,6 @@ namespace Cosmos
 		{
 			element->OnUpdate();
 		}
-
-		ImGui::ShowDemoWindow();
 
 		// end frame
 		ImGui::Render();
@@ -130,7 +129,19 @@ namespace Cosmos
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		}
 
-		io.Fonts->AddFontDefault();
+		static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+
+		ImFontConfig robotoCFG;
+		robotoCFG.MergeMode = false;
+
+		ImFontConfig iconCFG;
+		iconCFG.MergeMode = true;
+		iconCFG.GlyphMinAdvanceX = 13.0f;
+
+		mFonts.vera = io.Fonts->AddFontFromFileTTF("Data/Fonts/vera.ttf", 16.0f, &robotoCFG);
+		mFonts.icons = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 13.0f, &iconCFG, iconRanges);
+		io.Fonts->Build();
+
 		io.IniFilename = "ui.ini";
 		io.WantCaptureMouse = true;
 
@@ -287,88 +298,155 @@ namespace Cosmos
 		ImVec4 _darkgrey = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
 		ImVec4 _lighgrey = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
 
-		// Color array
-		style.Colors[ImGuiCol_Text] = _white;
-		style.Colors[ImGuiCol_TextDisabled] = _grey;
-		style.Colors[ImGuiCol_WindowBg] = _dark;
-		style.Colors[ImGuiCol_ChildBg] = _dark;
-		style.Colors[ImGuiCol_PopupBg] = _dark;
-		style.Colors[ImGuiCol_Border] = _grey;
-		style.Colors[ImGuiCol_BorderShadow] = _black;
-		style.Colors[ImGuiCol_FrameBg] = _darkgrey;
-		style.Colors[ImGuiCol_FrameBgHovered] = _grey;
-		style.Colors[ImGuiCol_FrameBgActive] = _grey;
-		style.Colors[ImGuiCol_TitleBg] = _darkgrey;
-		style.Colors[ImGuiCol_TitleBgActive] = _darkgrey;
-		style.Colors[ImGuiCol_TitleBgCollapsed] = _darkgrey;
-		style.Colors[ImGuiCol_MenuBarBg] = _darkgrey;
-		style.Colors[ImGuiCol_ScrollbarBg] = _darkgrey;
-		style.Colors[ImGuiCol_ScrollbarGrabHovered] = _grey;
-		style.Colors[ImGuiCol_ScrollbarGrabActive] = _grey;
-		style.Colors[ImGuiCol_CheckMark] = _lighgrey;
-		style.Colors[ImGuiCol_SliderGrab] = _lighgrey;
-		style.Colors[ImGuiCol_SliderGrabActive] = _white;
-		style.Colors[ImGuiCol_Button] = _darkgrey;
-		style.Colors[ImGuiCol_ButtonHovered] = _grey;
-		style.Colors[ImGuiCol_ButtonActive] = _darkgrey;
-		style.Colors[ImGuiCol_Header] = _darkgrey;
-		style.Colors[ImGuiCol_HeaderHovered] = _grey;
-		style.Colors[ImGuiCol_HeaderActive] = _grey;
-		style.Colors[ImGuiCol_Separator] = _grey;
-		style.Colors[ImGuiCol_SeparatorHovered] = _grey;
-		style.Colors[ImGuiCol_SeparatorActive] = _grey;
-		style.Colors[ImGuiCol_ResizeGrip] = _darkgrey;
-		style.Colors[ImGuiCol_ResizeGripHovered] = _grey;
-		style.Colors[ImGuiCol_ResizeGripActive] = _grey;
-		style.Colors[ImGuiCol_Tab] = _darkgrey;
-		style.Colors[ImGuiCol_TabHovered] = _grey;
-		style.Colors[ImGuiCol_TabActive] = _grey;
-		style.Colors[ImGuiCol_TabUnfocused] = _grey;
-		style.Colors[ImGuiCol_TabUnfocused] = _grey;
-		style.Colors[ImGuiCol_TabUnfocusedActive] = _grey;
-		style.Colors[ImGuiCol_DockingPreview] = _grey;
-		style.Colors[ImGuiCol_DockingEmptyBg] = _grey;
-		style.Colors[ImGuiCol_PlotLines] = _white;
-		style.Colors[ImGuiCol_PlotLinesHovered] = _grey;
-		style.Colors[ImGuiCol_PlotHistogram] = _white;
-		style.Colors[ImGuiCol_PlotHistogramHovered] = _grey;
-		style.Colors[ImGuiCol_TableHeaderBg] = _dark;
-		style.Colors[ImGuiCol_TableBorderStrong] = _darkgrey;
-		style.Colors[ImGuiCol_TableBorderLight] = _grey;
-		style.Colors[ImGuiCol_TableRowBg] = _black;
-		style.Colors[ImGuiCol_TableRowBgAlt] = _white;
-		style.Colors[ImGuiCol_TextSelectedBg] = _darkgrey;
-		style.Colors[ImGuiCol_DragDropTarget] = _darkgrey;
-		style.Colors[ImGuiCol_NavHighlight] = _grey;
-		style.Colors[ImGuiCol_NavWindowingHighlight] = _grey;
-		style.Colors[ImGuiCol_NavWindowingDimBg] = _grey;
-		style.Colors[ImGuiCol_ModalWindowDimBg] = _grey;
-
+		// Colors
+		{
+			style.Colors[ImGuiCol_Text] = _white;
+			style.Colors[ImGuiCol_TextDisabled] = _grey;
+			style.Colors[ImGuiCol_WindowBg] = _dark;
+			style.Colors[ImGuiCol_ChildBg] = _dark;
+			style.Colors[ImGuiCol_PopupBg] = _dark;
+			style.Colors[ImGuiCol_Border] = _grey;
+			style.Colors[ImGuiCol_BorderShadow] = _black;
+			style.Colors[ImGuiCol_FrameBg] = _darkgrey;
+			style.Colors[ImGuiCol_FrameBgHovered] = _grey;
+			style.Colors[ImGuiCol_FrameBgActive] = _grey;
+			style.Colors[ImGuiCol_TitleBg] = _darkgrey;
+			style.Colors[ImGuiCol_TitleBgActive] = _darkgrey;
+			style.Colors[ImGuiCol_TitleBgCollapsed] = _darkgrey;
+			style.Colors[ImGuiCol_MenuBarBg] = _darkgrey;
+			style.Colors[ImGuiCol_ScrollbarBg] = _darkgrey;
+			style.Colors[ImGuiCol_ScrollbarGrabHovered] = _grey;
+			style.Colors[ImGuiCol_ScrollbarGrabActive] = _grey;
+			style.Colors[ImGuiCol_CheckMark] = _lighgrey;
+			style.Colors[ImGuiCol_SliderGrab] = _lighgrey;
+			style.Colors[ImGuiCol_SliderGrabActive] = _white;
+			style.Colors[ImGuiCol_Button] = _darkgrey;
+			style.Colors[ImGuiCol_ButtonHovered] = _grey;
+			style.Colors[ImGuiCol_ButtonActive] = _darkgrey;
+			style.Colors[ImGuiCol_Header] = _darkgrey;
+			style.Colors[ImGuiCol_HeaderHovered] = _grey;
+			style.Colors[ImGuiCol_HeaderActive] = _grey;
+			style.Colors[ImGuiCol_Separator] = _grey;
+			style.Colors[ImGuiCol_SeparatorHovered] = _grey;
+			style.Colors[ImGuiCol_SeparatorActive] = _grey;
+			style.Colors[ImGuiCol_ResizeGrip] = _darkgrey;
+			style.Colors[ImGuiCol_ResizeGripHovered] = _grey;
+			style.Colors[ImGuiCol_ResizeGripActive] = _grey;
+			style.Colors[ImGuiCol_Tab] = _darkgrey;
+			style.Colors[ImGuiCol_TabHovered] = _grey;
+			style.Colors[ImGuiCol_TabActive] = _grey;
+			style.Colors[ImGuiCol_TabUnfocused] = _grey;
+			style.Colors[ImGuiCol_TabUnfocused] = _grey;
+			style.Colors[ImGuiCol_TabUnfocusedActive] = _grey;
+			style.Colors[ImGuiCol_DockingPreview] = _grey;
+			style.Colors[ImGuiCol_DockingEmptyBg] = _grey;
+			style.Colors[ImGuiCol_PlotLines] = _white;
+			style.Colors[ImGuiCol_PlotLinesHovered] = _grey;
+			style.Colors[ImGuiCol_PlotHistogram] = _white;
+			style.Colors[ImGuiCol_PlotHistogramHovered] = _grey;
+			style.Colors[ImGuiCol_TableHeaderBg] = _dark;
+			style.Colors[ImGuiCol_TableBorderStrong] = _darkgrey;
+			style.Colors[ImGuiCol_TableBorderLight] = _grey;
+			style.Colors[ImGuiCol_TableRowBg] = _black;
+			style.Colors[ImGuiCol_TableRowBgAlt] = _white;
+			style.Colors[ImGuiCol_TextSelectedBg] = _darkgrey;
+			style.Colors[ImGuiCol_DragDropTarget] = _darkgrey;
+			style.Colors[ImGuiCol_NavHighlight] = _grey;
+			style.Colors[ImGuiCol_NavWindowingHighlight] = _grey;
+			style.Colors[ImGuiCol_NavWindowingDimBg] = _grey;
+			style.Colors[ImGuiCol_ModalWindowDimBg] = _grey;
+		}
+		 
 		// Style
-		style.FrameRounding = 3;
-		style.WindowPadding = ImVec2(10.0f, 10.0f);
-		style.FramePadding = ImVec2(10.00f, 10.00f);
-		style.CellPadding = ImVec2(10.00f, 5.00f);
-		style.ItemSpacing = ImVec2(10.00f, 5.00f);
-		style.ItemInnerSpacing = ImVec2(5.00f, 5.00f);
-		style.TouchExtraPadding = ImVec2(0.00f, 0.00f);
-		style.IndentSpacing = 15;
-		style.ScrollbarSize = 18;
-		style.GrabMinSize = 10;
-		style.WindowBorderSize = 0;
-		style.ChildBorderSize = 0;
-		style.PopupBorderSize = 0;
-		style.FrameBorderSize = 0;
-		style.TabBorderSize = 0;
-		style.WindowRounding = 5;
-		style.ChildRounding = 5;
-		style.PopupRounding = 0;
-		style.ScrollbarRounding = 5;
-		style.GrabRounding = 0;
-		style.LogSliderDeadzone = 0;
-		style.TabRounding = 0;
-		style.WindowTitleAlign = ImVec2(0.50f, 0.50f);
-		style.WindowMenuButtonPosition = -1;
-		style.ColorButtonPosition = 0;
+		{
+			// main
+			style.WindowPadding = ImVec2(5.0f, 0.0f);
+			style.FramePadding = ImVec2(10.0f, 10.0f);
+			style.CellPadding = ImVec2(10.0f, 10.0f);
+			style.ItemSpacing = ImVec2(5.0f, 5.0f);
+			style.ItemInnerSpacing = ImVec2(5.0f, 5.0f);
+			style.TouchExtraPadding = ImVec2(0.0f, 0.0f);
+			style.IndentSpacing = 15.0f;
+			style.ScrollbarSize = 10.0f;
+			style.GrabMinSize = 10.0f;
+			// border
+			style.WindowBorderSize = 0.0f;
+			style.ChildBorderSize = 0.0f;
+			style.PopupBorderSize = 0.0f;
+			style.FrameBorderSize = 0.0f;
+			style.TabBorderSize = 0.0f;
+			// rounding
+			style.WindowRounding = 3.0f;
+			style.ChildRounding = 3.0f;
+			style.FrameRounding = 3.0f;
+			style.PopupRounding = 3.0f;
+			style.ScrollbarRounding = 3.0f;
+			style.GrabRounding = 3.0f;
+			style.TabRounding = 3.0f;
+			// widgets
+			style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+			style.WindowMenuButtonPosition = ImGuiDir_None;
+			style.ColorButtonPosition = ImGuiDir_Left;
+			style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
+			style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
+			style.SeparatorTextBorderSize = 5.0f;
+			style.SeparatorTextAlign = ImVec2(0.0f, 0.5f);
+			style.SeparatorTextPadding = ImVec2(20.0f, 0.0f);
+			style.LogSliderDeadzone = 0.0f;
+			// docking
+			style.DockingSeparatorSize = 0.0f;
+			// misc
+			style.DisplaySafeAreaPadding = ImVec2(0.0f, 0.0f);
+		}
+	}
+
+	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout)
+	{
+		ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+		ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+
+		// create descriptor set
+		VkDescriptorSet descriptorSet;
+		{
+			VkDescriptorSetAllocateInfo alloc_info = {};
+			alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			alloc_info.descriptorPool = v->DescriptorPool;
+			alloc_info.descriptorSetCount = 1;
+			alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
+			VkResult err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptorSet);
+			check_vk_result(err);
+		}
+
+		// update descriptor set
+		{
+			VkDescriptorImageInfo desc_image[1] = {};
+			desc_image[0].sampler = sampler;
+			desc_image[0].imageView = view;
+			desc_image[0].imageLayout = layout;
+
+			VkWriteDescriptorSet write_desc[1] = {};
+			write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write_desc[0].dstSet = descriptorSet;
+			write_desc[0].descriptorCount = 1;
+			write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write_desc[0].pImageInfo = desc_image;
+			vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, nullptr);
+		}
+
+		return descriptorSet;
+	}
+
+	void ToogleMouseCursor(bool hide)
+	{
+		if (hide)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+
+			return;
+		}
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags ^= ImGuiConfigFlags_NoMouse;
 	}
 }

@@ -35,7 +35,7 @@ namespace Cosmos
 		virtual void OnDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
-		virtual void OnUpdate(Timestep ts) override;
+		virtual void OnUpdate(float timestep) override;
 
 		// called before destructor, for freeing resources
 		virtual void OnDrestroy() override;

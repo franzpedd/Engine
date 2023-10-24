@@ -21,6 +21,7 @@ project "Engine"
 
         "%{includelist.Vulkan}",
         "%{includelist.ImGUI}",
+        "%{includelist.ImGUIzmo}",
         "%{includelist.GLFW}",
         "%{includelist.GLI}",
         "%{includelist.GLM}",

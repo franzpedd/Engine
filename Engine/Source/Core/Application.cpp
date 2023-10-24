@@ -29,16 +29,40 @@ namespace Cosmos
 	{
 		while (!mWindow->ShouldQuit())
 		{
-			// start clock
-			float time = (float)mWindow->GetTime();
-			mTs = time - mLastFrameTime;
-			mLastFrameTime = time;
+			// starts fps system
+			{
+				mStart = std::chrono::high_resolution_clock::now(); // starts timer
+			}
 
-			OnUpdate(mTs);					// updates the client
-			mScene->OnUpdate(mTs);			// scene logic
-			mUI->OnUpdate();				// ui logic
-			mRenderer->OnUpdate();			// render frame
-			mWindow->OnUpdate();			// input events
+			// updates current tick
+			{
+				OnUpdate(mTimestep);			// updates the client
+				mScene->OnUpdate(mTimestep);	// scene logic
+				mUI->OnUpdate();				// ui logic
+				mRenderer->OnUpdate();			// updates renderer
+				mWindow->OnUpdate();			// input events
+			}
+			
+			// end fps system
+			{
+				mEnd = std::chrono::high_resolution_clock::now();	// ends timer
+				mFrameCount++;										// add frame to the count
+
+				// calculates time taken by the renderer updating
+				mTimeDifference = std::chrono::duration<double, std::milli>(mEnd - mStart).count(); 
+
+				mTimestep = (float)mTimeDifference / 1000.0f; // timestep
+
+				// calculates time taken by last timestamp and renderer finished
+				mFpsTimer += (float)mTimeDifference;
+
+				if (mFpsTimer > 1000.0f) // greater than next frame, reset frame counting
+				{
+					mLastFPS = (uint32_t)((float)mFrameCount * (1000.0f / mFpsTimer));
+					mFrameCount = 0;
+					mFpsTimer = 0.0f;
+				}
+			}
 		}
 
 		mScene->Destroy();

@@ -8,6 +8,7 @@ namespace Cosmos
 	class Dockspace;
 	class Explorer;
 	class Grid;
+	class Mainmenu;
 	class Viewport;
 
 	class Editor : public Application
@@ -23,7 +24,7 @@ namespace Cosmos
 	public:
 
 		// updates the editor logic
-		void OnUpdate(Timestep ts) override;
+		void OnUpdate(float timestep) override;
 
 	public:
 		
@@ -51,6 +52,7 @@ namespace Cosmos
 		Explorer* mExplorer;
 		Grid* mGrid;
 		Viewport* mViewport;
+		Mainmenu* mMainmenu;
 
 		Camera mCamera;
 	};

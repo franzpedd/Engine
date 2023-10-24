@@ -16,21 +16,21 @@ namespace Cosmos
 	void Explorer::OnUpdate()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
-		glm::vec2 buttonSize = { 50, 50 };
-		glm::vec2 currentPos = {};
+		ImVec2 buttonSize = { 50, 50 };
+		ImVec2 currentPos = {};
 		float offSet = 5.0f;
 
 		std::filesystem::path parentPath = mRoot;
 		parentPath = parentPath.parent_path();
 
-		ui::Begin("Explorer");
-		ui::BeginChild("Items");
+		ImGui::Begin("Explorer");
+		ImGui::BeginChild("Items");
 
 		// draw back folder
 		{
-			ui::BeginGroup();
+			ImGui::BeginGroup();
 
-			if (ui::ButtonImage("...", mFolderDescriptorSet, buttonSize))
+			if (ImGui::ImageButton("...", mFolderDescriptorSet, buttonSize))
 			{
 				ItemProperties item;
 				item.descriptor = &mFolderDescriptorSet;
@@ -41,41 +41,41 @@ namespace Cosmos
 				Clicked(item);
 			}
 
-			currentPos = ui::GetCursorPos();
-			ui::SetCursonPos({ currentPos.x + offSet, currentPos.y });
+			currentPos = { ImGui::GetCursorPos().x, ImGui::GetCursorPos().y };
+			ImGui::SetCursorPos(currentPos);
 
-			ui::Text("...");
+			ImGui::Text("...");
 
-			ui::EndGroup();
+			ImGui::EndGroup();
 		}
 
-		ui::SameLine();
+		ImGui::SameLine();
 
 		for (size_t i = 0; i < currDirItems.size(); i++)
 		{
 			// checks if must draw in the same line
-			if ((currentPos.x + (buttonSize.x * 2)) <= ui::GetContentRegionAvail().x) ui::SameLine();
+			if ((currentPos.x + (buttonSize.x * 2)) <= ImGui::GetContentRegionAvail().x) ImGui::SameLine();
 
 			// draws
 			{
-				ui::BeginGroup();
+				ImGui::BeginGroup();
 
-				if (ui::ButtonImage(currDirItems[i].dirEntry.path().string().c_str(), *currDirItems[i].descriptor, buttonSize))
+				if (ImGui::ImageButton(currDirItems[i].dirEntry.path().string().c_str(), *currDirItems[i].descriptor, buttonSize))
 				{
 					Clicked(currDirItems[i]);
 				}
 
-				currentPos = ui::GetCursorPos();
-				ui::SetCursonPos({ currentPos.x + offSet, currentPos.y });
+				currentPos = ImGui::GetCursorPos();
+				ImGui::SetCursorPos({ currentPos.x + offSet, currentPos.y });
 
-				ui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
+				ImGui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
 
-				ui::EndGroup();
+				ImGui::EndGroup();
 			}
 		}
 
-		ui::EndChild();
-		ui::End();
+		ImGui::EndChild();
+		ImGui::End();
 	}
 
 	void Explorer::OnResize()
@@ -100,7 +100,7 @@ namespace Cosmos
 			texturePath /= "editor";
 			texturePath /= "folder.png";
 			mFolderTexture = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
-			mFolderDescriptorSet = ui::AddTexture(mFolderTexture->Sampler(), mFolderTexture->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			mFolderDescriptorSet = AddTexture(mFolderTexture->Sampler(), mFolderTexture->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 
 		// extensions
@@ -112,7 +112,7 @@ namespace Cosmos
 				texturePath /= "editor";
 				texturePath /= mExtensionTexturePaths[i];
 				mExtensionTexture[i] = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
-				mExtensionDescriptors[i] = ui::AddTexture(mExtensionTexture[i]->Sampler(), mExtensionTexture[i]->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->Sampler(), mExtensionTexture[i]->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}
 	}

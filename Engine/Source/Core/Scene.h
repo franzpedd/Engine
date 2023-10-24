@@ -2,7 +2,6 @@
 
 #include "Camera.h"
 #include "Entity/Entity.h"
-#include "Util/Timestep.h"
 #include <memory>
 
 namespace Cosmos
@@ -29,7 +28,7 @@ namespace Cosmos
 	public:
 
 		// updates the scene objects
-		void OnUpdate(Timestep ts);
+		void OnUpdate(float timestep);
 
 		// draws the scene drawables
 		void OnDraw();

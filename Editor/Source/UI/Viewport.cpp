@@ -151,9 +151,9 @@ namespace Cosmos
 
 	void Viewport::OnUpdate()
 	{
-		ui::Begin("Scene viewport");
-		ui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ui::GetContentRegionAvail());
-		ui::End();
+		ImGui::Begin("Scene viewport");
+		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
+		ImGui::End();
 	}
 
 	void Viewport::OnResize()
@@ -244,7 +244,7 @@ namespace Cosmos
 				EndSingleTimeCommand(mRenderer->BackendDevice(), mCommandEntry->commandPool, command);
 
 				mImageViews[i] = CreateImageView(mRenderer->BackendDevice(), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-				mDescriptorSets[i] = ui::AddTexture(mSampler, mImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				mDescriptorSets[i] = AddTexture(mSampler, mImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 				std::array<VkImageView, 2> attachments = { mImageViews[i], mDepthView };
 

@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Platform/Window.h"
-#include "UI/UIDrawable.h"
 #include "Util/Keycodes.h"
 #include "Util/Math.h"
-#include "Util/Timestep.h"
 #include <memory>
 
 namespace Cosmos
@@ -16,7 +14,7 @@ namespace Cosmos
 		enum Type
 		{
 			LOOK_AT = 0,
-			FIRST_PERSON
+			EDITOR_FLY
 		};
 
 	public:
@@ -39,6 +37,12 @@ namespace Cosmos
 		// returns far value
 		float GetFar() { return mZfar; }
 
+		// returns the current camera position
+		glm::vec3& GetPosition() { return mPosition; }
+
+		// returns the current camera rotation
+		glm::vec3& GetRotation() { return mRotation; }
+
 	public:
 
 		// mouse was recently moved
@@ -53,7 +57,7 @@ namespace Cosmos
 	public:
 
 		// updates the camera
-		void OnUpdate(Timestep ts);
+		void OnUpdate(float timestep);
 
 		// updates the camera's view
 		void UpdateViewMatrix();
@@ -68,17 +72,18 @@ namespace Cosmos
 
 		std::shared_ptr<Window>& mWindow;
 
-		Type mType = Type::FIRST_PERSON;
+		Type mType = Type::EDITOR_FLY;
 		bool mFlipY = true;
 		bool mShouldMove = false;
+		float mPitch = 0.0f;
 		float mFov = 45.0f;
 		float mZnear = 0.1f;
 		float mZfar = 256.0f;
 		float mMovementSpeed = 1.0f;
 		float mRotationSpeed = 1.0f;
-		glm::mat4 mPerspective = glm::mat4();
-		glm::mat4 mView = glm::mat4();
+		glm::mat4 mPerspective = glm::mat4(1.0f);
+		glm::mat4 mView = glm::mat4(1.0f);
 		glm::vec3 mRotation = glm::vec3();
-		glm::vec3 mPosition = glm::vec3();
+		glm::vec3 mPosition = glm::vec3(0.0f, 1.0f, 0.0f);
 	};
 }

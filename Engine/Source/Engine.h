@@ -9,7 +9,7 @@
 #include "Renderer/Vulkan/VKImage.h"
 
 #include "UI/UICore.h"
-#include "UI/UIDrawable.h"
+#include "UI/Icons.h"
 #include "UI/UIElement.h"
 
 #include "Util/Keycodes.h"

@@ -21,11 +21,11 @@ namespace Cosmos
 
 	}
 
-	void Scene::OnUpdate(Timestep ts)
+	void Scene::OnUpdate(float timestep)
 	{
 		for (auto& ent : mEntities)
 		{
-			ent->OnUpdate(ts);
+			ent->OnUpdate(timestep);
 		}
 	}
 

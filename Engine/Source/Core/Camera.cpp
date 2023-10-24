@@ -1,5 +1,6 @@
 #include "Camera.h"
 
+#include "UI/UICore.h"
 #include "Util/Logger.h"
 
 namespace Cosmos
@@ -7,6 +8,8 @@ namespace Cosmos
 	Camera::Camera(std::shared_ptr<Window>& window)
 		: mWindow(window)
 	{
+		// update initial position
+		UpdateViewMatrix();
 	}
 
 	glm::mat4& Camera::GetProjection()
@@ -33,6 +36,18 @@ namespace Cosmos
 	{
 		if (!mShouldMove) return;
 
+		//LOG_TO_TERMINAL(Logger::Trace, "Rotation X:%f Y:%f Z:%f", mRotation.x, mRotation.y, mRotation.z);
+
+		// disables scene flipping 
+		if (mRotation.x >= 89.0f) mRotation.x = 89.0f;
+		if (mRotation.x <= -89.0f) mRotation.x = -89.0f;
+
+		// fix rotation
+		if (mRotation.x >= 360.0f) mRotation.x = 0.0f;
+		if (mRotation.x <= -360.0f) mRotation.x = 0.0f;
+		if (mRotation.y >= 360.0f) mRotation.y = 0.0f;
+		if (mRotation.y <= -360.0f) mRotation.y = 0.0f;
+
 		Rotate(glm::vec3(-yOffset * mRotationSpeed * 0.5f, xOffset * mRotationSpeed * 0.5f, 0.0f));
 
 		// axis move and zooming
@@ -49,22 +64,22 @@ namespace Cosmos
 
 	void Camera::OnKeyboardPress(Keycode key)
 	{
-		if (key == KEY_Z && mShouldMove)
+		if (key == KEY_Z && mShouldMove && mType == EDITOR_FLY)
 		{
 			mShouldMove = false;
 			mWindow->ToogleCursorMode(false);
-			ui::ToogleMouseCursor(false);
+			ToogleMouseCursor(false);
 		}
 
-		else if (key == KEY_Z && !mShouldMove)
+		else if (key == KEY_Z && !mShouldMove && mType == EDITOR_FLY)
 		{
 			mShouldMove = true;
 			mWindow->ToogleCursorMode(true);
-			ui::ToogleMouseCursor(true);
+			ToogleMouseCursor(true);
 		}
 	}
 
-	void Camera::OnUpdate(Timestep ts)
+	void Camera::OnUpdate(float timestep)
 	{
 		if (!mShouldMove) return;
 
@@ -74,7 +89,7 @@ namespace Cosmos
 		camFront.z = cos(glm::radians(mRotation.x)) * cos(glm::radians(mRotation.y));
 		camFront = glm::normalize(camFront);
 
-		float moveSpeed = ts * mMovementSpeed;
+		float moveSpeed = timestep * mMovementSpeed;
 
 		if (mWindow->IsKeyDown(KEY_W)) mPosition += camFront * moveSpeed;
 		if (mWindow->IsKeyDown(KEY_S)) mPosition -= camFront * moveSpeed;
@@ -98,7 +113,7 @@ namespace Cosmos
 		
 		transM = glm::translate(glm::mat4(1.0f), translation);
 		
-		if (mType == Type::FIRST_PERSON) mView = rotM * transM;
+		if (mType == Type::EDITOR_FLY) mView = rotM * transM;
 		else mView = transM * rotM;
 	}
 

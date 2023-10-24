@@ -30,15 +30,8 @@ namespace Cosmos
 		vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
 	}
 
-	void Grid::OnUpdate(Timestep ts)
+	void Grid::OnUpdate(float timestep)
 	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-		float width = (float)mRenderer->BackendSwapchain()->Extent().width;
-		float height = (float)mRenderer->BackendSwapchain()->Extent().height;
-
 		UniformBufferObject ubo = {};
 		ubo.near = mCamera.GetNear();
 		ubo.far = mCamera.GetFar();

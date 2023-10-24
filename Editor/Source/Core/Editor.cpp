@@ -4,6 +4,7 @@
 
 #include "UI/Dockspace.h"
 #include "UI/Explorer.h"
+#include "UI/Mainmenu.h"
 #include "UI/Viewport.h"
 
 namespace Cosmos
@@ -15,10 +16,12 @@ namespace Cosmos
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer);
 		mGrid = new Grid(mRenderer, mCamera, *mViewport);
+		mMainmenu = new Mainmenu(mCamera);
 
 		mUI->ElementStack().Push(mDockspace);
 		mUI->ElementStack().Push(mViewport);
 		mUI->ElementStack().Push(mExplorer);
+		mUI->ElementStack().Push(mMainmenu);
 
 		mScene->Entities().Push(mGrid);
 	}
@@ -28,9 +31,9 @@ namespace Cosmos
 
 	}
 
-	void Editor::OnUpdate(Timestep ts)
+	void Editor::OnUpdate(float timestep)
 	{
-		mCamera.OnUpdate(ts);
+		mCamera.OnUpdate(timestep);
 	}
 
 	void Editor::OnMouseMove(float xPos, float yPos, float xOffset, float yOffset)
