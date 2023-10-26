@@ -2,8 +2,6 @@
 
 layout(binding = 0) uniform UniformBufferObject
 {
-    float near;
-    float far;
     mat4 model;
     mat4 view;
     mat4 proj;
@@ -13,6 +11,10 @@ layout(location = 1) in vec3 inNearPoint;
 layout(location = 2) in vec3 inFarPoint;
 
 layout(location = 0) out vec4 outColor;
+
+// constants for near and far may be enough
+const float cNear = 0.1;
+const float cFar = 256.0;
 
 vec4 Grid(vec3 pos, float scale)
 {
@@ -25,10 +27,16 @@ vec4 Grid(vec3 pos, float scale)
     vec4 color = vec4(0.2, 0.2, 0.2, 1.0 - min(line, 1.0));
 
     // z axis
-    if(pos.x > -0.1 * minimumx && pos.x < 0.1 * minimumx) color.z = 1.0;
-        
+    if(pos.x > -0.1 * minimumx && pos.x < 0.1 * minimumx) 
+    {
+        color.z = 1.0;
+    }
+
     // x axis
-    if(pos.z > -0.1 * minimumz && pos.z < 0.1 * minimumz) color.x = 1.0;
+    if(pos.z > -0.1 * minimumz && pos.z < 0.1 * minimumz)
+    {
+        color.x = 1.0;
+    }
        
     return color;
 }
@@ -51,10 +59,10 @@ float ComputeLinearDepth(vec3 pos)
     float clipDepth = (clipSpace.z / clipSpace.w) * 2.0 - 1.0; 
 
     // get linear value between near and far
-    float linearDepth = (2.0 * ubo.near * ubo.far) / (ubo.far + ubo.near - clipDepth * (ubo.far - ubo.near)); 
+    float linearDepth = (2.0 * cNear * cFar) / (cFar + cNear - clipDepth * (cFar - cNear)); 
 
     // normalize
-    return linearDepth / ubo.far; 
+    return linearDepth / cFar; 
 }
 
 void main()
@@ -70,6 +78,6 @@ void main()
     float linearDepth = ComputeLinearDepth(pos);
     float fading = max(0, (0.5 - linearDepth));
 
-    outColor = (Grid(pos, 10) + Grid(pos, 1))* float(t > 0); // adding multiple resolution for the grid
+    outColor = (Grid(pos, 10) + Grid(pos, 1)) * float(t > 0); // adding multiple resolution for the grid
     outColor.a *= fading;
 }

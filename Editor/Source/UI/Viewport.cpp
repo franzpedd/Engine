@@ -11,6 +11,12 @@ namespace Cosmos
 		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
 		Commander::Get().Add(mCommandEntry);
 
+		// set viewport renderpass to main renderpass
+		auto& mainCommander = mRenderer->GetCommander().Access()[2];
+		mRenderer->GetCommander().AccessMainCommandEntry() = mainCommander;
+
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "Rework Commander class and main RenderPass usage");
+
 		mSurfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
 		mDepthFormat = FindDepthFormat(mRenderer->BackendDevice());
 

@@ -14,8 +14,6 @@ namespace Cosmos
 
 		struct UniformBufferObject
 		{
-			alignas(4) float near;
-			alignas(4) float far;
 			alignas(16) glm::mat4 model;
 			alignas(16) glm::mat4 view;
 			alignas(16) glm::mat4 proj;
@@ -24,7 +22,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Camera& camera, Viewport& viewport);
+		Grid(std::shared_ptr<Renderer>& renderer, Camera& camera);
 
 		// destructor
 		virtual ~Grid();
@@ -49,7 +47,6 @@ namespace Cosmos
 
 		std::shared_ptr<Renderer>& mRenderer;
 		Camera& mCamera;
-		Viewport& mViewport;
 		
 		std::shared_ptr<VKShader> mVertexShader;
 		std::shared_ptr<VKShader> mFragmentShader;
@@ -60,7 +57,6 @@ namespace Cosmos
 		VkPipeline mGraphicsPipeline = VK_NULL_HANDLE;
 		VkPipelineLayout mPipelineLayout = VK_NULL_HANDLE;
 
-		// move to renderer ?
 		std::vector<VkBuffer> mUniformBuffers;
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 		std::vector<void*> mUniformBuffersMapped;

@@ -3,8 +3,6 @@
 
 layout(binding = 0) uniform UniformBufferObject
 {
-    float near;
-    float far;
     mat4 model;
     mat4 view;
     mat4 proj;

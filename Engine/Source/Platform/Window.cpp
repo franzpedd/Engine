@@ -92,6 +92,11 @@ namespace Cosmos
 		return glfwGetMouseButton(mWindow, (int)button);
 	}
 
+	int Window::Hovered()
+	{
+		return glfwGetWindowAttrib(mWindow, GLFW_HOVERED);
+	}
+
 	void Window::OnUpdate()
 	{
 		glfwPollEvents();

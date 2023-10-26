@@ -6,8 +6,8 @@
 
 namespace Cosmos
 {
-	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera& camera, Viewport& viewport)
-		: Entity("Grid"), mRenderer(renderer), mCamera(camera), mViewport(viewport)
+	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera& camera)
+		: Entity("Grid"), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Grid";
 
@@ -23,7 +23,7 @@ namespace Cosmos
 	{
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer cmdBuffer = mViewport.GetCommandEntry()->commandBuffers[currentFrame];
+		VkCommandBuffer cmdBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
 		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
@@ -33,8 +33,6 @@ namespace Cosmos
 	void Grid::OnUpdate(float timestep)
 	{
 		UniformBufferObject ubo = {};
-		ubo.near = mCamera.GetNear();
-		ubo.far = mCamera.GetFar();
 		ubo.model = glm::mat4(1.0f);
 		ubo.view = mCamera.GetView();
 		ubo.proj = mCamera.GetProjection();
@@ -65,8 +63,8 @@ namespace Cosmos
 	{
 		// create graphics pipeline related (shaders, descriptor set layout, pipeline layout, graphics pipeline)
 		{
-			mVertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Vertex, "Grid.vert", "Data/shaders/grid.vert");
-			mFragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Fragment, "Grid.frag", "Data/shaders/grid.frag");
+			mVertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Vertex, "Grid.vert", "Data/Shaders/grid.vert");
+			mFragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Fragment, "Grid.frag", "Data/Shaders/grid.frag");
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { mVertexShader->Stage(), mFragmentShader->Stage() };
@@ -181,13 +179,13 @@ namespace Cosmos
 			pipelineCI.pColorBlendState = &CBSCI;
 			pipelineCI.pDynamicState = &DSCI;
 			pipelineCI.layout = mPipelineLayout;
-			pipelineCI.renderPass = mViewport.GetCommandEntry()->renderPass;
+			pipelineCI.renderPass = mRenderer->GetCommander().AccessMainCommandEntry()->renderPass;
 			pipelineCI.subpass = 0;
 			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
 			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->BackendDevice()->Device(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 		}
 
-		// create ubo (move to renderer if other instances appear?)
+		// matrix ubo
 		{
 			mUniformBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 			mUniformBuffersMemory.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);

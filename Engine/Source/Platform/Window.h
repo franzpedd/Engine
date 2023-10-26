@@ -66,6 +66,9 @@ namespace Cosmos
 		// returns if a button is pressed
 		bool IsButtonDown(Buttoncode button);
 
+		// returns if main window object is focused
+		int Hovered();
+
 	public:
 
 		// updates the window

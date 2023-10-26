@@ -17,6 +17,12 @@ namespace Cosmos
 		int width;
 		int height;
 		mWindow->GetFramebufferSize(&width, &height);
+
+		if (height == 0) // avoid division by 0
+		{
+			return glm::mat4(1.0f);
+		}
+
 		mPerspective = glm::perspective(mFov, (float)width / (float)height, mZnear, mZfar);
 
 		if (mFlipY)
@@ -64,6 +70,11 @@ namespace Cosmos
 
 	void Camera::OnKeyboardPress(Keycode key)
 	{
+		if (!mWindow->Hovered()) // disable outside window commands
+		{
+			return;
+		}
+
 		if (key == KEY_Z && mShouldMove && mType == EDITOR_FLY)
 		{
 			mShouldMove = false;

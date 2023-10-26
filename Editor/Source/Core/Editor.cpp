@@ -15,7 +15,7 @@ namespace Cosmos
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer);
-		mGrid = new Grid(mRenderer, mCamera, *mViewport);
+		mGrid = new Grid(mRenderer, mCamera);
 		mMainmenu = new Mainmenu(mCamera);
 
 		mUI->ElementStack().Push(mDockspace);
@@ -24,6 +24,13 @@ namespace Cosmos
 		mUI->ElementStack().Push(mMainmenu);
 
 		mScene->Entities().Push(mGrid);
+
+		// testing Plane Primitive
+		mPlane1 = new Plane(mRenderer, mCamera);
+		mPlane2 = new Plane(mRenderer, mCamera);
+
+		mScene->Entities().Push(mPlane1);
+		mScene->Entities().Push(mPlane2);
 	}
 
 	Editor::~Editor()

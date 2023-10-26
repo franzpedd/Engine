@@ -36,6 +36,8 @@ namespace Cosmos
 			vkDestroySemaphore(mDevice->Device(), mRenderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(mDevice->Device(), mImageAvailableSemaphores[i], nullptr);
 		}
+
+		mPipelineLibrary.DestroyAllPipelines();
 	}
 
 	void Renderer::OnUpdate()

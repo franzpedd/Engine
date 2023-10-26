@@ -3,8 +3,10 @@
 #include "Defines.h"
 #include "Commander.h"
 
+#include "Vulkan/VKBuffer.h"
 #include "Vulkan/VKInstance.h"
 #include "Vulkan/VKDevice.h"
+#include "Vulkan/VKPipeline.h"
 #include "Vulkan/VKSwapchain.h"
 
 #include <vulkan/vulkan.h>
@@ -52,6 +54,12 @@ namespace Cosmos
 		// returns the current image index
 		inline uint32_t ImageIndex() { return mImageIndex; }
 
+		// returns a reference to the commander
+		inline Commander& GetCommander() { return mCommander; }
+
+		// returns a reference to the pipeline library
+		inline VKPipelineLibrary& GetPipelineLibrary() { return mPipelineLibrary; }
+
 	public:
 
 		// updates the renderer
@@ -62,7 +70,7 @@ namespace Cosmos
 
 	private:
 
-		// renderer render backend
+		// render frame backend
 		void Render();
 
 		// submit all render passes
@@ -80,6 +88,7 @@ namespace Cosmos
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
 		Commander mCommander;
+		VKPipelineLibrary mPipelineLibrary;
 		VkPipelineCache mPipelineCache;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;

@@ -54,6 +54,9 @@ namespace Cosmos
 		// access the command entries 
 		std::vector<std::shared_ptr<CommandEntry>>& Access() { return mEntrylist; }
 
+		// access the current main command entry
+		std::shared_ptr<CommandEntry>& AccessMainCommandEntry() { return mMainCommandEntry; }
+
 	public:
 
 		// adds a new commander entry from the list
@@ -69,5 +72,6 @@ namespace Cosmos
 
 		static Commander* sCommander;
 		std::vector<std::shared_ptr<CommandEntry>> mEntrylist; // todo: move to unordered map
+		std::shared_ptr<CommandEntry> mMainCommandEntry;
 	};
 }

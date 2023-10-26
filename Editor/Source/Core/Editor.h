@@ -54,6 +54,9 @@ namespace Cosmos
 		Viewport* mViewport;
 		Mainmenu* mMainmenu;
 
+		Plane* mPlane1;
+		Plane* mPlane2;
+
 		Camera mCamera;
 	};
 }
