@@ -5,18 +5,15 @@
 #include "Renderer/Renderer.h"
 #include "Util/Math.h"
 
-#include <vector>
-
 namespace Cosmos
 {
-	// forward declarations
 	// forward declarations
 	class Renderer;
 	class VKGraphicsPipeline;
 	class VKShader;
 	class VKBuffer;
-
-	class Plane : public Entity
+	
+	class Cube : public Entity
 	{
 	public:
 
@@ -37,7 +34,7 @@ namespace Cosmos
 				return bindingDescriptions;
 			}
 
-			// returns the attributes of a plane
+			// returns the attributes of a cube
 			static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
 			{
 				std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
@@ -59,10 +56,10 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Plane(std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Cube(std::shared_ptr<Renderer>& renderer, Camera& camera);
 
 		// destructor
-		~Plane() = default;
+		~Cube() = default;;
 
 	public:
 
@@ -94,5 +91,6 @@ namespace Cosmos
 
 		std::vector<Vertex> mVertices;
 		std::vector<uint16_t> mIndices;
+
 	};
 }

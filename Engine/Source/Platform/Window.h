@@ -92,6 +92,9 @@ namespace Cosmos
 		// gets the framebuffer size
 		void GetFramebufferSize(int* width, int* height);
 
+		// returns the window's aspect ratio
+		float GetAspectRatio();
+
 		// waits for all window events to be handled
 		void WaitEvents();
 

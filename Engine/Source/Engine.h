@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 #include "Core/Scene.h"
 
+#include "Entity/Primitives/Cube.h"
 #include "Entity/Primitives/Plane.h"
 
 #include "Renderer/Renderer.h"

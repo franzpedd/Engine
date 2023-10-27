@@ -1,9 +1,11 @@
 #include "Mainmenu.h"
 
+#include "Renderer/Grid.h"
+
 namespace Cosmos
 {
-	Mainmenu::Mainmenu(Camera& camera)
-		: mCamera(camera)
+	Mainmenu::Mainmenu(Camera& camera, Grid* grid)
+		: mCamera(camera), mGrid(grid)
 	{
 		Logger() << "Creating Mainmenu";
 	}
@@ -48,6 +50,16 @@ namespace Cosmos
 			if (ImGui::MenuItem(ICON_FA_FAST_FORWARD " Redo"))
 			{
 
+			}
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu(ICON_FA_BOOKMARK "View"))
+		{
+			if (CheckboxSliderEx("Draw Grid", &mCheckboxGrid))
+			{
+				mGrid->ToogleOnOff();
 			}
 
 			ImGui::EndMenu();

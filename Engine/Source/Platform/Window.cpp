@@ -140,6 +140,20 @@ namespace Cosmos
 		glfwGetFramebufferSize(mWindow, width, height);
 	}
 
+	float Window::GetAspectRatio()
+	{
+		int width;
+		int height;
+		GetFramebufferSize(&width, &height);
+
+		if (height == 0) // avoid division by 0
+		{
+			return 1.0f;
+		}
+
+		return width / height;
+	}
+
 	void Window::WaitEvents()
 	{
 		glfwWaitEvents();

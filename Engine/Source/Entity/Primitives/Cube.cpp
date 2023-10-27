@@ -1,47 +1,66 @@
-#include "Plane.h"
+#include "Cube.h"
 
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 #include "Renderer/Vulkan/VKPipeline.h"
+
 #include "Util/Logger.h"
 
 namespace Cosmos
 {
-	static float offsetGlobal = 0.5f;
-
-	Plane::Plane(std::shared_ptr<Renderer>& renderer, Camera& camera)
-		: Entity("Plane"), mRenderer(renderer), mCamera(camera)
+	Cube::Cube(std::shared_ptr<Renderer>& renderer, Camera& camera)
+		: Entity("Cube"), mRenderer(renderer), mCamera(camera)
 	{
-		Logger() << "Creating Plane Primitive";
+		Logger() << "Creating Primitive: Cube";
 
 		// setup initial config
-		mVertices.resize(4);
-		mIndices = { 0, 1, 2, 2, 3, 0 };
+		mVertices.resize(8);
+		mIndices =
+		{
+			0, 1, 2,	// t0 (front)
+			2, 1, 3,	// t1 (front)
+			4, 0, 6,	// t2 (left)
+			6, 0, 2,	// t3 (left)
+			7, 5, 6,	// t4 (back)
+			6, 5, 4,	// t5 (back)
+			3, 1, 7,	// t6 (right)
+			7, 1, 5,	// t7 (right)
+			4, 5, 0,	// t8 (back)
+			0, 5, 1,	// t9 (back)
+			3, 7, 2,	// t10 (top)
+			2, 7, 6		// t11 (top)
+		};
 
 		// vertex position
-		mVertices[0].position = { 0.0f, 0.0f, offsetGlobal * 0.1f };
-		mVertices[1].position = { 1.0f, 0.0f, offsetGlobal * 0.1f };
-		mVertices[2].position = { 1.0f, 1.0f, offsetGlobal * 0.1f };
-		mVertices[3].position = { 0.0f, 1.0f, offsetGlobal * 0.1f };
+		mVertices[0].position = { 0.0f, 0.0f, 0.0f }; // v0
+		mVertices[1].position = { 1.0f, 0.0f, 0.0f }; // v1
+		mVertices[2].position = { 0.0f, 1.0f, 0.0f }; // v2
+		mVertices[3].position = { 1.0f, 1.0f, 0.0f }; // v3
+		mVertices[4].position = { 0.0f, 0.0f, 1.0f }; // v4
+		mVertices[5].position = { 1.0f, 0.0f, 1.0f }; // v5
+		mVertices[6].position = { 0.0f, 1.0f, 1.0f }; // v6
+		mVertices[7].position = { 1.0f, 1.0f, 1.0f }; // v7
 
-		mVertices[0].color = { offsetGlobal * 0.1f, 1.0f, 0.0f };
-		mVertices[1].color = { offsetGlobal * 1.0f, 1.0f, 0.0f };
-		mVertices[2].color = { offsetGlobal * 0.5f, 0.35f, 0.4f };
-		mVertices[3].color = { offsetGlobal * 0.1f, 1.0f, 1.0f };
+		// color
+		mVertices[0].color = { 0.0f, 0.0f, 0.0f };
+		mVertices[1].color = { 1.0f, 0.0f, 0.0f };
+		mVertices[2].color = { 1.0f, 0.0f, 0.0f };
+		mVertices[3].color = { 0.5f, 0.5f, 0.0f };
+		mVertices[4].color = { 0.5f, 1.5f, 1.0f };
+		mVertices[5].color = { 1.0f, 0.0f, 1.0f };
+		mVertices[6].color = { 1.0f, 0.0f, 1.0f };
+		mVertices[7].color = { 1.0f, 1.0f, 1.0f };
 
-		offsetGlobal += 3.0f;
-
-		// resources
 		CreatePipeline();
 		CreateBuffers();
 	}
 
-	void Plane::OnDraw()
+	void Cube::OnDraw()
 	{
 		// pre-drawing
 		VKGraphicsPipeline::UniformBufferObject ubo = {};
-		ubo.model = glm::mat4(1.0f);
-		ubo.view = glm::rotate(mCamera.GetView(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.model = glm::translate(ubo.model, glm::vec3(-1.0f, 1.0f, -1.0f));
+		ubo.view = glm::rotate(mCamera.GetView(), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.proj = mCamera.GetProjection();
 		memcpy(mGraphicsPipeline->AccessUniformBuffers()[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 
@@ -58,41 +77,41 @@ namespace Cosmos
 		vkCmdDrawIndexed(cmdBuffer, uint32_t(mIndices.size()), 1, 0, 0, 0);
 	}
 
-	void Plane::OnUpdate(float timestep)
+	void Cube::OnUpdate(float timestep)
 	{
-
 	}
 
-	void Plane::OnDrestroy()
+	void Cube::OnDrestroy()
 	{
 		mIndexBuffer->Destroy();
 		mVertexBuffer->Destroy();
 	}
 
-	void Plane::CreatePipeline()
+	void Cube::CreatePipeline()
 	{
 		// if already created just reference it
 		auto& graphicsLibrary = mRenderer->GetPipelineLibrary().AccessGraphicsTable();
-		if (graphicsLibrary.find("Plane") != graphicsLibrary.end())
+		if (graphicsLibrary.find("Cube") != graphicsLibrary.end())
 		{
-			mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"];
+			mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"];
 		}
-		
+
 		else
 		{
 			VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
 			graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
 			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
-			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Plane Vert", "Data/Shaders/plane.vert");
-			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Plane Frag", "Data/Shaders/plane.frag");
-		
+			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Cube Vert", "Data/Shaders/cube.vert");
+			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Cube Frag", "Data/Shaders/cube.frag");
+			graphicsPipeline.cullMode = VK_CULL_MODE_FRONT_BIT;
+
 			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
-		
-			mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"] = mGraphicsPipeline;
+
+			mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"] = mGraphicsPipeline;
 		}
 	}
 
-	void Plane::CreateBuffers()
+	void Cube::CreateBuffers()
 	{
 		mVertexBuffer = VKBuffer::Create
 		(
@@ -102,7 +121,7 @@ namespace Cosmos
 			mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
 			mVertices.data()
 		);
-
+		
 		mIndexBuffer = VKBuffer::Create
 		(
 			mRenderer->BackendDevice(),

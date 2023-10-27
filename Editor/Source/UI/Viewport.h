@@ -9,13 +9,16 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer);
+		Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer, Camera& camera);
 
 		// destructor
 		virtual ~Viewport();
 
 		// returns a reference to the command entry
 		inline std::shared_ptr<CommandEntry>& GetCommandEntry() { return mCommandEntry; }
+
+		// returns the current viewport size
+		inline ImVec2 GetSize() { return mCurrentSize; }
 
 	public:
 
@@ -34,7 +37,10 @@ namespace Cosmos
 
 		std::shared_ptr<UICore>& mUI;
 		std::shared_ptr<Renderer>& mRenderer;
+		Camera& mCamera;
+
 		std::shared_ptr<CommandEntry> mCommandEntry;
+		ImVec2 mCurrentSize;
 
 		VkSampler mSampler = VK_NULL_HANDLE;
 

@@ -10,20 +10,16 @@ namespace Cosmos
 	{
 		// update initial position
 		UpdateViewMatrix();
+
+		// initial camera aspect ratio
+		mAspectRatio = mWindow->GetAspectRatio();
+
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "Aspect ratio is wrong when on editor");
 	}
 
 	glm::mat4& Camera::GetProjection()
 	{
-		int width;
-		int height;
-		mWindow->GetFramebufferSize(&width, &height);
-
-		if (height == 0) // avoid division by 0
-		{
-			return glm::mat4(1.0f);
-		}
-
-		mPerspective = glm::perspective(mFov, (float)width / (float)height, mZnear, mZfar);
+		mPerspective = glm::perspective(mFov, mAspectRatio, mZnear, mZfar);
 
 		if (mFlipY)
 		{

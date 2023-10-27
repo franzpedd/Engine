@@ -38,6 +38,11 @@ namespace Cosmos
 		// called before destructor, for freeing resources
 		virtual void OnDrestroy() override;
 
+	public:
+
+		// toogles on/off if grid should be drawn
+		void ToogleOnOff();
+
 	private:
 
 		// create all used resources
@@ -47,6 +52,7 @@ namespace Cosmos
 
 		std::shared_ptr<Renderer>& mRenderer;
 		Camera& mCamera;
+		bool mVisible = true;
 		
 		std::shared_ptr<VKShader> mVertexShader;
 		std::shared_ptr<VKShader> mFragmentShader;

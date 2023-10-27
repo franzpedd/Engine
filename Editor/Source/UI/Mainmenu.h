@@ -4,12 +4,15 @@
 
 namespace Cosmos
 {
+	// forward declarations
+	class Grid;
+
 	class Mainmenu : public UIElement
 	{
 	public:
 
 		// constructor
-		Mainmenu(Camera& camera);
+		Mainmenu(Camera& camera, Grid* grid);
 
 		// destructor
 		virtual ~Mainmenu();
@@ -30,5 +33,8 @@ namespace Cosmos
 	private:
 
 		Camera& mCamera;
+		Grid* mGrid;
+		
+		bool mCheckboxGrid = true;
 	};
 }

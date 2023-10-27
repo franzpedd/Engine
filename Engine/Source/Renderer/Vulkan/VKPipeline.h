@@ -39,6 +39,9 @@ namespace Cosmos
 			std::shared_ptr<VKShader> vertexShader;
 			std::shared_ptr<VKShader> fragmentShader;
 
+			// customize before creation
+			VkCullModeFlags cullMode = VK_CULL_MODE_NONE;
+
 			// constructor
 			InitializerList(VkRenderPass& renderPass, VkPipelineCache& pipelineCache)
 				: renderPass(renderPass), pipelineCache(pipelineCache) { }

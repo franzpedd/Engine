@@ -80,4 +80,6 @@ void main()
 
     outColor = (Grid(pos, 10) + Grid(pos, 1)) * float(t > 0); // adding multiple resolution for the grid
     outColor.a *= fading;
+
+    if(outColor.w <= 000000.1) discard; // discarting pixels outside grid
 }

@@ -7,7 +7,11 @@
 #pragma warning( push )
 #pragma warning( disable : 26451 )
 #endif
+
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
+#include <imgui_internal.h>
+
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
@@ -21,6 +25,7 @@ namespace Cosmos
 	class Window;
 
 	struct CommandEntry;
+	
 
 	class UICore
 	{
@@ -94,4 +99,13 @@ namespace Cosmos
 
 	// hidens or unhides the mouse iteraction with mouse and ui
 	void ToogleMouseCursor(bool hide);
+
+	// theme custom checkbox
+	bool CheckboxEx(const char* label, bool* v);
+
+	// simplified checkbox
+	bool CheckboxSimplifiedEx(const char* label, bool* value);
+
+	// slider checkbox
+	bool CheckboxSliderEx(const char* label, bool* v);
 }

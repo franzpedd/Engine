@@ -21,6 +21,8 @@ namespace Cosmos
 
 	void Grid::OnDraw()
 	{
+		if (!mVisible) return;
+
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer cmdBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
@@ -57,6 +59,11 @@ namespace Cosmos
 		vkDestroyDescriptorSetLayout(mRenderer->BackendDevice()->Device(), mDescriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(mRenderer->BackendDevice()->Device(), mPipelineLayout, nullptr);
 		vkDestroyPipeline(mRenderer->BackendDevice()->Device(), mGraphicsPipeline, nullptr);
+	}
+
+	void Grid::ToogleOnOff()
+	{
+		mVisible == true ? mVisible = false : mVisible = true;
 	}
 
 	void Grid::CreateResources()
@@ -145,6 +152,12 @@ namespace Cosmos
 			VkPipelineColorBlendAttachmentState CBAS = {};
 			CBAS.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			CBAS.blendEnable = VK_FALSE;
+			CBAS.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			CBAS.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			CBAS.colorBlendOp = VK_BLEND_OP_ADD;
+			CBAS.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			CBAS.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;	
+			CBAS.alphaBlendOp = VK_BLEND_OP_ADD;
 
 			VkPipelineColorBlendStateCreateInfo CBSCI = {};
 			CBSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

@@ -4,8 +4,8 @@
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer)
-		: mUI(ui), mRenderer(renderer)
+	Viewport::Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer, Camera& camera)
+		: mUI(ui), mRenderer(renderer), mCamera(camera)
 
 	{
 		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
@@ -83,11 +83,11 @@ namespace Cosmos
 
 			VkRenderPassCreateInfo renderPassCI = {};
 			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-			renderPassCI.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderPassCI.attachmentCount = (uint32_t)attachments.size();
 			renderPassCI.pAttachments = attachments.data();
 			renderPassCI.subpassCount = 1;
 			renderPassCI.pSubpasses = &subpassDescription;
-			renderPassCI.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			renderPassCI.dependencyCount = (uint32_t)dependencies.size();
 			renderPassCI.pDependencies = dependencies.data();
 			VK_ASSERT(vkCreateRenderPass(mRenderer->BackendDevice()->Device(), &renderPassCI, nullptr, &mCommandEntry->renderPass), "Failed to create renderpass");
 		}
@@ -159,6 +159,11 @@ namespace Cosmos
 	{
 		ImGui::Begin("Scene viewport");
 		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
+
+		// updating aspect ratio for the docking
+		mCurrentSize = ImGui::GetWindowSize();
+		mCamera.SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
+
 		ImGui::End();
 	}
 

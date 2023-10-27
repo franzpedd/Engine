@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "Renderer/Gizmo.h"
 #include "Renderer/Grid.h"
 
 #include "UI/Dockspace.h"
@@ -14,9 +15,9 @@ namespace Cosmos
 	{
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
-		mViewport = new Viewport(mUI, mRenderer);
+		mViewport = new Viewport(mUI, mRenderer, mCamera);
 		mGrid = new Grid(mRenderer, mCamera);
-		mMainmenu = new Mainmenu(mCamera);
+		mMainmenu = new Mainmenu(mCamera, mGrid);
 
 		mUI->ElementStack().Push(mDockspace);
 		mUI->ElementStack().Push(mViewport);
@@ -25,12 +26,11 @@ namespace Cosmos
 
 		mScene->Entities().Push(mGrid);
 
-		// testing Plane Primitive
-		mPlane1 = new Plane(mRenderer, mCamera);
-		mPlane2 = new Plane(mRenderer, mCamera);
-
-		mScene->Entities().Push(mPlane1);
-		mScene->Entities().Push(mPlane2);
+		// testing Primitives
+		mScene->Entities().Push(new Plane(mRenderer, mCamera));
+		mScene->Entities().Push(new Plane(mRenderer, mCamera));
+		mScene->Entities().Push(new Cube(mRenderer, mCamera));
+		mScene->Entities().Push(new Gizmo(mRenderer, mCamera));
 	}
 
 	Editor::~Editor()
