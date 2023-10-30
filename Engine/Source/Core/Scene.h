@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Camera.h"
 #include "Entity/Entity.h"
 #include <memory>
 
@@ -31,7 +30,7 @@ namespace Cosmos
 		void OnUpdate(float timestep);
 
 		// draws the scene drawables
-		void OnDraw();
+		void OnRenderDraw();
 
 		// cleans the entities resources
 		void Destroy();

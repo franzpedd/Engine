@@ -3,17 +3,12 @@
 namespace Cosmos
 {
 	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
-		: mRenderer(renderer)
+		: Entity("UI:Explorer"), mRenderer(renderer)
 	{
 		CreateTextures();
 	}
 
-	Explorer::~Explorer()
-	{
-
-	}
-
-	void Explorer::OnUpdate()
+	void Explorer::OnUIDraw()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
 		ImVec2 buttonSize = { 50, 50 };
@@ -78,8 +73,14 @@ namespace Cosmos
 		ImGui::End();
 	}
 
-	void Explorer::OnResize()
+	void Explorer::OnDestroy()
 	{
+		for (auto& texture : mExtensionTexture)
+		{
+			delete texture;
+		}
+
+		delete mFolderTexture;
 	}
 
 	void Explorer::Clicked(ItemProperties& item)
@@ -99,7 +100,7 @@ namespace Cosmos
 			texturePath /= "textures";
 			texturePath /= "editor";
 			texturePath /= "folder.png";
-			mFolderTexture = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
+			mFolderTexture = new VKTexture2D(mRenderer->BackendDevice(), texturePath.string().c_str());
 			mFolderDescriptorSet = AddTexture(mFolderTexture->Sampler(), mFolderTexture->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 
@@ -111,7 +112,7 @@ namespace Cosmos
 				texturePath /= "textures";
 				texturePath /= "editor";
 				texturePath /= mExtensionTexturePaths[i];
-				mExtensionTexture[i] = VKTexture2D::Create(mRenderer->BackendDevice(), texturePath.string().c_str());
+				mExtensionTexture[i] = new VKTexture2D(mRenderer->BackendDevice(), texturePath.string().c_str());
 				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->Sampler(), mExtensionTexture[i]->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}

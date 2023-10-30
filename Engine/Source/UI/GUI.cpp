@@ -1,4 +1,4 @@
-#include "UICore.h"
+#include "GUI.h"
 
 #include "Icons.h"
 #include "Platform/Window.h"
@@ -25,12 +25,12 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<UICore> UICore::Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
+	std::shared_ptr<GUI> GUI::Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
 	{
-		return std::make_shared<UICore>(window, renderer);
+		return std::make_shared<GUI>(window, renderer);
 	}
 
-	UICore::UICore(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
+	GUI::GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
 		: mWindow(window), mRenderer(renderer)
 	{
 		mCommandEntry = CommandEntry::Create(mRenderer->BackendDevice()->Device(), "UI");
@@ -40,7 +40,7 @@ namespace Cosmos
 		SetupConfiguration();
 	}
 
-	UICore::~UICore()
+	GUI::~GUI()
 	{
 		mCommandEntry->Destroy();
 
@@ -49,16 +49,16 @@ namespace Cosmos
 		ImGui::DestroyContext();
 	}
 
-	void UICore::OnUpdate()
+	void GUI::OnUpdate(EntityStack& entities)
 	{
 		// new frame
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		for (UIElement* element : mUIElements.Elements())
+		for (Entity* ent : entities)
 		{
-			element->OnUpdate();
+			ent->OnUIDraw();
 		}
 
 		// end frame
@@ -72,17 +72,17 @@ namespace Cosmos
 		}
 	}
 
-	void UICore::Draw(VkCommandBuffer cmd)
+	void GUI::Draw(VkCommandBuffer cmd)
 	{
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 	}
 
-	void UICore::SetImageCount(uint32_t count)
+	void GUI::SetImageCount(uint32_t count)
 	{
 		ImGui_ImplVulkan_SetMinImageCount(count);
 	}
 
-	void UICore::OnResize()
+	void GUI::OnWindowResize(EntityStack& entities)
 	{
 		// recreate framebuffer based on image views
 		{
@@ -109,13 +109,13 @@ namespace Cosmos
 			}
 		}
 
-		for (UIElement* element : mUIElements.Elements())
+		for (Entity* ent : entities)
 		{
-			element->OnResize();
+			ent->OnWindowResize();
 		}
 	}
 
-	void UICore::SetupConfiguration()
+	void GUI::SetupConfiguration()
 	{
 		// initial config
 		IMGUI_CHECKVERSION();
@@ -201,7 +201,7 @@ namespace Cosmos
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
 
-	void UICore::CreateResources()
+	void GUI::CreateResources()
 	{
 		// render pass
 		{
@@ -287,7 +287,7 @@ namespace Cosmos
 		}
 	}
 
-	void UICore::SetupCustomStyle()
+	void GUI::SetupCustomStyle()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -460,7 +460,7 @@ namespace Cosmos
 		const ImGuiStyle& style = g.Style;
 		const ImGuiID id = window->GetID(label);
 		const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
-		const ImRect check_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(label_size.y + style.FramePadding.y * 0.5, label_size.y + style.FramePadding.y * 0.5));
+		const ImRect check_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(label_size.y + style.FramePadding.y * 0.5f, label_size.y + style.FramePadding.y * 0.5f));
 
 		ImGui::ItemSize(check_bb, style.FramePadding.y);
 
@@ -499,8 +499,9 @@ namespace Cosmos
 			if (g.LogEnabled) ImGui::LogRenderedText(&text_bb.GetTL(), *v ? "[X]" : "[]");
 			if (label_size.x > 0.0f) ImGui::RenderText(text_bb.GetTL(), label);
 
-			return pressed;
 		}
+
+		return pressed;
 	}
 
 	bool CheckboxSimplifiedEx(const char* label, bool* value)

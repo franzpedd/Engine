@@ -25,8 +25,8 @@ namespace Cosmos
 			6, 5, 4,	// t5 (back)
 			3, 1, 7,	// t6 (right)
 			7, 1, 5,	// t7 (right)
-			4, 5, 0,	// t8 (back)
-			0, 5, 1,	// t9 (back)
+			4, 5, 0,	// t8 (under)
+			0, 5, 1,	// t9 (under)
 			3, 7, 2,	// t10 (top)
 			2, 7, 6		// t11 (top)
 		};
@@ -55,7 +55,7 @@ namespace Cosmos
 		CreateBuffers();
 	}
 
-	void Cube::OnDraw()
+	void Cube::OnRenderDraw()
 	{
 		// pre-drawing
 		VKGraphicsPipeline::UniformBufferObject ubo = {};
@@ -81,7 +81,7 @@ namespace Cosmos
 	{
 	}
 
-	void Cube::OnDrestroy()
+	void Cube::OnDestroy()
 	{
 		mIndexBuffer->Destroy();
 		mVertexBuffer->Destroy();

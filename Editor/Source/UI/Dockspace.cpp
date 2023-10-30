@@ -3,16 +3,12 @@
 namespace Cosmos
 {
 	Dockspace::Dockspace()
+		: Entity("UI:Dockspace")
 	{
 		Logger() << "Creating Dockspace";
 	}
 
-	Dockspace::~Dockspace()
-	{
-
-	}
-
-	void Dockspace::OnUpdate()
+	void Dockspace::OnUIDraw()
 	{
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -31,9 +27,5 @@ namespace Cosmos
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 		
 		ImGui::End();
-	}
-
-	void Dockspace::OnResize()
-	{
 	}
 }

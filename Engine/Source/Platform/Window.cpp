@@ -151,7 +151,7 @@ namespace Cosmos
 			return 1.0f;
 		}
 
-		return width / height;
+		return (float)(width / height);
 	}
 
 	void Window::WaitEvents()
@@ -246,7 +246,7 @@ namespace Cosmos
 				win->GetData().mouseLastX = xPos;
 				win->GetData().mouseLastY = yPos;
 				
-				Application::Get()->OnMouseMove(xPos, yPos, xOffset, yOffset);
+				Application::Get()->OnMouseMove(xOffset, yOffset);
 			});
 	}
 }

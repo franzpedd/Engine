@@ -4,8 +4,8 @@
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer, Camera& camera)
-		: mUI(ui), mRenderer(renderer), mCamera(camera)
+	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera)
+		: Entity("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera)
 
 	{
 		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
@@ -137,37 +137,19 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	Viewport::~Viewport()
-	{
-		vkDestroySampler(mRenderer->BackendDevice()->Device(), mSampler, nullptr);
-
-		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->BackendDevice()->Device(), mDepthImage, nullptr);
-
-		for (size_t i = 0; i < mRenderer->BackendSwapchain()->Images().size(); i++)
-		{
-			vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->BackendDevice()->Device(), mImages[i], nullptr);
-		}
-
-		mCommandEntry->Destroy();
-	}
-
-	void Viewport::OnUpdate()
+	void Viewport::OnUIDraw()
 	{
 		ImGui::Begin("Scene viewport");
 		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
 
 		// updating aspect ratio for the docking
 		mCurrentSize = ImGui::GetWindowSize();
-		mCamera.SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
+		mCamera->SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
 
 		ImGui::End();
 	}
 
-	void Viewport::OnResize()
+	void Viewport::OnWindowResize()
 	{
 		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mDepthView, nullptr);
 		vkFreeMemory(mRenderer->BackendDevice()->Device(), mDepthMemory, nullptr);
@@ -186,6 +168,26 @@ namespace Cosmos
 		}
 
 		CreateResources();
+	}
+
+	void Viewport::OnDestroy()
+	{
+		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
+		
+		vkDestroySampler(mRenderer->BackendDevice()->Device(), mSampler, nullptr);
+		
+		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mDepthView, nullptr);
+		vkFreeMemory(mRenderer->BackendDevice()->Device(), mDepthMemory, nullptr);
+		vkDestroyImage(mRenderer->BackendDevice()->Device(), mDepthImage, nullptr);
+		
+		for (size_t i = 0; i < mRenderer->BackendSwapchain()->Images().size(); i++)
+		{
+			vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageViews[i], nullptr);
+			vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemories[i], nullptr);
+			vkDestroyImage(mRenderer->BackendDevice()->Device(), mImages[i], nullptr);
+		}
+		
+		mCommandEntry->Destroy();
 	}
 
 	void Viewport::CreateResources()

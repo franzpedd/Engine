@@ -1,12 +1,12 @@
 #include "Camera.h"
 
-#include "UI/UICore.h"
+#include "UI/GUI.h"
 #include "Util/Logger.h"
 
 namespace Cosmos
 {
 	Camera::Camera(std::shared_ptr<Window>& window)
-		: mWindow(window)
+		: Entity("Camera"), mWindow(window)
 	{
 		// update initial position
 		UpdateViewMatrix();
@@ -14,7 +14,7 @@ namespace Cosmos
 		// initial camera aspect ratio
 		mAspectRatio = mWindow->GetAspectRatio();
 
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "Aspect ratio is wrong when on editor");
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Make camera an entity");
 	}
 
 	glm::mat4& Camera::GetProjection()
@@ -34,11 +34,9 @@ namespace Cosmos
 		return mView;
 	}
 
-	void Camera::OnMouseMove(float xOffset, float yOffset)
+	void Camera::OnMouseMove(float x, float y)
 	{
 		if (!mShouldMove) return;
-
-		//LOG_TO_TERMINAL(Logger::Trace, "Rotation X:%f Y:%f Z:%f", mRotation.x, mRotation.y, mRotation.z);
 
 		// disables scene flipping 
 		if (mRotation.x >= 89.0f) mRotation.x = 89.0f;
@@ -50,18 +48,18 @@ namespace Cosmos
 		if (mRotation.y >= 360.0f) mRotation.y = 0.0f;
 		if (mRotation.y <= -360.0f) mRotation.y = 0.0f;
 
-		Rotate(glm::vec3(-yOffset * mRotationSpeed * 0.5f, xOffset * mRotationSpeed * 0.5f, 0.0f));
+		Rotate(glm::vec3(-y * mRotationSpeed * 0.5f, x * mRotationSpeed * 0.5f, 0.0f));
 
 		// axis move and zooming
-		// Translate(glm::vec3(-0.0f, 0.0f, yOffset * .005f));
-		// Translate(glm::vec3(-xOffset * 0.005f, -yOffset * 0.005f, 0.0f));
+		// Translate(glm::vec3(-0.0f, 0.0f, y * .005f));
+		// Translate(glm::vec3(-x * 0.005f, -y * 0.005f, 0.0f));
 	}
 
-	void Camera::OnMouseScroll(float yOffset)
+	void Camera::OnMouseScroll(float y)
 	{
 		if (!mShouldMove) return;
 
-		Translate(glm::vec3(0.0f, 0.0f, yOffset * 0.005f));
+		Translate(glm::vec3(0.0f, 0.0f, y * 0.005f));
 	}
 
 	void Camera::OnKeyboardPress(Keycode key)

@@ -4,15 +4,15 @@
 
 namespace Cosmos
 {
-	class Viewport : public UIElement
+	class Viewport : public Entity
 	{
 	public:
 
 		// constructor
-		Viewport(std::shared_ptr<UICore>& ui, std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera);
 
 		// destructor
-		virtual ~Viewport();
+		virtual ~Viewport() = default;
 
 		// returns a reference to the command entry
 		inline std::shared_ptr<CommandEntry>& GetCommandEntry() { return mCommandEntry; }
@@ -23,10 +23,13 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUpdate() override;
+		virtual void OnUIDraw() override;
 
 		// window was recently resized
-		virtual void OnResize() override;
+		virtual void OnWindowResize() override;
+
+		// freeing resources
+		virtual void OnDestroy() override;
 
 	private:
 
@@ -35,9 +38,9 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<UICore>& mUI;
+		std::shared_ptr<GUI>& mUI;
 		std::shared_ptr<Renderer>& mRenderer;
-		Camera& mCamera;
+		Camera* mCamera;
 
 		std::shared_ptr<CommandEntry> mCommandEntry;
 		ImVec2 mCurrentSize;

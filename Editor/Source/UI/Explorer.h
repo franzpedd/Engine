@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-	class Explorer : public UIElement
+	class Explorer : public Entity
 	{
 	public:
 
@@ -14,7 +14,7 @@ namespace Cosmos
 		{
 			std::filesystem::directory_entry dirEntry;
 			std::string ext;
-			std::shared_ptr<VKTexture2D> texture;
+			VKTexture2D* texture;
 			VkDescriptorSet* descriptor = VK_NULL_HANDLE;
 		};
 
@@ -24,15 +24,15 @@ namespace Cosmos
 		Explorer(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		virtual ~Explorer();
+		virtual ~Explorer() = default;
 
 	public:
 
 		// updates the ui element
-		virtual void OnUpdate() override;
+		virtual void OnUIDraw() override;
 
-		// window was recently resized
-		virtual void OnResize() override;
+		// called for freeing resources
+		virtual void OnDestroy() override;
 
 	public:
 
@@ -51,7 +51,7 @@ namespace Cosmos
 		std::string mRoot = "Data";
 
 		// folder 
-		std::shared_ptr<VKTexture2D> mFolderTexture;
+		VKTexture2D* mFolderTexture;
 		VkDescriptorSet mFolderDescriptorSet;
 
 		// extensions
@@ -72,7 +72,7 @@ namespace Cosmos
 			"png.png", "jpg.png", "ktx.png"			// textures
 		};
 
-		std::array<std::shared_ptr<VKTexture2D>, 11> mExtensionTexture;
+		std::array<VKTexture2D*, 11> mExtensionTexture;
 		std::array<VkDescriptorSet, 11> mExtensionDescriptors;
 	};
 }

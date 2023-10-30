@@ -11,65 +11,34 @@
 namespace Cosmos
 {
 	Editor::Editor()
-		: mCamera(mWindow)
 	{
+		mCamera = new Camera(mWindow);
+
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer, mCamera);
 		mGrid = new Grid(mRenderer, mCamera);
+		mGizmo = new Gizmo(mWindow, mRenderer, mCamera);
 		mMainmenu = new Mainmenu(mCamera, mGrid);
 
-		mUI->ElementStack().Push(mDockspace);
-		mUI->ElementStack().Push(mViewport);
-		mUI->ElementStack().Push(mExplorer);
-		mUI->ElementStack().Push(mMainmenu);
+		// components
+		mScene->Entities().Push(mCamera);
 
+		// widgets
+		mScene->Entities().Push(mDockspace);
+		mScene->Entities().Push(mViewport);
+		mScene->Entities().Push(mExplorer);
+		mScene->Entities().Push(mMainmenu);
+		
+		// objects
 		mScene->Entities().Push(mGrid);
+		mScene->Entities().Push(mGizmo);
 
 		// testing Primitives
-		mScene->Entities().Push(new Plane(mRenderer, mCamera));
-		mScene->Entities().Push(new Plane(mRenderer, mCamera));
-		mScene->Entities().Push(new Cube(mRenderer, mCamera));
-		mScene->Entities().Push(new Gizmo(mRenderer, mCamera));
-	}
+		mScene->Entities().Push(new Plane(mRenderer, *mCamera));
+		mScene->Entities().Push(new Plane(mRenderer, *mCamera));
+		mScene->Entities().Push(new Cube(mRenderer, *mCamera));
 
-	Editor::~Editor()
-	{
-
-	}
-
-	void Editor::OnUpdate(float timestep)
-	{
-		mCamera.OnUpdate(timestep);
-	}
-
-	void Editor::OnMouseMove(float xPos, float yPos, float xOffset, float yOffset)
-	{
-		mCamera.OnMouseMove(xOffset, yOffset);
-	}
-
-	void Editor::OnMouseScroll(float yOffset)
-	{
-		mCamera.OnMouseScroll(yOffset);
-	}
-
-	void Editor::OnMousePress(Buttoncode button)
-	{
-		
-	}
-
-	void Editor::OnMouseRelease(Buttoncode button)
-	{
-		
-	}
-
-	void Editor::OnKeyboardPress(Keycode key)
-	{
-		mCamera.OnKeyboardPress(key);
-	}
-
-	void Editor::OnKeyboardRelease(Keycode key)
-	{
-
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Rework Window hovering to consider inside docking window width and height");
 	}
 }

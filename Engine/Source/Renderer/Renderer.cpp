@@ -2,7 +2,7 @@
 
 #include "Core/Scene.h"
 #include "Platform/Window.h"
-#include "UI/UICore.h"
+#include "UI/GUI.h"
 #include "Util/Logger.h"
 
 #include <array>
@@ -40,12 +40,7 @@ namespace Cosmos
 		mPipelineLibrary.DestroyAllPipelines();
 	}
 
-	void Renderer::OnUpdate()
-	{
-		Render();
-	}
-
-	void Renderer::Render()
+	void Renderer::OnUpdate(EntityStack& entities)
 	{
 		VkResult res;
 
@@ -117,7 +112,7 @@ namespace Cosmos
 				mSwapchain->Recreate();
 
 				mUI->SetImageCount(mSwapchain->ImageCount());
-				mUI->OnResize();
+				mUI->OnWindowResize(entities);
 			}
 
 			else if (res != VK_SUCCESS)
@@ -224,7 +219,7 @@ namespace Cosmos
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			// render scene
-			mScene->OnDraw();
+			mScene->OnRenderDraw();
 
 			vkCmdEndRenderPass(cmdBuffer);
 

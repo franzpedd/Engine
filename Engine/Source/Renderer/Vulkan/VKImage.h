@@ -13,9 +13,6 @@ namespace Cosmos
 	{
 	public:
 
-		// creates a texture from an input file
-		static std::shared_ptr<VKTexture2D> Create(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
-
 		// constructor
 		VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
 

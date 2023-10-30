@@ -10,7 +10,7 @@ namespace Cosmos
 	class Window;
 	class Renderer;
 	class Scene;
-	class UICore;
+	class GUI;
 
 	class Application
 	{
@@ -36,28 +36,25 @@ namespace Cosmos
 		// initializes main loop
 		void Run();
 
-		// updates the application client
-		virtual void OnUpdate(float timestep) = 0;
-
 	public:
 
 		// called when a mouse was moved
-		virtual void OnMouseMove(float xPos, float yPos, float xOffset, float yOffset) = 0;
+		void OnMouseMove(float x, float y);
 
 		// called when a mouse was scrolled
-		virtual void OnMouseScroll(float yOffset) = 0;
+		void OnMouseScroll(float y);
 
 		// called when a mouse button was pressed
-		virtual void OnMousePress(Buttoncode button) = 0;
+		void OnMousePress(Buttoncode button);
 
 		// called when a mouse pbutton was released
-		virtual void OnMouseRelease(Buttoncode button) = 0;
+		void OnMouseRelease(Buttoncode button);
 
 		// called when a keyboard key is pressed
-		virtual void OnKeyboardPress(Keycode key) = 0;
+		void OnKeyboardPress(Keycode key);
 
 		// called when a keyboard key is released
-		virtual void OnKeyboardRelease(Keycode key) = 0;
+		void OnKeyboardRelease(Keycode key);
 
 	protected:
 
@@ -65,7 +62,7 @@ namespace Cosmos
 		std::shared_ptr<Window> mWindow;
 		std::shared_ptr<Scene> mScene;
 		std::shared_ptr<Renderer> mRenderer;
-		std::shared_ptr<UICore> mUI;
+		std::shared_ptr<GUI> mUI;
 
 		// fps system
 		std::chrono::steady_clock::time_point mStart = {};

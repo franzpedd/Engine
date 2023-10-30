@@ -503,6 +503,19 @@ namespace Cosmos
 		// destructor
 		virtual ~Model();
 
+	public:
+
+		// draws the entity (leave empty if doesnt required)
+		virtual void OnRenderDraw() override;
+
+		// updates the entity (leave empty if doesnt required)
+		virtual void OnUpdate(float timestep) override;
+
+		// called before destructor, for freeing resources
+		virtual void OnDestroy() override;
+
+	public:
+
 		// draws a singular node
 		void DrawNode(GLTFNode* node, VkCommandBuffer commandBuffer);
 

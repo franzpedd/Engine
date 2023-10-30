@@ -26,6 +26,8 @@ namespace Cosmos
 
 	void Texture::Cleanup()
 	{
+		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
+
 		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageView, nullptr);
 		vkDestroyImage(mRenderer->BackendDevice()->Device(), mImage, nullptr);
 		vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemory, nullptr);
@@ -475,6 +477,18 @@ namespace Cosmos
 	Model::~Model()
 	{
 		Destroy();
+	}
+
+	void Model::OnRenderDraw()
+	{
+	}
+
+	void Model::OnUpdate(float timestep)
+	{
+	}
+
+	void Model::OnDestroy()
+	{
 	}
 
 	void Model::DrawNode(GLTFNode* node, VkCommandBuffer commandBuffer)

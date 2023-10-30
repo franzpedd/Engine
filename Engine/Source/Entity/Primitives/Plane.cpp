@@ -36,7 +36,7 @@ namespace Cosmos
 		CreateBuffers();
 	}
 
-	void Plane::OnDraw()
+	void Plane::OnRenderDraw()
 	{
 		// pre-drawing
 		VKGraphicsPipeline::UniformBufferObject ubo = {};
@@ -63,7 +63,7 @@ namespace Cosmos
 
 	}
 
-	void Plane::OnDrestroy()
+	void Plane::OnDestroy()
 	{
 		mIndexBuffer->Destroy();
 		mVertexBuffer->Destroy();

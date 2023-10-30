@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Util/Keycodes.h"
 #include <vector>
 
 namespace Cosmos
@@ -19,14 +20,40 @@ namespace Cosmos
 
 	public:
 
-		// draws the entity (leave empty if doesnt required)
-		virtual void OnDraw() = 0;
+		// for renderer drawing
+		virtual void OnRenderDraw() {}
 
-		// updates the entity (leave empty if doesnt required)
-		virtual void OnUpdate(float timestep) = 0;
+		// for user interface drawing
+		virtual void OnUIDraw() {}
 
-		// called before destructor, for freeing resources
-		virtual void OnDrestroy() = 0;
+		// for logic updating
+		virtual void OnUpdate(float timestep) {}
+
+		// for freeing resources
+		virtual void OnDestroy() {}
+
+	public:
+
+		// // called when the window is resized
+		virtual void OnWindowResize() {}
+
+		// called when a mouse position changes
+		virtual void OnMouseMove(float x, float y) {}
+
+		// called when a mouse scroll happens
+		virtual void OnMouseScroll(float y) {}
+
+		// called when a mouse button was pressed
+		virtual void OnMousePress(Buttoncode button) {}
+
+		// called when a mouse button was released
+		virtual void OnMouseRelease(Buttoncode button) {}
+
+		// called when a keyboard key is pressed
+		virtual void OnKeyboardPress(Keycode key) {}
+
+		// called when a keyboard key is released
+		virtual void OnKeyboardRelease(Keycode key) {}
 
 	private:
 

@@ -22,21 +22,21 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Grid(std::shared_ptr<Renderer>& renderer, Camera* camera);
 
 		// destructor
-		virtual ~Grid();
+		virtual ~Grid() = default;
 
 	public:
 
 		// draws the entity (leave empty if doesnt required)
-		virtual void OnDraw() override;
+		virtual void OnRenderDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
 		virtual void OnUpdate(float timestep) override;
 
 		// called before destructor, for freeing resources
-		virtual void OnDrestroy() override;
+		virtual void OnDestroy() override;
 
 	public:
 
@@ -51,7 +51,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
-		Camera& mCamera;
+		Camera* mCamera;
 		bool mVisible = true;
 		
 		std::shared_ptr<VKShader> mVertexShader;

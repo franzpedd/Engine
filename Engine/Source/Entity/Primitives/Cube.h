@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Camera.h"
 #include "Entity/Entity.h"
+#include "Entity/Camera.h"
 #include "Renderer/Renderer.h"
 #include "Util/Math.h"
 
@@ -64,13 +64,13 @@ namespace Cosmos
 	public:
 
 		// draws the entity (leave empty if doesnt required)
-		virtual void OnDraw() override;
+		virtual void OnRenderDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
 		virtual void OnUpdate(float timestep) override;
 
 		// called before destructor, for freeing resources
-		virtual void OnDrestroy() override;
+		virtual void OnDestroy() override;
 
 	private:
 

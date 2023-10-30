@@ -1,13 +1,15 @@
 #pragma once
 
+#include "Entity.h"
 #include "Platform/Window.h"
 #include "Util/Keycodes.h"
 #include "Util/Math.h"
+
 #include <memory>
 
 namespace Cosmos
 {
-	class Camera
+	class Camera : public Entity
 	{
 	public:
 
@@ -49,13 +51,13 @@ namespace Cosmos
 	public:
 
 		// mouse was recently moved
-		void OnMouseMove(float xOffset, float yOffset);
+		virtual void OnMouseMove(float x, float y) override;
 
 		// mouse was recently scrolled
-		void OnMouseScroll(float yOffset);
+		virtual void OnMouseScroll(float y) override;
 
 		// keyboard key was recrently pressed
-		void OnKeyboardPress(Keycode key);
+		virtual void OnKeyboardPress(Keycode key) override;
 
 	public:
 

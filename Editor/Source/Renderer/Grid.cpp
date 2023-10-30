@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera& camera)
+	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera* camera)
 		: Entity("Grid"), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Grid";
@@ -14,12 +14,7 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	Grid::~Grid()
-	{
-
-	}
-
-	void Grid::OnDraw()
+	void Grid::OnRenderDraw()
 	{
 		if (!mVisible) return;
 
@@ -36,13 +31,13 @@ namespace Cosmos
 	{
 		UniformBufferObject ubo = {};
 		ubo.model = glm::mat4(1.0f);
-		ubo.view = mCamera.GetView();
-		ubo.proj = mCamera.GetProjection();
+		ubo.view = mCamera->GetView();
+		ubo.proj = mCamera->GetProjection();
 		
 		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}
 
-	void Grid::OnDrestroy()
+	void Grid::OnDestroy()
 	{
 		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
 

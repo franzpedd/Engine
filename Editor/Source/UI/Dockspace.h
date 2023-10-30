@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	class Dockspace : public UIElement
+	class Dockspace : public Entity
 	{
 	public:
 
@@ -12,14 +12,11 @@ namespace Cosmos
 		Dockspace();
 
 		// destructor
-		virtual ~Dockspace();
+		virtual ~Dockspace() = default;
 
 	public:
 
 		// updates the ui element
-		virtual void OnUpdate() override;
-
-		// window was recently resized
-		virtual void OnResize() override;
+		virtual void OnUIDraw() override;
 	};
 }

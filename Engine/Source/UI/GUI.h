@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UIElement.h"
+#include "Entity/Entity.h"
 #include <vulkan/vulkan.h>
 
 #if defined(_MSC_VER)
@@ -11,6 +11,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <imguizmo.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -25,9 +26,8 @@ namespace Cosmos
 	class Window;
 
 	struct CommandEntry;
-	
 
-	class UICore
+	class GUI
 	{
 	public:
 
@@ -41,16 +41,13 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new user interface
-		static std::shared_ptr<UICore> Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
+		static std::shared_ptr<GUI> Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
 
 		// constructor
-		UICore(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
+		GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		~UICore();
-
-		// returns a reference to all ui elements, used to attach new ui elements
-		inline UIElementStack& ElementStack() { return mUIElements; }
+		~GUI();
 
 		// returns a reference to the renderer command entries
 		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
@@ -61,7 +58,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui
-		void OnUpdate();
+		void OnUpdate(EntityStack& entities);
 
 		// draws the ui
 		void Draw(VkCommandBuffer cmd);
@@ -70,7 +67,7 @@ namespace Cosmos
 		void SetImageCount(uint32_t count);
 
 		// handles framebuffer resizes
-		void OnResize();
+		void OnWindowResize(EntityStack& entities);
 
 	public:
 
@@ -88,8 +85,6 @@ namespace Cosmos
 		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<Renderer>& mRenderer;
 		std::shared_ptr<CommandEntry> mCommandEntry;
-
-		UIElementStack mUIElements;
 
 		Fonts mFonts;
 	};

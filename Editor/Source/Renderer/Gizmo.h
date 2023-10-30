@@ -9,7 +9,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Gizmo(std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Gizmo(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer, Camera* camera);
 
 		// destructor
 		~Gizmo() = default;
@@ -17,18 +17,33 @@ namespace Cosmos
 	public:
 
 		// draws the entity (leave empty if doesnt required)
-		virtual void OnDraw() override;
+		virtual void OnRenderDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
 		virtual void OnUpdate(float timestep) override;
 
 		// called before destructor, for freeing resources
-		virtual void OnDrestroy() override;
+		virtual void OnDestroy() override;
+
+	public:
+
+		// called when a mouse button was pressed
+		void OnMousePress(Buttoncode button) override;
+
+		// called when a mouse button was released
+		void OnMouseRelease(Buttoncode button) override;
+
+		// called when a keyboard key is pressed
+		void OnKeyboardPress(Keycode key) override;
+
+		// called when a keyboard key is released
+		void OnKeyboardRelease(Keycode key) override;
 
 	private:
 
+		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<Renderer>& mRenderer;
-		Camera& mCamera;
+		Camera* mCamera;
 	};
 
 }

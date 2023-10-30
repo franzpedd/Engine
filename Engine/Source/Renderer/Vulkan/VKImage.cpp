@@ -17,11 +17,6 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKTexture2D> VKTexture2D::Create(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
-	{
-		return std::make_shared<VKTexture2D>(device, path, msaa, ktx);
-	}
-
 	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
 		: mDevice(device), mPath(path), mMSAA(msaa), mKTX(ktx)
 	{
@@ -33,6 +28,8 @@ namespace Cosmos
 
 	VKTexture2D::~VKTexture2D()
 	{
+		vkDeviceWaitIdle(mDevice->Device());
+
 		vkDestroySampler(mDevice->Device(), mSampler, nullptr);
 		vkDestroyImageView(mDevice->Device(), mView, nullptr);
 		vkDestroyImage(mDevice->Device(), mImage, nullptr);

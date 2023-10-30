@@ -29,11 +29,11 @@ namespace Cosmos
 		}
 	}
 
-	void Scene::OnDraw()
+	void Scene::OnRenderDraw()
 	{
 		for (auto& ent : mEntities)
 		{
-			ent->OnDraw();
+			ent->OnRenderDraw();
 		}
 	}
 
@@ -41,7 +41,7 @@ namespace Cosmos
 	{
 		for (auto& ent : mEntities)
 		{
-			ent->OnDrestroy();
+			ent->OnDestroy();
 		}
 	}
 }

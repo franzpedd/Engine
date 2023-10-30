@@ -2,6 +2,7 @@
 
 #include "Defines.h"
 #include "Commander.h"
+#include "Entity/Entity.h"
 
 #include "Vulkan/VKBuffer.h"
 #include "Vulkan/VKInstance.h"
@@ -15,7 +16,7 @@
 namespace Cosmos
 {
 	// forward declaration
-	class UICore;
+	class GUI;
 	class Window;
 	class Scene;
 
@@ -63,15 +64,12 @@ namespace Cosmos
 	public:
 
 		// updates the renderer
-		void OnUpdate();
+		void OnUpdate(EntityStack& entities);
 
 		// links the user interface to the renderer
-		inline void ConnectUI(std::shared_ptr<UICore>& ui) { mUI = ui; }
+		inline void ConnectUI(std::shared_ptr<GUI>& ui) { mUI = ui; }
 
 	private:
-
-		// render frame backend
-		void Render();
 
 		// submit all render passes
 		void ManageRenderPasses(uint32_t& imageIndex);
@@ -97,6 +95,6 @@ namespace Cosmos
 		uint32_t mCurrentFrame = 0;
 		uint32_t mImageIndex = 0;
 
-		std::shared_ptr<UICore> mUI;
+		std::shared_ptr<GUI> mUI;
 	};
 }

@@ -22,6 +22,7 @@ project "Editor"
         
         "%{includelist.Vulkan}",
         "%{includelist.ImGUI}",
+        "%{includelist.ImGUIzmo}",
         "%{includelist.GLI}",
         "%{includelist.GLM}",
         "%{includelist.TinyGLTF}",

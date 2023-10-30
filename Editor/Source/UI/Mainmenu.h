@@ -7,23 +7,20 @@ namespace Cosmos
 	// forward declarations
 	class Grid;
 
-	class Mainmenu : public UIElement
+	class Mainmenu : public Entity
 	{
 	public:
 
 		// constructor
-		Mainmenu(Camera& camera, Grid* grid);
+		Mainmenu(Camera* camera, Grid* grid);
 
 		// destructor
-		virtual ~Mainmenu();
+		virtual ~Mainmenu() = default;
 
 	public:
 
 		// updates the ui element
-		virtual void OnUpdate() override;
-
-		// window was recently resized
-		virtual void OnResize() override;
+		virtual void OnUIDraw() override;
 
 	private:
 
@@ -32,7 +29,7 @@ namespace Cosmos
 
 	private:
 
-		Camera& mCamera;
+		Camera* mCamera;
 		Grid* mGrid;
 		
 		bool mCheckboxGrid = true;

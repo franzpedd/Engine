@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
-#include "UI/UICore.h"
+#include "UI/GUI.h"
 #include "Util/Logger.h"
 
 namespace Cosmos
@@ -19,7 +19,7 @@ namespace Cosmos
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
 		mScene = Scene::Create(mWindow);
 		mRenderer = Renderer::Create(mWindow, mScene);
-		mUI = UICore::Create(mWindow, mRenderer);
+		mUI = GUI::Create(mWindow, mRenderer);
 
 		// connect the UI to the renderer to handle resize events
 		mRenderer->ConnectUI(mUI);
@@ -36,11 +36,10 @@ namespace Cosmos
 
 			// updates current tick
 			{
-				OnUpdate(mTimestep);			// updates the client
-				mScene->OnUpdate(mTimestep);	// scene logic
-				mUI->OnUpdate();				// ui logic
-				mRenderer->OnUpdate();			// updates renderer
-				mWindow->OnUpdate();			// input events
+				mScene->OnUpdate(mTimestep);				// scene logic
+				mUI->OnUpdate(mScene->Entities());			// ui logic
+				mRenderer->OnUpdate(mScene->Entities());	// updates renderer
+				mWindow->OnUpdate();						// input events
 			}
 			
 			// end fps system
@@ -66,5 +65,53 @@ namespace Cosmos
 		}
 
 		mScene->Destroy();
+	}
+
+	void Application::OnMouseMove(float x, float y)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnMouseMove(x, y);
+		}
+	}
+
+	void Application::OnMouseScroll(float y)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnMouseScroll(y);
+		}
+	}
+
+	void Application::OnMousePress(Buttoncode button)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnMousePress(button);
+		}
+	}
+
+	void Application::OnMouseRelease(Buttoncode button)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnMouseRelease(button);
+		}
+	}
+
+	void Application::OnKeyboardPress(Keycode key)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnKeyboardPress(key);
+		}
+	}
+
+	void Application::OnKeyboardRelease(Keycode key)
+	{
+		for (auto& ent : mScene->Entities())
+		{
+			ent->OnKeyboardRelease(key);
+		}
 	}
 }
