@@ -49,16 +49,16 @@ namespace Cosmos
 		ImGui::DestroyContext();
 	}
 
-	void GUI::OnUpdate(EntityStack& entities)
+	void GUI::OnUpdate()
 	{
 		// new frame
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		for (Entity* ent : entities)
+		for (Widget* widget : mWidgetStack)
 		{
-			ent->OnUIDraw();
+			widget->OnUpdateUI();
 		}
 
 		// end frame
@@ -82,7 +82,7 @@ namespace Cosmos
 		ImGui_ImplVulkan_SetMinImageCount(count);
 	}
 
-	void GUI::OnWindowResize(EntityStack& entities)
+	void GUI::OnWindowResize()
 	{
 		// recreate framebuffer based on image views
 		{
@@ -109,9 +109,17 @@ namespace Cosmos
 			}
 		}
 
-		for (Entity* ent : entities)
+		for (Widget* widget : mWidgetStack)
 		{
-			ent->OnWindowResize();
+			widget->OnWindowResize();
+		}
+	}
+
+	void GUI::Destroy()
+	{
+		for (auto& widget : mWidgetStack)
+		{
+			widget->OnDestroy();
 		}
 	}
 

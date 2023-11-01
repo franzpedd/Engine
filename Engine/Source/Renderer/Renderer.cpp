@@ -40,7 +40,7 @@ namespace Cosmos
 		mPipelineLibrary.DestroyAllPipelines();
 	}
 
-	void Renderer::OnUpdate(EntityStack& entities)
+	void Renderer::OnUpdate()
 	{
 		VkResult res;
 
@@ -112,7 +112,7 @@ namespace Cosmos
 				mSwapchain->Recreate();
 
 				mUI->SetImageCount(mSwapchain->ImageCount());
-				mUI->OnWindowResize(entities);
+				mUI->OnWindowResize();
 			}
 
 			else if (res != VK_SUCCESS)

@@ -41,6 +41,7 @@ namespace Cosmos
 
 			// customize before creation
 			VkCullModeFlags cullMode = VK_CULL_MODE_NONE;
+			std::vector<VkPushConstantRange> pushConstantRange = {};
 
 			// constructor
 			InitializerList(VkRenderPass& renderPass, VkPipelineCache& pipelineCache)

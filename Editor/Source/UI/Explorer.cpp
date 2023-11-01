@@ -3,12 +3,12 @@
 namespace Cosmos
 {
 	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
-		: Entity("UI:Explorer"), mRenderer(renderer)
+		: Widget("UI:Explorer"), mRenderer(renderer)
 	{
 		CreateTextures();
 	}
 
-	void Explorer::OnUIDraw()
+	void Explorer::OnUpdateUI()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
 		ImVec2 buttonSize = { 50, 50 };

@@ -8,11 +8,14 @@
 namespace Cosmos
 {
 	static float offsetGlobal = 0.5f;
+	uint64_t Plane::sInstances = 0;
 
 	Plane::Plane(std::shared_ptr<Renderer>& renderer, Camera& camera)
 		: Entity("Plane"), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Plane Primitive";
+		mID = sInstances;
+		sInstances++;
 
 		// setup initial config
 		mVertices.resize(4);
@@ -34,6 +37,16 @@ namespace Cosmos
 		// resources
 		CreatePipeline();
 		CreateBuffers();
+	}
+
+	Plane::~Plane()
+	{
+		sInstances--;
+	}
+	
+	uint64_t Plane::GetInstancesCount()
+	{
+		return sInstances;
 	}
 
 	void Plane::OnRenderDraw()
@@ -83,8 +96,8 @@ namespace Cosmos
 			VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
 			graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
 			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
-			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Plane Vert", "Data/Shaders/plane.vert");
-			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Plane Frag", "Data/Shaders/plane.frag");
+			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
+			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
 		
 			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
 		

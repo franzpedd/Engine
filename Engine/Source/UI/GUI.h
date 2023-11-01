@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Entity/Entity.h"
+#include "Widget.h"
 #include <vulkan/vulkan.h>
 
 #if defined(_MSC_VER)
 #pragma warning( push )
-#pragma warning( disable : 26451 )
+#pragma warning( disable : 26451 26495 6255 6001 6263 )
 #endif
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -55,10 +55,13 @@ namespace Cosmos
 		// returns the fonts
 		inline Fonts& GetFonts() { return mFonts; }
 
+		// returns a reference to the widgets stack
+		inline WidgetStack& Widgets() { return mWidgetStack; }
+
 	public:
 
 		// updates the ui
-		void OnUpdate(EntityStack& entities);
+		void OnUpdate();
 
 		// draws the ui
 		void Draw(VkCommandBuffer cmd);
@@ -67,7 +70,10 @@ namespace Cosmos
 		void SetImageCount(uint32_t count);
 
 		// handles framebuffer resizes
-		void OnWindowResize(EntityStack& entities);
+		void OnWindowResize();
+
+		// free the widgetstack
+		void Destroy();
 
 	public:
 
@@ -85,6 +91,7 @@ namespace Cosmos
 		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<Renderer>& mRenderer;
 		std::shared_ptr<CommandEntry> mCommandEntry;
+		WidgetStack mWidgetStack;
 
 		Fonts mFonts;
 	};

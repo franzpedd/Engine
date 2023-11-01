@@ -7,7 +7,7 @@ namespace Cosmos
 	// forward declarations
 	class Grid;
 
-	class Mainmenu : public Entity
+	class Mainmenu : public Widget
 	{
 	public:
 
@@ -20,7 +20,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUIDraw() override;
+		virtual void OnUpdateUI() override;
 
 	private:
 

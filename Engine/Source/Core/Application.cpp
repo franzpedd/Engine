@@ -23,6 +23,9 @@ namespace Cosmos
 
 		// connect the UI to the renderer to handle resize events
 		mRenderer->ConnectUI(mUI);
+
+		// setup number generator seed
+		mRandom.Seed();
 	}
 
 	void Application::Run()
@@ -36,10 +39,10 @@ namespace Cosmos
 
 			// updates current tick
 			{
-				mScene->OnUpdate(mTimestep);				// scene logic
-				mUI->OnUpdate(mScene->Entities());			// ui logic
-				mRenderer->OnUpdate(mScene->Entities());	// updates renderer
-				mWindow->OnUpdate();						// input events
+				mScene->OnUpdate(mTimestep);		// updates scene
+				mUI->OnUpdate();					// updates ui
+				mRenderer->OnUpdate();				// updates renderer
+				mWindow->OnUpdate();				// updates window
 			}
 			
 			// end fps system
@@ -65,6 +68,7 @@ namespace Cosmos
 		}
 
 		mScene->Destroy();
+		mUI->Destroy();
 	}
 
 	void Application::OnMouseMove(float x, float y)
@@ -72,6 +76,11 @@ namespace Cosmos
 		for (auto& ent : mScene->Entities())
 		{
 			ent->OnMouseMove(x, y);
+		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnMouseMove(x, y);
 		}
 	}
 
@@ -81,6 +90,11 @@ namespace Cosmos
 		{
 			ent->OnMouseScroll(y);
 		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnMouseScroll(y);
+		}
 	}
 
 	void Application::OnMousePress(Buttoncode button)
@@ -88,6 +102,11 @@ namespace Cosmos
 		for (auto& ent : mScene->Entities())
 		{
 			ent->OnMousePress(button);
+		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnMousePress(button);
 		}
 	}
 
@@ -97,6 +116,11 @@ namespace Cosmos
 		{
 			ent->OnMouseRelease(button);
 		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnMouseRelease(button);
+		}
 	}
 
 	void Application::OnKeyboardPress(Keycode key)
@@ -105,6 +129,11 @@ namespace Cosmos
 		{
 			ent->OnKeyboardPress(key);
 		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnKeyboardPress(key);
+		}
 	}
 
 	void Application::OnKeyboardRelease(Keycode key)
@@ -112,6 +141,11 @@ namespace Cosmos
 		for (auto& ent : mScene->Entities())
 		{
 			ent->OnKeyboardRelease(key);
+		}
+
+		for (auto& widget : mUI->Widgets())
+		{
+			widget->OnKeyboardRelease(key);
 		}
 	}
 }

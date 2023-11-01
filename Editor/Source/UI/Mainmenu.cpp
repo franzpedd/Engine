@@ -5,12 +5,12 @@
 namespace Cosmos
 {
 	Mainmenu::Mainmenu(Camera* camera, Grid* grid)
-		: Entity("UI:Mainmenu"), mCamera(camera), mGrid(grid)
+		: Widget("UI:Mainmenu"), mCamera(camera), mGrid(grid)
 	{
 		Logger() << "Creating Mainmenu";
 	}
 
-	void Mainmenu::OnUIDraw()
+	void Mainmenu::OnUpdateUI()
 	{
 		ImGui::BeginMainMenuBar();
 		DisplayMainMenu();

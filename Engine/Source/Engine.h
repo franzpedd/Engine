@@ -14,6 +14,7 @@
 
 #include "UI/GUI.h"
 #include "UI/Icons.h"
+#include "UI/Widget.h"
 
 #include "Util/Keycodes.h"
 #include "Util/Logger.h"

@@ -64,7 +64,7 @@ namespace Cosmos
 	public:
 
 		// updates the renderer
-		void OnUpdate(EntityStack& entities);
+		void OnUpdate();
 
 		// links the user interface to the renderer
 		inline void ConnectUI(std::shared_ptr<GUI>& ui) { mUI = ui; }

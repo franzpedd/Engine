@@ -3,12 +3,12 @@
 namespace Cosmos
 {
 	Dockspace::Dockspace()
-		: Entity("UI:Dockspace")
+		: Widget("UI:Dockspace")
 	{
 		Logger() << "Creating Dockspace";
 	}
 
-	void Dockspace::OnUIDraw()
+	void Dockspace::OnUpdateUI()
 	{
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);

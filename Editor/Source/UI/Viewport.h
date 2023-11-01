@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	class Viewport : public Entity
+	class Viewport : public Widget
 	{
 	public:
 
@@ -23,7 +23,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUIDraw() override;
+		virtual void OnUpdateUI() override;
 
 		// window was recently resized
 		virtual void OnWindowResize() override;

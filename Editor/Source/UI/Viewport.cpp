@@ -5,7 +5,7 @@
 namespace Cosmos
 {
 	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera)
-		: Entity("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera)
+		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera)
 
 	{
 		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
@@ -137,7 +137,7 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	void Viewport::OnUIDraw()
+	void Viewport::OnUpdateUI()
 	{
 		ImGui::Begin("Scene viewport");
 		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());

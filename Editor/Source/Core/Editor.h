@@ -10,6 +10,7 @@ namespace Cosmos
 	class Grid;
 	class Gizmo;
 	class Mainmenu;
+	class SceneHierarchy;
 	class Viewport;
 
 	class Editor : public Application
@@ -29,6 +30,7 @@ namespace Cosmos
 		Explorer* mExplorer;
 		Viewport* mViewport;
 		Mainmenu* mMainmenu;
+		SceneHierarchy* mSceneHierarchy;
 
 		// entity
 		Grid* mGrid;

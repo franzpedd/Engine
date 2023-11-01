@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	class Dockspace : public Entity
+	class Dockspace : public Widget
 	{
 	public:
 
@@ -17,6 +17,6 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUIDraw() override;
+		virtual void OnUpdateUI() override;
 	};
 }

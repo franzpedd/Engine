@@ -29,7 +29,7 @@ namespace Cosmos
 
 	public:
 
-		// draws the entity (leave empty if doesnt required)
+		// draws the entity (leave empty if not required)
 		virtual void OnRenderDraw() override;
 
 		// updates the entity (leave empty if doesnt required)

@@ -8,10 +8,14 @@
 
 namespace Cosmos
 {
+	uint64_t Cube::sInstances = 0;
+
 	Cube::Cube(std::shared_ptr<Renderer>& renderer, Camera& camera)
 		: Entity("Cube"), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Primitive: Cube";
+		mID = sInstances;
+		sInstances++;
 
 		// setup initial config
 		mVertices.resize(8);
@@ -53,6 +57,16 @@ namespace Cosmos
 
 		CreatePipeline();
 		CreateBuffers();
+	}
+
+	Cube::~Cube()
+	{
+		sInstances--;
+	}
+
+	uint64_t Cube::GetInstancesCount()
+	{
+		return sInstances;
 	}
 
 	void Cube::OnRenderDraw()
@@ -101,9 +115,8 @@ namespace Cosmos
 			VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
 			graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
 			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
-			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Cube Vert", "Data/Shaders/cube.vert");
-			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Cube Frag", "Data/Shaders/cube.frag");
-			graphicsPipeline.cullMode = VK_CULL_MODE_FRONT_BIT;
+			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
+			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
 
 			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
 

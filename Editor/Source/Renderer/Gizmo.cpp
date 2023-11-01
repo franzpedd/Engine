@@ -6,10 +6,13 @@ namespace Cosmos
 		: Entity("Gizmo"), mWindow(window), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Gizmo";
+
+		CreateResources();
 	}
 
 	void Gizmo::OnRenderDraw()
 	{
+		
 	}
 
 	void Gizmo::OnUpdate(float timestep)
@@ -18,11 +21,12 @@ namespace Cosmos
 
 	void Gizmo::OnDestroy()
 	{
+
 	}
 
 	void Gizmo::OnMousePress(Buttoncode button)
 	{
-		
+		// START MOUSE PICKING
 	}
 
 	void Gizmo::OnMouseRelease(Buttoncode button)
@@ -36,24 +40,41 @@ namespace Cosmos
 			return;
 		}
 
-		if (key == Keycode::KEY_E && mWindow->IsKeyDown(Keycode::KEY_LEFT_SHIFT))
+		bool shift = mWindow->IsKeyDown(Keycode::KEY_LEFT_SHIFT);
+
+		if (shift)
 		{
-			LOG_TO_TERMINAL(Logger::Severity::Trace, "Scale mode");
-		}
-		
-		if (key == Keycode::KEY_T && mWindow->IsKeyDown(Keycode::KEY_LEFT_SHIFT))
-		{
-			LOG_TO_TERMINAL(Logger::Severity::Trace, "Translate mode");
-			return;
-		}
-		
-		if (key == Keycode::KEY_R && mWindow->IsKeyDown(Keycode::KEY_LEFT_SHIFT))
-		{
-			LOG_TO_TERMINAL(Logger::Severity::Trace, "Rotate mode");
+			switch (key)
+			{
+			case Cosmos::KEY_Y:
+				mCurrentOperation = SCALE;
+				break;
+			case Cosmos::KEY_T:
+				mCurrentOperation = TRANSLATE;
+				break;
+			case Cosmos::KEY_R:
+				mCurrentOperation = ROTATE;
+				break;
+			case Cosmos::KEY_U:
+				mCurrentOperation = UNIVERSAL;
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
 	void Gizmo::OnKeyboardRelease(Keycode key)
 	{
+	}
+
+	void Gizmo::CreateResources()
+	{
+
+	}
+
+	void Gizmo::EditTransform(Entity& ent)
+	{
+
 	}
 }

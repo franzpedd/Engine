@@ -505,6 +505,9 @@ namespace Cosmos
 
 	public:
 
+		// returns how many instances of the derivated object exists
+		virtual uint64_t GetInstancesCount() override;
+
 		// draws the entity (leave empty if doesnt required)
 		virtual void OnRenderDraw() override;
 
@@ -588,5 +591,8 @@ namespace Cosmos
 		std::vector<std::string> mExtensions = {};
 		Dimension mDimension;
 		LoaderInfo mLoaderInfo;
+
+		// holds how many instances of cubes exists
+		static uint64_t sInstances;
 	};
 }

@@ -6,6 +6,8 @@
 
 namespace Cosmos
 {
+	uint64_t Model::sInstances = 0;
+
 	Texture::Texture(std::shared_ptr<Renderer>& renderer)
 		: mRenderer(renderer)
 	{
@@ -471,12 +473,19 @@ namespace Cosmos
 	Model::Model(std::shared_ptr<Renderer>& renderer)
 		: Entity("Model"), mRenderer(renderer)
 	{
-
+		Logger() << "Creating Model";
+		sInstances++;
 	}
 
 	Model::~Model()
 	{
+		sInstances--;
 		Destroy();
+	}
+
+	uint64_t Model::GetInstancesCount()
+	{
+		return sInstances;
 	}
 
 	void Model::OnRenderDraw()

@@ -32,7 +32,8 @@ project "Editor"
     links
     {
         "Engine",
-        "ImGUI"
+        "ImGUI",
+        "ImGUIzmo"
     }
 
     defines 

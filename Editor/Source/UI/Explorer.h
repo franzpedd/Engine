@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-	class Explorer : public Entity
+	class Explorer : public Widget
 	{
 	public:
 
@@ -14,7 +14,7 @@ namespace Cosmos
 		{
 			std::filesystem::directory_entry dirEntry;
 			std::string ext;
-			VKTexture2D* texture;
+			VKTexture2D* texture = nullptr;
 			VkDescriptorSet* descriptor = VK_NULL_HANDLE;
 		};
 
@@ -29,7 +29,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUIDraw() override;
+		virtual void OnUpdateUI() override;
 
 		// called for freeing resources
 		virtual void OnDestroy() override;

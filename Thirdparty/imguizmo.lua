@@ -1,6 +1,6 @@
 project "ImGUIzmo"
     location "imguizmo"
-    kind "None"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++11"
 
@@ -15,7 +15,13 @@ project "ImGUIzmo"
 
     includedirs
     {
-        "imguizmo"
+        "imguizmo",
+        "%{includelist.ImGUI}"
+    }
+
+    links
+    {
+        "ImGUI"
     }
 
     filter "configurations:Debug"
@@ -25,3 +31,6 @@ project "ImGUIzmo"
     filter "configurations:Release"
         runtime "Release"
         optimize "Full"
+
+    filter "system:windows"
+        disablewarnings { "26495", "6255", "6001", "6263" }

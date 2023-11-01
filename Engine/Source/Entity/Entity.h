@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Application.h"
 #include "Util/Keycodes.h"
 #include <vector>
 
@@ -18,13 +19,16 @@ namespace Cosmos
 		// returns it's name
 		inline const char* Name() { return mName; }
 
+		// returns it's id
+		inline uint64_t ID() { return mID; }
+		
 	public:
+
+		// returns how many instances of the derivated object exists
+		virtual uint64_t GetInstancesCount() { return 0; };
 
 		// for renderer drawing
 		virtual void OnRenderDraw() {}
-
-		// for user interface drawing
-		virtual void OnUIDraw() {}
 
 		// for logic updating
 		virtual void OnUpdate(float timestep) {}
@@ -55,9 +59,10 @@ namespace Cosmos
 		// called when a keyboard key is released
 		virtual void OnKeyboardRelease(Keycode key) {}
 
-	private:
+	protected:
 
 		const char* mName;
+		uint64_t mID = 0;
 	};
 
 	class EntityStack

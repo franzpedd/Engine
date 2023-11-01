@@ -63,6 +63,8 @@ namespace Cosmos
 		pipelineLayoutCI.flags = 0;
 		pipelineLayoutCI.setLayoutCount = 1;
 		pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayout;
+		pipelineLayoutCI.pPushConstantRanges = mInitializerList.pushConstantRange.data();
+		pipelineLayoutCI.pushConstantRangeCount = (uint32_t)mInitializerList.pushConstantRange.size();
 		VK_ASSERT(vkCreatePipelineLayout(mDevice->Device(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
 
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCI = {};
