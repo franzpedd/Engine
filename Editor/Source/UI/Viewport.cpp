@@ -146,6 +146,14 @@ namespace Cosmos
 		mCurrentSize = ImGui::GetWindowSize();
 		mCamera->SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
 
+		// viewport boundaries
+		mContentRegionMin = ImGui::GetWindowContentRegionMin();
+		mContentRegionMax = ImGui::GetWindowContentRegionMax();
+		mContentRegionMin.x += ImGui::GetWindowPos().x;
+		mContentRegionMin.y += ImGui::GetWindowPos().y;
+		mContentRegionMax.x += ImGui::GetWindowPos().x;
+		mContentRegionMax.y += ImGui::GetWindowPos().y;
+
 		ImGui::End();
 	}
 

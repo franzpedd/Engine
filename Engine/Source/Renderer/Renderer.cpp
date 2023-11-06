@@ -9,12 +9,12 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<Renderer> Renderer::Create(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene)
+	std::shared_ptr<Renderer> Renderer::Create(std::shared_ptr<Window>& window, Scene* scene)
 	{
 		return std::make_shared<Renderer>(window, scene);
 	}
 
-	Renderer::Renderer(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene)
+	Renderer::Renderer(std::shared_ptr<Window>& window, Scene* scene)
 		: mWindow(window), mScene(scene)
 	{
 		mInstance = VKInstance::Create("Cosmos Application", "Cosmos", true);

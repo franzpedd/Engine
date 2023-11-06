@@ -111,7 +111,8 @@ namespace Cosmos
 	};
 }
 
-// macros to facilitate using logging
+// macros to facilitate using logging (only enabled on debug)
+#if defined(ENGINE_DEBUG) || defined(EDITOR_DEBUG)
 
 #define LOG_TO_FILE(severity, filepath, ...)										\
 {																					\
@@ -143,3 +144,12 @@ namespace Cosmos
 		std::abort();																						\
 	}																										\
 }
+
+#else
+
+#define LOG_TO_FILE(severity, filepath, ...);
+#define LOG_TO_TERMINAL(severity, ...);
+#define LOG_ASSERT(x, ...);
+#define VK_ASSERT(fn, ...);	
+
+#endif

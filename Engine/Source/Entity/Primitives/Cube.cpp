@@ -8,14 +8,10 @@
 
 namespace Cosmos
 {
-	uint64_t Cube::sInstances = 0;
-
-	Cube::Cube(std::shared_ptr<Renderer>& renderer, Camera& camera)
-		: Entity("Cube"), mRenderer(renderer), mCamera(camera)
+	Cube::Cube(Scene* scene, std::shared_ptr<Renderer>& renderer, Camera& camera)
+		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Primitive: Cube";
-		mID = sInstances;
-		sInstances++;
 
 		// setup initial config
 		mVertices.resize(8);
@@ -46,27 +42,17 @@ namespace Cosmos
 		mVertices[7].position = { 1.0f, 1.0f, 1.0f }; // v7
 
 		// color
-		mVertices[0].color = { 0.0f, 0.0f, 0.0f };
-		mVertices[1].color = { 1.0f, 0.0f, 0.0f };
-		mVertices[2].color = { 1.0f, 0.0f, 0.0f };
-		mVertices[3].color = { 0.5f, 0.5f, 0.0f };
-		mVertices[4].color = { 0.5f, 1.5f, 1.0f };
-		mVertices[5].color = { 1.0f, 0.0f, 1.0f };
-		mVertices[6].color = { 1.0f, 0.0f, 1.0f };
-		mVertices[7].color = { 1.0f, 1.0f, 1.0f };
+		mVertices[0].color = { 1.0f, 0.0f, 0.0f };
+		mVertices[1].color = { 0.0f, 1.0f, 0.0f };
+		mVertices[2].color = { 0.0f, 0.0f, 1.0f };
+		mVertices[3].color = { 1.0f, 0.0f, 0.0f };
+		mVertices[4].color = { 0.0f, 1.0f, 0.0f };
+		mVertices[5].color = { 0.0f, 0.0f, 1.0f };
+		mVertices[6].color = { 0.0f, 1.0f, 0.0f };
+		mVertices[7].color = { 0.0f, 0.0f, 1.0f };
 
 		CreatePipeline();
 		CreateBuffers();
-	}
-
-	Cube::~Cube()
-	{
-		sInstances--;
-	}
-
-	uint64_t Cube::GetInstancesCount()
-	{
-		return sInstances;
 	}
 
 	void Cube::OnRenderDraw()
@@ -76,6 +62,7 @@ namespace Cosmos
 		ubo.model = glm::translate(ubo.model, glm::vec3(-1.0f, 1.0f, -1.0f));
 		ubo.view = glm::rotate(mCamera.GetView(), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.proj = mCamera.GetProjection();
+		ubo.selected = true;
 		memcpy(mGraphicsPipeline->AccessUniformBuffers()[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 
 		// drawing
@@ -117,6 +104,7 @@ namespace Cosmos
 			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
 			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
 			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
+			graphicsPipeline.cullMode = VK_CULL_MODE_FRONT_BIT;
 
 			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
 

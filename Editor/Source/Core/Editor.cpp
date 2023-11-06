@@ -13,13 +13,13 @@ namespace Cosmos
 {
 	Editor::Editor()
 	{
-		mCamera = new Camera(mWindow);
+		mCamera = new Camera(mWindow, mScene);
 
 		mDockspace = new Dockspace();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer, mCamera);
-		mGrid = new Grid(mRenderer, mCamera);
-		mGizmo = new Gizmo(mWindow, mRenderer, mCamera);
+		mGrid = new Grid(mRenderer, mScene, mCamera);
+		mGizmo = new Gizmo(mWindow, mRenderer, mScene, mCamera, mViewport);
 		mMainmenu = new Mainmenu(mCamera, mGrid);
 		mSceneHierarchy = new SceneHierarchy(mScene, mGizmo);
 
@@ -31,16 +31,17 @@ namespace Cosmos
 		mUI->Widgets().Push(mSceneHierarchy);
 		
 		// objects
-		mScene->Entities().Push(mCamera);
-		mScene->Entities().Push(mGrid);
-		mScene->Entities().Push(mGizmo);
+		mScene->Entities()->Push(mCamera);
+		mScene->Entities()->Push(mGrid);
+		mScene->Entities()->Push(mGizmo);
 
 		// testing Primitives
-		mScene->Entities().Push(new Plane(mRenderer, *mCamera));
-		mScene->Entities().Push(new Plane(mRenderer, *mCamera));
-		mScene->Entities().Push(new Cube(mRenderer, *mCamera));
+		//mScene->Entities()->Push(new Plane(mScene, mRenderer, *mCamera));
+		//mScene->Entities()->Push(new Cube(mScene, mRenderer, *mCamera));
 
 		// todos
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Fix Mainloop timestep");
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Move from EntityStack to (ECS)");
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Rework Window hovering to consider inside docking window width and height (EDITOR)");
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Create Event Listener System for only calling those who are listening the events and not all Entities/widgets (ENGINE)");
 	}

@@ -24,6 +24,7 @@ namespace Cosmos
 	// forward declarations
 	class Renderer;
 	class GLTFNode;
+	class Scene;
 
 	class Texture
 	{
@@ -498,15 +499,12 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Model(std::shared_ptr<Renderer>& renderer);
+		Model(std::shared_ptr<Renderer>& renderer, Scene* scene);
 
 		// destructor
 		virtual ~Model();
 
 	public:
-
-		// returns how many instances of the derivated object exists
-		virtual uint64_t GetInstancesCount() override;
 
 		// draws the entity (leave empty if doesnt required)
 		virtual void OnRenderDraw() override;
@@ -578,6 +576,8 @@ namespace Cosmos
 	public: // to facilitate
 
 		std::shared_ptr<Renderer>& mRenderer;
+		Scene* mScene;
+
 		Vertices mVertices = {};
 		Indices mIndices = {};
 		glm::mat4 mAABB = {};
@@ -591,8 +591,5 @@ namespace Cosmos
 		std::vector<std::string> mExtensions = {};
 		Dimension mDimension;
 		LoaderInfo mLoaderInfo;
-
-		// holds how many instances of cubes exists
-		static uint64_t sInstances;
 	};
 }

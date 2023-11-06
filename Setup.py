@@ -112,5 +112,6 @@ Util.Clone("https://github.com/glfw/glfw", "glfw", "3.3-stable");
 Util.Clone("https://github.com/g-truc/glm", "glm", "0.9.8");
 Util.Clone("https://github.com/g-truc/gli", "gli", "0.8.2");
 Util.Clone("https://github.com/syoyo/tinygltf", "tinygltf", "release");
+Util.Clone("https://github.com/skypjack/entt", "entt", "master");
 Premake.Download("5.0.0-beta2");
 Premake.Generate();

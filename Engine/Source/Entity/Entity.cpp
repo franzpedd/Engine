@@ -2,14 +2,20 @@
 
 namespace Cosmos
 {
-	Entity::Entity(const char* name)
-		: mName(name)
+	Entity::Entity(Scene* scene)
+		: mScene(scene)
+	{
+
+	}
+
+	Entity::Entity(Scene* scene, entt::entity id)
+		: mScene(scene), mEntityHandle(id)
 	{
 	}
 
-	Entity::~Entity()
+	std::unique_ptr<EntityStack> EntityStack::Create()
 	{
-
+		return std::make_unique<EntityStack>();
 	}
 
 	EntityStack::~EntityStack()

@@ -17,11 +17,13 @@ namespace Cosmos
 	{
 	public:
 
+		// projection view model
 		struct UniformBufferObject
 		{
-			alignas(16) glm::mat4 model;
-			alignas(16) glm::mat4 view;
 			alignas(16) glm::mat4 proj;
+			alignas(16) glm::mat4 view;
+			alignas(16) glm::mat4 model;
+			alignas(1) bool selected;
 		};
 
 		/* herlper to pre-configure the graphics pipeline,

@@ -6,8 +6,8 @@
 
 namespace Cosmos
 {
-	Grid::Grid(std::shared_ptr<Renderer>& renderer, Camera* camera)
-		: Entity("Grid"), mRenderer(renderer), mCamera(camera)
+	Grid::Grid(std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera)
+		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Grid";
 

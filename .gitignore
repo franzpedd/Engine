@@ -1,6 +1,7 @@
 # folders
 .vs/
 _Build/
+Thirdparty/entt
 Thirdparty/glfw
 Thirdparty/gli
 Thirdparty/glm

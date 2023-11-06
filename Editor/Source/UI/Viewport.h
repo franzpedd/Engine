@@ -20,6 +20,12 @@ namespace Cosmos
 		// returns the current viewport size
 		inline ImVec2 GetSize() { return mCurrentSize; }
 
+		// returns the viewport window lower boundaries
+		inline ImVec2 GetWindowContentRegionMin() { return mContentRegionMin; }
+
+		// returns the viewport window higher boundaries
+		inline ImVec2 GetWindowContentRegionMax() { return mContentRegionMax; }
+
 	public:
 
 		// updates the ui element
@@ -43,7 +49,10 @@ namespace Cosmos
 		Camera* mCamera;
 
 		std::shared_ptr<CommandEntry> mCommandEntry;
+
 		ImVec2 mCurrentSize;
+		ImVec2 mContentRegionMin;
+		ImVec2 mContentRegionMax;
 
 		VkSampler mSampler = VK_NULL_HANDLE;
 

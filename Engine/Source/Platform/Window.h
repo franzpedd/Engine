@@ -42,6 +42,9 @@ namespace Cosmos
 		// returns current time
 		double GetTime();
 
+		// returns the cursor position
+		void GetCursorPosition(double* x, double* y);
+
 		// return window's title
 		const char* GetTitle();
 

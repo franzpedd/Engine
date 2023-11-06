@@ -7,57 +7,33 @@
 
 namespace Cosmos
 {
-	static float offsetGlobal = 0.5f;
-	uint64_t Plane::sInstances = 0;
-
-	Plane::Plane(std::shared_ptr<Renderer>& renderer, Camera& camera)
-		: Entity("Plane"), mRenderer(renderer), mCamera(camera)
+	Plane::Plane(Scene* scene, std::shared_ptr<Renderer>& renderer, Camera& camera)
+		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Plane Primitive";
-		mID = sInstances;
-		sInstances++;
 
 		// setup initial config
 		mVertices.resize(4);
 		mIndices = { 0, 1, 2, 2, 3, 0 };
 
 		// vertex position
-		mVertices[0].position = { 0.0f, 0.0f, offsetGlobal * 0.1f };
-		mVertices[1].position = { 1.0f, 0.0f, offsetGlobal * 0.1f };
-		mVertices[2].position = { 1.0f, 1.0f, offsetGlobal * 0.1f };
-		mVertices[3].position = { 0.0f, 1.0f, offsetGlobal * 0.1f };
+		mVertices[0].position = { 0.0f, 0.0f, 0.1f };
+		mVertices[1].position = { 1.0f, 0.0f, 0.1f };
+		mVertices[2].position = { 1.0f, 1.0f, 0.1f };
+		mVertices[3].position = { 0.0f, 1.0f, 0.1f };
 
-		mVertices[0].color = { offsetGlobal * 0.1f, 1.0f, 0.0f };
-		mVertices[1].color = { offsetGlobal * 1.0f, 1.0f, 0.0f };
-		mVertices[2].color = { offsetGlobal * 0.5f, 0.35f, 0.4f };
-		mVertices[3].color = { offsetGlobal * 0.1f, 1.0f, 1.0f };
-
-		offsetGlobal += 3.0f;
+		mVertices[0].color = { 1.0f, 1.0f, 1.0f };
+		mVertices[1].color = { 1.0f, 1.0f, 0.0f };
+		mVertices[2].color = { 1.0f, 0.0f, 1.0f };
+		mVertices[3].color = { 0.0f, 1.0f, 1.0f };
 
 		// resources
 		CreatePipeline();
 		CreateBuffers();
 	}
 
-	Plane::~Plane()
-	{
-		sInstances--;
-	}
-	
-	uint64_t Plane::GetInstancesCount()
-	{
-		return sInstances;
-	}
-
 	void Plane::OnRenderDraw()
 	{
-		// pre-drawing
-		VKGraphicsPipeline::UniformBufferObject ubo = {};
-		ubo.model = glm::mat4(1.0f);
-		ubo.view = glm::rotate(mCamera.GetView(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubo.proj = mCamera.GetProjection();
-		memcpy(mGraphicsPipeline->AccessUniformBuffers()[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
-
 		// drawing
 		VkDeviceSize vertexSize = mVertexBuffer->GetSize();
 		VkDeviceSize indexSize = mIndexBuffer->GetSize();
@@ -73,7 +49,12 @@ namespace Cosmos
 
 	void Plane::OnUpdate(float timestep)
 	{
-
+		VKGraphicsPipeline::UniformBufferObject ubo = {};
+		ubo.model = glm::mat4(1.0f);
+		ubo.view = glm::rotate(mCamera.GetView(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.proj = mCamera.GetProjection();
+		ubo.selected = mSelected;
+		memcpy(mGraphicsPipeline->AccessUniformBuffers()[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}
 
 	void Plane::OnDestroy()

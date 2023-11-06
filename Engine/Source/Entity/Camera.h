@@ -22,7 +22,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Camera(std::shared_ptr<Window>& window);
+		Camera(std::shared_ptr<Window>& window, Scene* scene);
 
 		// destructor
 		~Camera() = default;
@@ -76,6 +76,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
+		Scene* mScene;
 
 		Type mType = Type::EDITOR_FLY;
 		bool mFlipY = true;

@@ -59,15 +59,12 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Plane(std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Plane(Scene* scene, std::shared_ptr<Renderer>& renderer, Camera& camera);
 
 		// destructor
-		~Plane();
+		virtual ~Plane() = default;
 
 	public:
-
-		// returns how many instances of the derivated object exists
-		virtual uint64_t GetInstancesCount() override;
 
 		// draws the entity (leave empty if doesnt required)
 		virtual void OnRenderDraw() override;
@@ -88,6 +85,7 @@ namespace Cosmos
 
 	private:
 
+		Scene* mScene;
 		std::shared_ptr<Renderer>& mRenderer;
 		Camera& mCamera;
 
@@ -97,8 +95,5 @@ namespace Cosmos
 
 		std::vector<Vertex> mVertices;
 		std::vector<uint16_t> mIndices;
-
-		// holds how many instances of cubes exists
-		static uint64_t sInstances;
 	};
 }

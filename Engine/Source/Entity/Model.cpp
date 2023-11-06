@@ -1,13 +1,12 @@
 #include "Model.h"
 
+#include "Core/Scene.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Util/Logger.h"
 
 namespace Cosmos
 {
-	uint64_t Model::sInstances = 0;
-
 	Texture::Texture(std::shared_ptr<Renderer>& renderer)
 		: mRenderer(renderer)
 	{
@@ -470,22 +469,15 @@ namespace Cosmos
 		return m;
 	}
 
-	Model::Model(std::shared_ptr<Renderer>& renderer)
-		: Entity("Model"), mRenderer(renderer)
+	Model::Model(std::shared_ptr<Renderer>& renderer, Scene* scene)
+		: Entity(mScene), mRenderer(renderer), mScene(scene)
 	{
 		Logger() << "Creating Model";
-		sInstances++;
 	}
 
 	Model::~Model()
 	{
-		sInstances--;
 		Destroy();
-	}
-
-	uint64_t Model::GetInstancesCount()
-	{
-		return sInstances;
 	}
 
 	void Model::OnRenderDraw()

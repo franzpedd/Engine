@@ -49,6 +49,11 @@ namespace Cosmos
 		return glfwGetTime();
 	}
 
+	void Window::GetCursorPosition(double* x, double* y)
+	{
+		glfwGetCursorPos(mWindow, x, y);
+	}
+
 	const char* Window::GetTitle()
 	{
 		return mTitle;

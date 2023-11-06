@@ -17,15 +17,12 @@ namespace Cosmos
 
 		// create objects
 		mWindow = Window::Create("Cosmos Application", 1280, 720);
-		mScene = Scene::Create(mWindow);
+		mScene = new Scene(mWindow);
 		mRenderer = Renderer::Create(mWindow, mScene);
 		mUI = GUI::Create(mWindow, mRenderer);
 
 		// connect the UI to the renderer to handle resize events
 		mRenderer->ConnectUI(mUI);
-
-		// setup number generator seed
-		mRandom.Seed();
 	}
 
 	void Application::Run()
@@ -69,11 +66,13 @@ namespace Cosmos
 
 		mScene->Destroy();
 		mUI->Destroy();
+
+		delete mScene;
 	}
 
 	void Application::OnMouseMove(float x, float y)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnMouseMove(x, y);
 		}
@@ -86,7 +85,7 @@ namespace Cosmos
 
 	void Application::OnMouseScroll(float y)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnMouseScroll(y);
 		}
@@ -99,7 +98,7 @@ namespace Cosmos
 
 	void Application::OnMousePress(Buttoncode button)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnMousePress(button);
 		}
@@ -112,7 +111,7 @@ namespace Cosmos
 
 	void Application::OnMouseRelease(Buttoncode button)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnMouseRelease(button);
 		}
@@ -125,7 +124,7 @@ namespace Cosmos
 
 	void Application::OnKeyboardPress(Keycode key)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnKeyboardPress(key);
 		}
@@ -138,7 +137,7 @@ namespace Cosmos
 
 	void Application::OnKeyboardRelease(Keycode key)
 	{
-		for (auto& ent : mScene->Entities())
+		for (auto& ent : mScene->Entities()->GetEntitiesVector())
 		{
 			ent->OnKeyboardRelease(key);
 		}

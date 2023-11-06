@@ -22,7 +22,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Camera* camera);
+		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera);
 
 		// destructor
 		virtual ~Grid() = default;
@@ -51,6 +51,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
+		Scene* mScene;
 		Camera* mCamera;
 		bool mVisible = true;
 		

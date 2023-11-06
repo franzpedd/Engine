@@ -20,6 +20,7 @@ includelist["GLI"] = "%{wks.location}/Thirdparty/gli"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["TinyGLTF"] = "%{wks.location}/Thirdparty/tinygltf"
 includelist["STB"] = "%{wks.location}/Thirdparty/stb"
+includelist["EnTT"] = "%{wks.location}/Thirdparty/entt/single_include"
 
 -- libraries used
 librarylist = {}
@@ -28,6 +29,7 @@ librarylist["Shaderc"] = "%{vkpath}/Lib/shaderc_shared.lib"
 
 -- include any dependency
 group "Thirdarty"
+    include "Thirdparty/entt.lua"
     include "Thirdparty/imgui.lua"
     include "Thirdparty/imguizmo.lua"
     include "Thirdparty/glfw.lua"

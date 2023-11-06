@@ -4,6 +4,9 @@
 
 namespace Cosmos
 {
+	// forward declaration
+	class Viewport;
+
 	class Gizmo : public Entity
 	{
 	public:
@@ -19,7 +22,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Gizmo(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer, Camera* camera);
+		Gizmo(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera, Viewport* viewport);
 
 		// destructor
 		~Gizmo() = default;
@@ -61,7 +64,9 @@ namespace Cosmos
 
 		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<Renderer>& mRenderer;
+		Scene* mScene;
 		Camera* mCamera;
+		Viewport* mViewport;
 
 		std::shared_ptr<VKShader> mPickVertexShader;
 		std::shared_ptr<VKShader> mPickFragmentShader;

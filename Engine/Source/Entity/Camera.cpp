@@ -5,8 +5,8 @@
 
 namespace Cosmos
 {
-	Camera::Camera(std::shared_ptr<Window>& window)
-		: Entity("Camera"), mWindow(window)
+	Camera::Camera(std::shared_ptr<Window>& window, Scene* scene)
+		: Entity(scene), mWindow(window)
 	{
 		// update initial position
 		UpdateViewMatrix();

@@ -25,10 +25,10 @@ namespace Cosmos
 	public:
 
 		// returns a smart poitner to a new renderer
-		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene);
+		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window, Scene* scene);
 
 		// constructor
-		Renderer(std::shared_ptr<Window>& window, std::shared_ptr<Scene>& scene);
+		Renderer(std::shared_ptr<Window>& window, Scene* scene);
 
 		// destructor
 		~Renderer();
@@ -80,7 +80,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
-		std::shared_ptr<Scene>& mScene;
+		Scene* mScene;
 		std::shared_ptr<VKInstance> mInstance;
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;

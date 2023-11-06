@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Util/Keycodes.h"
-#include "Util/Random.h"
 #include <chrono>
 #include <memory>
 
@@ -32,9 +31,6 @@ namespace Cosmos
 		// returns the logic timestep to update logic
 		inline float GetTimestep() { return mTimestep; }
 
-		// returns the random number generator system
-		inline Random& GetRandomNumberGenerator() { return mRandom; }
-
 	public:
 
 		// initializes main loop
@@ -64,10 +60,9 @@ namespace Cosmos
 
 		static Application* sApplication;
 		std::shared_ptr<Window> mWindow;
-		std::shared_ptr<Scene> mScene;
+		Scene* mScene;
 		std::shared_ptr<Renderer> mRenderer;
 		std::shared_ptr<GUI> mUI;
-		Random mRandom;
 
 		// fps system
 		std::chrono::steady_clock::time_point mStart = {};

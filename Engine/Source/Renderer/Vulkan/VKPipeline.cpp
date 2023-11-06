@@ -45,7 +45,7 @@ namespace Cosmos
 		uboDescSetLayoutBinding.binding = 0;
 		uboDescSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uboDescSetLayoutBinding.descriptorCount = 1;
-		uboDescSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // grid example passes to fragment, but that is a special case
+		uboDescSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		uboDescSetLayoutBinding.pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutCreateInfo uboDescSetLayoutCI = {};
