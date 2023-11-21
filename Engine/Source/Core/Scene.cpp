@@ -1,8 +1,10 @@
 #include "Scene.h"
 
 #include "Entity/Entity.h"
+#include "Entity/Camera.h"
 #include "Platform/Window.h"
 #include "Util/Logger.h"
+#include "Debug/Profiler.h"
 
 namespace Cosmos
 {
@@ -22,7 +24,6 @@ namespace Cosmos
 		Entity entity = { this, entt };
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<NameComponent>(name);
-		entity.AddComponent<TransformComponent>();
 		
 		mEntityMap[id] = entity;
 	}
@@ -64,6 +65,8 @@ namespace Cosmos
 
 	void Scene::OnUpdate(float timestep)
 	{
+		PROFILER_FUNCTION();
+
 		for (auto& ent : mEntities->GetEntitiesVector())
 		{
 			ent->OnUpdate(timestep);

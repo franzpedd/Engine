@@ -19,8 +19,8 @@ namespace Cosmos
 		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoTitleBar);
-		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetCurrentAverageFPS());
-		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::Get()->GetTimestep());
+		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetAverageFPS());
+		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::Get()->GetTimeStep());
 		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", mCamera->GetPosition().x, mCamera->GetPosition().y, mCamera->GetPosition().z);
 		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", mCamera->GetRotation().x, mCamera->GetRotation().y, mCamera->GetRotation().z);
 		

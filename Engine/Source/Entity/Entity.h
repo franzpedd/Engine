@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components.h"
+#include "Components/BaseComponents.h"
 
 #include "Core/Application.h"
 #include "Core/Scene.h"
@@ -11,9 +11,6 @@
 
 namespace Cosmos
 {
-	// forward declaration
-	class Scene;
-
 	class Entity
 	{
 	public:

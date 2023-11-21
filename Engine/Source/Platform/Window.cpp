@@ -2,6 +2,7 @@
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
+#include "Debug/Profiler.h"
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
@@ -104,6 +105,8 @@ namespace Cosmos
 
 	void Window::OnUpdate()
 	{
+		PROFILER_FUNCTION();
+
 		glfwPollEvents();
 	}
 

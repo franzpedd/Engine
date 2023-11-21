@@ -40,7 +40,9 @@ namespace Cosmos
 		//mScene->Entities()->Push(new Cube(mScene, mRenderer, *mCamera));
 
 		// todos
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Fix Mainloop timestep");
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Create pch and re-arange classes");
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Implement Platform Safe C functions");
+		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Fix Mainloop timestep and fps system");
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Move from EntityStack to (ECS)");
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Rework Window hovering to consider inside docking window width and height (EDITOR)");
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Create Event Listener System for only calling those who are listening the events and not all Entities/widgets (ENGINE)");

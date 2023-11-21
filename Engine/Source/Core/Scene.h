@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Util/EnTT.h"
+#include "Util/Entt.h"
 #include "Util/UUID.h"
 #include <memory>
 

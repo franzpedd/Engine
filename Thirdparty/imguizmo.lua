@@ -9,8 +9,8 @@ project "ImGUIzmo"
 
     files
     {
-        "imguizmo/imguizmo.h",
-        "imguizmo/imguizmo.cpp"
+        "imguizmo/ImGuizmo.h",
+        "imguizmo/ImGuizmo.cpp"
     }
 
     includedirs

@@ -22,10 +22,6 @@ namespace Cosmos
 
 	public:
 
-		// draws a single component, templated to forward function at the end
-		template<typename T, typename F>
-		void DrawSingleComponent(const char* name, Entity* entity, F function);
-
 		// adds a menu option with the component name
 		template<typename T>
 		void DisplayAddComponentEntry(const char* name);
@@ -35,9 +31,6 @@ namespace Cosmos
 		// sub-menu with scene hierarchy
 		void DisplaySceneHierarchy();
 
-		// scene hierarchy edit menu-bar
-		void DisplayEditMenubar();
-
 		// sub-menu with selected entity components on display
 		void DisplaySelectedEntityComponents();
 
@@ -46,6 +39,10 @@ namespace Cosmos
 
 		// draws all components an given entity has
 		void DrawComponents(Entity entity);
+
+		// draws a single component and forwards the function
+		template<typename T, typename F>
+		static void DrawComponent(const char* name, Entity& entity, F func);
 
 	private:
 

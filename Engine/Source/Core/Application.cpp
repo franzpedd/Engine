@@ -5,6 +5,7 @@
 #include "Renderer/Renderer.h"
 #include "UI/GUI.h"
 #include "Util/Logger.h"
+#include "Debug/Profiler.h"
 
 namespace Cosmos
 {
@@ -12,6 +13,8 @@ namespace Cosmos
 
 	Application::Application()
 	{
+		PROFILER_FUNCTION();
+
 		LOG_ASSERT(sApplication == nullptr, "Application already created");
 		sApplication = this;
 
@@ -27,16 +30,21 @@ namespace Cosmos
 
 	void Application::Run()
 	{
+		PROFILER_FUNCTION();
+
 		while (!mWindow->ShouldQuit())
 		{
+			PROFILER_SCOPE("Run-Loop");
+
 			// starts fps system
 			{
 				mStart = std::chrono::high_resolution_clock::now(); // starts timer
 			}
-
+			
 			// updates current tick
 			{
-				mScene->OnUpdate(mTimestep);		// updates scene
+				PROFILER_SCOPE("Run-Loop Update");
+				mScene->OnUpdate(mTimeStep);		// updates scene
 				mUI->OnUpdate();					// updates ui
 				mRenderer->OnUpdate();				// updates renderer
 				mWindow->OnUpdate();				// updates window
@@ -45,20 +53,20 @@ namespace Cosmos
 			// end fps system
 			{
 				mEnd = std::chrono::high_resolution_clock::now();	// ends timer
-				mFrameCount++;										// add frame to the count
-
+				mFrames++;										// add frame to the count
+			
 				// calculates time taken by the renderer updating
 				mTimeDifference = std::chrono::duration<double, std::milli>(mEnd - mStart).count(); 
-
-				mTimestep = (float)mTimeDifference / 1000.0f; // timestep
-
+			
+				mTimeStep = (float)mTimeDifference / 1000.0f; // timestep
+			
 				// calculates time taken by last timestamp and renderer finished
 				mFpsTimer += (float)mTimeDifference;
-
+			
 				if (mFpsTimer > 1000.0f) // greater than next frame, reset frame counting
 				{
-					mLastFPS = (uint32_t)((float)mFrameCount * (1000.0f / mFpsTimer));
-					mFrameCount = 0;
+					mLastFPS = (uint32_t)((float)mFrames * (1000.0f / mFpsTimer));
+					mFrames = 0;
 					mFpsTimer = 0.0f;
 				}
 			}

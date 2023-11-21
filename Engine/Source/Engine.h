@@ -3,10 +3,12 @@
 #include "Core/Application.h"
 #include "Core/Scene.h"
 
-#include "Entity/Components.h"
+#include "Entity/Components/BaseComponents.h"
 #include "Entity/Entity.h"
 #include "Entity/Primitives/Cube.h"
 #include "Entity/Primitives/Plane.h"
+
+#include "Debug/Profiler.h"
 
 #include "Renderer/Renderer.h"
 #include "Renderer/Vulkan/VKBuffer.h"

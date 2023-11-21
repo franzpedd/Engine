@@ -6,6 +6,7 @@
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
 #include "Util/Logger.h"
+#include "Debug/Profiler.h"
 
 // not using own implementation of GLFW + VULKAN for ImGUI
 #if defined(_MSC_VER)
@@ -42,15 +43,17 @@ namespace Cosmos
 
 	GUI::~GUI()
 	{
-		mCommandEntry->Destroy();
-
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+
+		mCommandEntry->Destroy();
 	}
 
 	void GUI::OnUpdate()
 	{
+		PROFILER_FUNCTION();
+
 		// new frame
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -201,12 +204,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
 
 		// upload fonts
-		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mRenderer->BackendDevice(), mCommandEntry->commandPool);
-		ImGui_ImplVulkan_CreateFontsTexture(cmdBuffer);
-		EndSingleTimeCommand(mRenderer->BackendDevice(), mCommandEntry->commandPool, cmdBuffer);
-
-		// destroy used resources for uploading fonts
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		ImGui_ImplVulkan_CreateFontsTexture();
 	}
 
 	void GUI::CreateResources()

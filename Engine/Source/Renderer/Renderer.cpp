@@ -4,6 +4,7 @@
 #include "Platform/Window.h"
 #include "UI/GUI.h"
 #include "Util/Logger.h"
+#include "Debug/Profiler.h"
 
 #include <array>
 
@@ -42,6 +43,8 @@ namespace Cosmos
 
 	void Renderer::OnUpdate()
 	{
+		PROFILER_FUNCTION();
+
 		VkResult res;
 
 		// acquire next image in the swapchain

@@ -11,7 +11,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <imguizmo.h>
+#include <ImGuizmo.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

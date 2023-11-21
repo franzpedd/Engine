@@ -346,13 +346,14 @@ namespace Cosmos
 	{
 		for (const auto& availablePresentMode : availablePresentModes)
 		{
-			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) // triple-buffer
 			{
 				return availablePresentMode;
 			}
 		}
 
-		return VK_PRESENT_MODE_FIFO_KHR;
+		return VK_PRESENT_MODE_IMMEDIATE_KHR; // render as is
+		//return VK_PRESENT_MODE_FIFO_KHR; // vsync
 	}
 
 	VkExtent2D VKSwapchain::ChooseExtent(const VkSurfaceCapabilitiesKHR& capabilities)
