@@ -1,17 +1,13 @@
+#include "epch.h"
 #include "Window.h"
 
 #include "Core/Application.h"
-#include "Util/Logger.h"
-#include "Debug/Profiler.h"
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <glfw/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
-
-#include <chrono>
-#include <thread>
 
 namespace Cosmos
 {

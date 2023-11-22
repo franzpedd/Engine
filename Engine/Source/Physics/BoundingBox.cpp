@@ -1,3 +1,4 @@
+#include "epch.h"
 #include "BoundingBox.h"
 
 namespace Cosmos

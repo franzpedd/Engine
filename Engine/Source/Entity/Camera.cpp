@@ -1,7 +1,7 @@
+#include "epch.h"
 #include "Camera.h"
 
 #include "UI/GUI.h"
-#include "Util/Logger.h"
 
 namespace Cosmos
 {

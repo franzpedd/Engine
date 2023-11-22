@@ -1,10 +1,9 @@
+#include "epch.h"
 #include "Scene.h"
 
 #include "Entity/Entity.h"
 #include "Entity/Camera.h"
 #include "Platform/Window.h"
-#include "Util/Logger.h"
-#include "Debug/Profiler.h"
 
 namespace Cosmos
 {

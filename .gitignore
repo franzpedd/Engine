@@ -8,6 +8,7 @@ Thirdparty/glm
 Thirdparty/imgui
 Thirdparty/premake
 Thirdparty/tinygltf
+Editor/Profiler
 
 # extensions
 *.sln

@@ -1,7 +1,7 @@
+#include "epch.h"
 #include "VKInstance.h"
 
 #include "Platform/Window.h"
-#include "Util/Logger.h"
 
 namespace Cosmos
 {

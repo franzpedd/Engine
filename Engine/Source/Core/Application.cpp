@@ -1,11 +1,10 @@
+#include "epch.h"
 #include "Application.h"
 
 #include "Scene.h"
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
 #include "UI/GUI.h"
-#include "Util/Logger.h"
-#include "Debug/Profiler.h"
 
 namespace Cosmos
 {

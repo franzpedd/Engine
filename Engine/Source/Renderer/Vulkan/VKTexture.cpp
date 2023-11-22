@@ -1,10 +1,9 @@
+#include "epch.h"
 #include "VKTexture.h"
 
 #include "VKBuffer.h"
 #include "VKDevice.h"
 #include "VKImage.h"
-
-#include "Util/Logger.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )

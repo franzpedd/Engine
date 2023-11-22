@@ -1,7 +1,7 @@
+#include "epch.h"
 #include "VKShader.h"
 
 #include "VKDevice.h"
-#include "Util/Logger.h"
 
 // stupid visual studio propagating warnings from thirdparty libraries
 #if defined(_MSC_VER)
@@ -12,9 +12,6 @@
 #if defined(_MSC_VER)
 	# pragma warning(pop)
 #endif
-
-#include <fstream>
-#include <sstream>
 
 namespace Cosmos
 {

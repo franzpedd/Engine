@@ -1,3 +1,4 @@
+#include "epch.h"
 #include "VKSwapchain.h"
 
 #include "VKDevice.h"
@@ -5,11 +6,6 @@
 #include "VKImage.h"
 #include "Platform/Window.h"
 #include "Renderer/Commander.h"
-#include "Util/Logger.h"
-
-#include <algorithm>
-#include <array>
-#include <vector>
 
 namespace Cosmos
 {

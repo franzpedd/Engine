@@ -1,11 +1,8 @@
+#include "epch.h"
 #include "VKDevice.h"
 
 #include "VKInstance.h"
 #include "Platform/Window.h"
-#include "Util/Logger.h"
-
-#include <vector>
-#include <set>
 
 namespace Cosmos
 {

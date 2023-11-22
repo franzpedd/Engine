@@ -4,6 +4,9 @@ project "Engine"
     language "C++"
     cppdialect "C++17"
 
+    pchheader "epch.h"
+    pchsource "Source/epch.cpp"
+
     targetdir(dirpath)
     objdir(objpath)
 

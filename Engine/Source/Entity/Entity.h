@@ -4,8 +4,8 @@
 
 #include "Core/Application.h"
 #include "Core/Scene.h"
-#include "Util/EnTT.h"
-#include "Util/Keycodes.h"
+#include "Entity/EnTT.h"
+#include "Platform/Keycodes.h"
 
 #include <vector>
 

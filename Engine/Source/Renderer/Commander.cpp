@@ -1,7 +1,7 @@
+#include "epch.h"
 #include "Commander.h"
 
 #include "Vulkan/VKDevice.h"
-#include "Util/Logger.h"
 
 namespace Cosmos
 {

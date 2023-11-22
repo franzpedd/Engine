@@ -89,7 +89,7 @@ namespace Cosmos
 	#define PROFILER_END() Cosmos::Profiler::Get().End()
 	#define PROFILER_SCOPE(name) Cosmos::Profiler::Timer timer##__LINE__(name);
 	#define PROFILER_FUNCTION() PROFILER_SCOPE(FUNC_SIG)
-#elif
+#else
 	#define PROFILER_BEGIN_SESSION(name, filepath)
 	#define PROFILER_END_SESSION()
 	#define PROFILER_SCOPE(name)

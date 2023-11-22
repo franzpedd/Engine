@@ -1,10 +1,9 @@
+#include "epch.h"
 #include "Cube.h"
 
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 #include "Renderer/Vulkan/VKPipeline.h"
-
-#include "Util/Logger.h"
 
 namespace Cosmos
 {

@@ -1,3 +1,4 @@
+#include "epch.h"
 #include "GUI.h"
 
 #include "Icons.h"
@@ -5,8 +6,6 @@
 #include "Renderer/Commander.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
-#include "Util/Logger.h"
-#include "Debug/Profiler.h"
 
 // not using own implementation of GLFW + VULKAN for ImGUI
 #if defined(_MSC_VER)

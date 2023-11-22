@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Entity.h"
+#include "Platform/Keycodes.h"
 #include "Platform/Window.h"
-#include "Util/Keycodes.h"
 #include "Util/Math.h"
 
 #include <memory>

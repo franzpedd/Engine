@@ -1,9 +1,9 @@
+#include "epch.h"
 #include "VKPipeline.h"
 
 #include "VKBuffer.h"
 #include "VKDevice.h"
 #include "VKShader.h"
-#include "Util/Logger.h"
 
 namespace Cosmos
 {

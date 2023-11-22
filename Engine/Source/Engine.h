@@ -8,6 +8,7 @@
 #include "Entity/Primitives/Cube.h"
 #include "Entity/Primitives/Plane.h"
 
+#include "Debug/Logger.h"
 #include "Debug/Profiler.h"
 
 #include "Renderer/Renderer.h"
@@ -19,6 +20,4 @@
 #include "UI/Icons.h"
 #include "UI/Widget.h"
 
-#include "Util/Keycodes.h"
-#include "Util/Logger.h"
 #include "Util/Math.h"
