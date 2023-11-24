@@ -66,6 +66,7 @@ namespace Cosmos
 	{
 		PROFILER_FUNCTION();
 
+		// discard this update function and perform updating on components
 		for (auto& ent : mEntities->GetEntitiesVector())
 		{
 			ent->OnUpdate(timestep);

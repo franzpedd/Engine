@@ -18,7 +18,7 @@ namespace Cosmos
 		~SceneHierarchy();
 
 		// for user interface drawing
-		virtual void OnUpdateUI() override;
+		virtual void OnUpdate() override;
 
 	public:
 

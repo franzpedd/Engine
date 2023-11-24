@@ -8,7 +8,7 @@ namespace Cosmos
 		Logger() << "Creating Dockspace";
 	}
 
-	void Dockspace::OnUpdateUI()
+	void Dockspace::OnUpdate()
 	{
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);

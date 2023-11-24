@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Widget.h"
+#include "Util/Math.h"
 #include <vulkan/vulkan.h>
 
 #if defined(_MSC_VER)
@@ -110,4 +111,7 @@ namespace Cosmos
 
 	// slider checkbox
 	bool CheckboxSliderEx(const char* label, bool* v);
+
+	// custom vec3 controls
+	bool Vector3Control(const char* label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 }

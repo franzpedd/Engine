@@ -3,6 +3,17 @@
 
 namespace Cosmos
 {
+	Logger::~Logger()
+	{
+		printf("%s", mOutput.str().c_str());
+	}
+
+	Logger& Logger::Get()
+	{
+		static Logger instance;
+		return instance;
+	}
+
 	void Logger::ToTerminal(Severity severity, const char* file, int line, const char* msg, ...)
 	{
 		char buffer[LOG_MAX_SIZE];
@@ -20,6 +31,17 @@ namespace Cosmos
 		oss << "[" << file << " - " << line << "]";
 		oss << "[" << SeverityToConstChar(severity) << "]";
 		oss << ": " << buffer;
+
+		if (mExternalLogger)
+		{
+			if (mConsoleMessage.str().size() >= LOG_MAX_SIZE * LOG_MAX_ENTRIES_SIZE)
+			{
+				mConsoleMessage.clear();
+			}
+
+			mConsoleMessage << oss.str() << std::endl;
+			return;
+		}
 
 		printf("%s\n", oss.str().c_str());
 	}

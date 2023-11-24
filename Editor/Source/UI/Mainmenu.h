@@ -20,7 +20,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUpdateUI() override;
+		virtual void OnUpdate() override;
 
 	private:
 

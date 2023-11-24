@@ -29,7 +29,7 @@ namespace Cosmos
 	public:
 
 		// updates the ui element
-		virtual void OnUpdateUI() override;
+		virtual void OnUpdate() override;
 
 		// called for freeing resources
 		virtual void OnDestroy() override;

@@ -8,7 +8,7 @@ namespace Cosmos
 		CreateTextures();
 	}
 
-	void Explorer::OnUpdateUI()
+	void Explorer::OnUpdate()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
 		ImVec2 buttonSize = { 50, 50 };

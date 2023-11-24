@@ -1,1 +1,1 @@
-{"otherData": {},"traceEvents":[{},{"cat":"function","dur":347660,"name":"__cdecl Cosmos::Application::Application(void)","ph":"X","pid":0,"tid":20140,"ts":443395570663.900}]}
+{"otherData": {},"traceEvents":[{},{"cat":"function","dur":340198,"name":"__cdecl Cosmos::Application::Application(void)","ph":"X","pid":0,"tid":6364,"ts":600002264513.500}]}

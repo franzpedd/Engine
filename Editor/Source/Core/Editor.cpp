@@ -3,6 +3,7 @@
 #include "Renderer/Gizmo.h"
 #include "Renderer/Grid.h"
 
+#include "UI/Console.h"
 #include "UI/Dockspace.h"
 #include "UI/Explorer.h"
 #include "UI/Mainmenu.h"
@@ -16,6 +17,7 @@ namespace Cosmos
 		mCamera = new Camera(mWindow, mScene);
 
 		mDockspace = new Dockspace();
+		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer, mCamera);
 		mGrid = new Grid(mRenderer, mScene, mCamera);
@@ -25,6 +27,7 @@ namespace Cosmos
 
 		// widgets
 		mUI->Widgets().Push(mDockspace);
+		mUI->Widgets().Push(mConsole);
 		mUI->Widgets().Push(mViewport);
 		mUI->Widgets().Push(mExplorer);
 		mUI->Widgets().Push(mMainmenu);

@@ -5,6 +5,7 @@
 namespace Cosmos
 {
 	// forward declarations
+	class Console;
 	class Dockspace;
 	class Explorer;
 	class Grid;
@@ -26,6 +27,7 @@ namespace Cosmos
 	private:
 
 		// ui
+		Console* mConsole;
 		Dockspace* mDockspace;
 		Explorer* mExplorer;
 		Viewport* mViewport;

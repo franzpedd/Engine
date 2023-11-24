@@ -137,7 +137,7 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	void Viewport::OnUpdateUI()
+	void Viewport::OnUpdate()
 	{
 		ImGui::Begin("Scene viewport");
 		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());

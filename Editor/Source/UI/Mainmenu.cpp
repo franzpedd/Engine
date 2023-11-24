@@ -10,13 +10,11 @@ namespace Cosmos
 		Logger() << "Creating Mainmenu";
 	}
 
-	void Mainmenu::OnUpdateUI()
+	void Mainmenu::OnUpdate()
 	{
 		ImGui::BeginMainMenuBar();
 		DisplayMainMenu();
 		ImGui::EndMainMenuBar();
-
-		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetAverageFPS());

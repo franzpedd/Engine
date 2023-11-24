@@ -7,7 +7,6 @@
 
 namespace Cosmos
 {
-
 	struct CommandEntry
 	{
 	public:

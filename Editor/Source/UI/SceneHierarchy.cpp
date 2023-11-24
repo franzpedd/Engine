@@ -14,7 +14,7 @@ namespace Cosmos
 	{
 	}
 
-	void SceneHierarchy::OnUpdateUI()
+	void SceneHierarchy::OnUpdate()
 	{
 		DisplaySceneHierarchy();
 		DisplaySelectedEntityComponents();
@@ -168,11 +168,19 @@ namespace Cosmos
 			}
 		}
 		
-
 		// 3D Transformation matrix
-		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [](auto& component)
+		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [](TransformComponent& component)
 			{
+				// translation
+				Vector3Control("Translation", component.translation);
 
+				// rotation
+				glm::vec3 rotation = glm::degrees(component.rotation);
+				Vector3Control("Rotation", component.rotation);
+				component.rotation = glm::radians(rotation);
+
+				// scale
+				Vector3Control("Scale", component.scale, 1.0f);
 			});
 	}
 
@@ -201,6 +209,16 @@ namespace Cosmos
 			{
 				func(component);
 				ImGui::TreePop();
+			}
+
+			ImGui::SameLine();
+
+			float itemSize = 30.0f;
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize);
+
+			if (ImGui::SmallButton(ICON_FA_MINUS_CIRCLE))
+			{
+				entity.RemoveComponent<T>();
 			}
 		}
 	}

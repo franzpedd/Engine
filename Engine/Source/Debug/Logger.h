@@ -3,6 +3,7 @@
 #include <sstream>
 
 #define LOG_MAX_SIZE 1024
+#define LOG_MAX_ENTRIES_SIZE 20
 
 namespace Cosmos
 {
@@ -25,33 +26,41 @@ namespace Cosmos
 		Logger() = default;
 	
 		// destructor
-		~Logger() 
-		{
-			printf("%s", m_Output.str().c_str());
-		}
+		~Logger();
+
+		// returns the logger
+		static Logger& Get();
 	
 		// logs to a ostringstream object
 		template<class T>
 		inline Logger& operator<<(const T& other)
 		{
-			m_Output << other << std::endl;
+			mOutput << other << std::endl;
 			return *this;
 		}
+
+		// sets/unsets the usage of external console
+		inline void UseExternalConsole(bool value) { mExternalLogger = value; }
+
+		// returns the stored console messages
+		inline std::ostringstream& GetMessages() { return mConsoleMessage; }
 	
 	public:
 	
 		// outputs a message to os's terminal
-		static void ToTerminal(Severity severity, const char* file, int line, const char* msg, ...);
+		void ToTerminal(Severity severity, const char* file, int line, const char* msg, ...);
 	
 		// outputs a message to a file
-		static void ToFile(Severity severity, const char* path, const char* file, int line, const char* msg, ...);
+		void ToFile(Severity severity, const char* path, const char* file, int line, const char* msg, ...);
 	
 		// translates severity level to readable text
-		static const char* SeverityToConstChar(Severity severity);
+		const char* SeverityToConstChar(Severity severity);
 	
 	private:
-	
-		std::ostringstream m_Output;
+		
+		bool mExternalLogger = false;
+		std::ostringstream mOutput;
+		std::ostringstream mConsoleMessage;
 	};
 }
 
@@ -60,33 +69,33 @@ namespace Cosmos
 
 #define LOG_TO_FILE(severity, filepath, ...)										\
 {																					\
-	Cosmos::Logger::ToFile(severity, filepath, __FILE__, __LINE__, __VA_ARGS__);	\
+	Cosmos::Logger::Get().ToFile(severity, filepath, __FILE__, __LINE__, __VA_ARGS__);	\
 	if(severity == Cosmos::Logger::Severity::Assert) std::abort();					\
 }
 
 #define LOG_TO_TERMINAL(severity, ...)										\
 {																			\
-	Cosmos::Logger::ToTerminal(severity, __FILE__, __LINE__, __VA_ARGS__);	\
+	Cosmos::Logger::Get().ToTerminal(severity, __FILE__, __LINE__, __VA_ARGS__);	\
 	if (severity == Cosmos::Logger::Severity::Assert) std::abort();			\
 }
 	
-#define LOG_ASSERT(x, ...)																				\
-{																										\
-	if(!(x))																							\
-	{																									\
-		Cosmos::Logger::ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
-		std::abort();																					\
-	}																									\
+#define LOG_ASSERT(x, ...)																						\
+{																												\
+	if(!(x))																									\
+	{																											\
+		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																							\
+	}																											\
 }
 
-#define VK_ASSERT(fn, ...)																					\
-{																											\
-	VkResult res = (fn);																					\
-	if (res != VK_SUCCESS)																					\
-	{																										\
-		Cosmos::Logger::ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);		\
-		std::abort();																						\
-	}																										\
+#define VK_ASSERT(fn, ...)																						\
+{																												\
+	VkResult res = (fn);																						\
+	if (res != VK_SUCCESS)																						\
+	{																											\
+		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																							\
+	}																											\
 }
 
 #else
