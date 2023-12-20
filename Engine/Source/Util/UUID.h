@@ -29,6 +29,9 @@ namespace Cosmos
 		// destructor
 		~UUID() = default;
 
+		// returns the uuid
+		inline uint64_t GetValue() { return mUUID; }
+
 		// returns the id
 		operator uint64_t() const { return mUUID; }
 

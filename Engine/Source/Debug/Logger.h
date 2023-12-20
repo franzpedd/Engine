@@ -1,9 +1,10 @@
 #pragma once
 
 #include <sstream>
+#include <vector>
 
 #define LOG_MAX_SIZE 1024
-#define LOG_MAX_ENTRIES_SIZE 20
+#define LOG_MAX_ENTRIES_SIZE 50
 
 namespace Cosmos
 {
@@ -15,10 +16,19 @@ namespace Cosmos
 		{
 			Trace = 0,
 			Info,
+			Todo,
 			Warn,
 			Error,
-			Assert
+			Assert,
+
+			MAX_SEVERITY
 		} Severity;
+
+		struct ConsoleMessage
+		{
+			Severity severity;
+			std::string message;
+		};
 
 	public:
 	
@@ -43,7 +53,7 @@ namespace Cosmos
 		inline void UseExternalConsole(bool value) { mExternalLogger = value; }
 
 		// returns the stored console messages
-		inline std::ostringstream& GetMessages() { return mConsoleMessage; }
+		inline std::vector<ConsoleMessage>& GetMessages() { return mConsoleMessages; }
 	
 	public:
 	
@@ -60,7 +70,7 @@ namespace Cosmos
 		
 		bool mExternalLogger = false;
 		std::ostringstream mOutput;
-		std::ostringstream mConsoleMessage;
+		std::vector<ConsoleMessage> mConsoleMessages;
 	};
 }
 

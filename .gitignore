@@ -6,6 +6,7 @@ Thirdparty/glfw
 Thirdparty/gli
 Thirdparty/glm
 Thirdparty/imgui
+Thirdparty/json
 Thirdparty/premake
 Thirdparty/tinygltf
 Editor/Profiler

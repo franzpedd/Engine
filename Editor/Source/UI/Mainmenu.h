@@ -2,6 +2,8 @@
 
 #include <Engine.h>
 
+#include "Core/Project.h"
+
 namespace Cosmos
 {
 	// forward declarations
@@ -11,8 +13,16 @@ namespace Cosmos
 	{
 	public:
 
+		enum Action
+		{
+			None = 0,
+			New, Open, Save, SaveAs, Undo, Redo
+		};
+
+	public:
+
 		// constructor
-		Mainmenu(Camera* camera, Grid* grid);
+		Mainmenu(std::unique_ptr<Project>& project, Camera* camera, Grid* grid);
 
 		// destructor
 		virtual ~Mainmenu() = default;
@@ -27,11 +37,16 @@ namespace Cosmos
 		// drawing and logic of main menu
 		void DisplayMainMenu();
 
+		// handles selected menu option
+		void HandleMenuAction();
+
 	private:
 
+		std::unique_ptr<Project>& mProject;
 		Camera* mCamera;
 		Grid* mGrid;
 		
 		bool mCheckboxGrid = true;
+		Action mMenuAction = Action::None;
 	};
 }

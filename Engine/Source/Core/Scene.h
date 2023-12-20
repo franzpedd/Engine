@@ -2,6 +2,7 @@
 
 #include "Entity/Entt.h"
 #include "Util/UUID.h"
+#include "Util/Serializer.h"
 #include <memory>
 
 namespace Cosmos
@@ -54,6 +55,12 @@ namespace Cosmos
 
 		// cleans the entities resources
 		void Destroy();
+
+		// loads a new scene
+		void Load(Serializer& sceneEntities);
+
+		// serializes the scene and returns a structure with it serialized
+		Serializer Serialize();
 
 	private:
 

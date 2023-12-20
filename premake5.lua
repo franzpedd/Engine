@@ -21,6 +21,7 @@ includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["TinyGLTF"] = "%{wks.location}/Thirdparty/tinygltf"
 includelist["STB"] = "%{wks.location}/Thirdparty/stb"
 includelist["EnTT"] = "%{wks.location}/Thirdparty/entt/single_include"
+includelist["JSON"] = "%{wks.location}/Thirdparty/json/single_include"
 
 -- libraries used
 librarylist = {}
@@ -35,6 +36,7 @@ group "Thirdarty"
     include "Thirdparty/glfw.lua"
     include "Thirdparty/gli.lua"
     include "Thirdparty/glm.lua"
+    include "Thirdparty/json.lua"
     include "Thirdparty/tinygltf.lua"
 group ""
 

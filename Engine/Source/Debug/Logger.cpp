@@ -25,21 +25,33 @@ namespace Cosmos
 		time_t ttime = time(0);
 		tm* local_time = localtime(&ttime);
 
-		std::stringstream oss;
-		oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
-		oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
-		oss << "[" << file << " - " << line << "]";
+		std::ostringstream oss;
+
+		if (!mExternalLogger)
+		{
+			oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
+			oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+			oss << "[" << file << " - " << line << "]";
+		}
+
+		else
+		{
+			oss << "[" << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+		}
+
 		oss << "[" << SeverityToConstChar(severity) << "]";
 		oss << ": " << buffer;
-
+		
 		if (mExternalLogger)
 		{
-			if (mConsoleMessage.str().size() >= LOG_MAX_SIZE * LOG_MAX_ENTRIES_SIZE)
+			if (mConsoleMessages.size() >= LOG_MAX_ENTRIES_SIZE)
 			{
-				mConsoleMessage.clear();
+				mConsoleMessages.clear();
 			}
-
-			mConsoleMessage << oss.str() << std::endl;
+		
+			oss << std::endl;
+		
+			mConsoleMessages.push_back({ severity, oss.str()});
 			return;
 		}
 
@@ -77,6 +89,7 @@ namespace Cosmos
 		{
 		case Severity::Trace: return "Trace";
 		case Severity::Info: return "Info";
+		case Severity::Todo: return "Todo";
 		case Severity::Warn: return "Warning";
 		case Severity::Error: return "Error";
 		case Severity::Assert: return "Assertion";

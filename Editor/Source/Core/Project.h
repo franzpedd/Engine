@@ -2,6 +2,7 @@
 
 #include <Engine.h>
 #include <filesystem>
+#include <memory>
 
 namespace Cosmos
 {
@@ -10,10 +11,16 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Project(std::shared_ptr<Scene>& scene, std::filesystem::path path);
+		Project(Scene* scene, std::string name);
 
 		// destructor
 		~Project();
+
+		// returns a reference to the project's name
+		inline std::string& GetName() { return mName; }
+
+		// returns a reference to the project's path
+		inline std::string& GetPath() { return mPath.string(); }
 
 	public:
 
@@ -21,17 +28,18 @@ namespace Cosmos
 		void New(std::filesystem::path path);
 
 		// opens a project
-		void Open(std::filesystem::path path);
+		void Open();
 
 		// saves current project
 		void Save();
 
 		// saves current project into another location
-		void SaveAs(std::filesystem::path path);
+		void SaveAs();
 
 	private:
 
-		std::shared_ptr<Scene>& mScene;
+		Scene* mScene;
+		std::string mName = "Untitled";
 		std::filesystem::path mPath;
 	};
 }

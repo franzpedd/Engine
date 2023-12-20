@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine.h>
+#include "Project.h"
 
 namespace Cosmos
 {
@@ -26,6 +27,9 @@ namespace Cosmos
 
 	private:
 
+		// project related
+		std::unique_ptr<Project> mProject;
+
 		// ui
 		Console* mConsole;
 		Dockspace* mDockspace;
@@ -35,9 +39,8 @@ namespace Cosmos
 		SceneHierarchy* mSceneHierarchy;
 
 		// entity
+		Camera* mCamera;
 		Grid* mGrid;
 		Gizmo* mGizmo;
-
-		Camera* mCamera;
 	};
 }

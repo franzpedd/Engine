@@ -2,6 +2,7 @@
 
 #include "Util/Math.h"
 #include "Util/UUID.h"
+#include "Util/Serializer.h"
 
 namespace Cosmos
 {
@@ -23,15 +24,15 @@ namespace Cosmos
 
 	struct TransformComponent
 	{
-		glm::vec3 translation = glm::vec3(1.0f);
-		glm::vec3 rotation = glm::vec3(1.0f);
+		glm::vec3 translation = glm::vec3(0.0f);
+		glm::vec3 rotation = glm::vec3(0.0f);
 		glm::vec3 scale = glm::vec3(1.0f);
 
 		// constructor
 		TransformComponent() = default;
 	};
 
-	struct MeshComponent
+	struct SpriteComponent
 	{
 
 	};

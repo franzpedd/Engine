@@ -14,16 +14,18 @@ namespace Cosmos
 {
 	Editor::Editor()
 	{
+		mProject = std::make_unique<Project>(mScene, "Project");
+
 		mCamera = new Camera(mWindow, mScene);
 
-		mDockspace = new Dockspace();
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
 		mViewport = new Viewport(mUI, mRenderer, mCamera);
 		mGrid = new Grid(mRenderer, mScene, mCamera);
 		mGizmo = new Gizmo(mWindow, mRenderer, mScene, mCamera, mViewport);
-		mMainmenu = new Mainmenu(mCamera, mGrid);
+		mMainmenu = new Mainmenu(mProject, mCamera, mGrid);
 		mSceneHierarchy = new SceneHierarchy(mScene, mGizmo);
+		mDockspace = new Dockspace();
 
 		// widgets
 		mUI->Widgets().Push(mDockspace);
@@ -43,10 +45,10 @@ namespace Cosmos
 		//mScene->Entities()->Push(new Cube(mScene, mRenderer, *mCamera));
 
 		// todos
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Implement Platform Safe C functions");
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Fix Mainloop timestep and fps system");
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Move from EntityStack to (ECS)");
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Rework Window hovering to consider inside docking window width and height (EDITOR)");
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Create Event Listener System for only calling those who are listening the events and not all Entities/widgets (ENGINE)");
+		LOG_TO_TERMINAL(Logger::Todo, "Implement Platform Safe C functions");
+		LOG_TO_TERMINAL(Logger::Todo, "Fix Mainloop timestep and fps system");
+		LOG_TO_TERMINAL(Logger::Todo, "Move from EntityStack to (ECS)");
+		LOG_TO_TERMINAL(Logger::Todo, "Rework Window hovering to consider inside docking window width and height (EDITOR)");
+		LOG_TO_TERMINAL(Logger::Todo, "Create Event Listener System for only calling those who are listening the events and not all Entities/widgets (ENGINE)");
 	}
 }

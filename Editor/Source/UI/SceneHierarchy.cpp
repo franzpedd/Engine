@@ -19,7 +19,7 @@ namespace Cosmos
 		DisplaySceneHierarchy();
 		DisplaySelectedEntityComponents();
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 
 	void SceneHierarchy::DisplaySceneHierarchy()
@@ -60,9 +60,9 @@ namespace Cosmos
 		}
 		
 		// draws all existing entity nodes
-		for (auto& entid : mScene->Registry().storage<entt::entity>())
+		for (auto& entid : mScene->GetEntityMap())
 		{
-			Entity entity{ mScene, entid };
+			Entity entity{ mScene, entid.second };
 			DrawEntityNode(entity);
 		}
 		
@@ -142,7 +142,7 @@ namespace Cosmos
 			if (ImGui::TreeNodeEx("##ID", 0, "ID"))
 			{
 				uint64_t id = entity.GetComponent<IDComponent>().id;
-				ImGui::Text("%d", id);
+				ImGui::Text("%ju", id);
 
 				ImGui::TreePop();
 			}

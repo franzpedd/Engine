@@ -30,7 +30,8 @@ project "Engine"
         "%{includelist.GLM}",
         "%{includelist.TinyGLTF}",
 		"%{includelist.STB}",
-        "%{includelist.EnTT}"
+        "%{includelist.EnTT}",
+        "%{includelist.JSON}"
     }
 
     links
@@ -59,7 +60,8 @@ project "Engine"
     filter "system:windows"
         defines 
         {
-            "_CRT_SECURE_NO_WARNINGS"
+            "_CRT_SECURE_NO_WARNINGS",
+            "PLATFORM_WINDOWS"
         }
 
         linkoptions { "/ignore:4006" }

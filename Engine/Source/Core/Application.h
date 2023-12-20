@@ -2,6 +2,7 @@
 
 #include "Platform/Keycodes.h"
 #include <chrono>
+#include <filesystem>
 #include <memory>
 
 namespace Cosmos
