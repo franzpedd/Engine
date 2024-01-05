@@ -11,6 +11,7 @@ namespace Cosmos
 		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Primitive: Cube";
+		LOG_TO_TERMINAL(Logger::Error, "Cube is not working");
 
 		// setup initial config
 		mVertices.resize(8);
@@ -90,45 +91,45 @@ namespace Cosmos
 	void Cube::CreatePipeline()
 	{
 		// if already created just reference it
-		auto& graphicsLibrary = mRenderer->GetPipelineLibrary().AccessGraphicsTable();
-		if (graphicsLibrary.find("Cube") != graphicsLibrary.end())
-		{
-			mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"];
-		}
-
-		else
-		{
-			VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
-			graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
-			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
-			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
-			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
-			graphicsPipeline.cullMode = VK_CULL_MODE_FRONT_BIT;
-
-			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
-
-			mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"] = mGraphicsPipeline;
-		}
+		//auto& graphicsLibrary = mRenderer->GetPipelineLibrary().AccessGraphicsTable();
+		//if (graphicsLibrary.find("Cube") != graphicsLibrary.end())
+		//{
+		//	mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"];
+		//}
+		//
+		//else
+		//{
+		//	VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
+		//	graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
+		//	graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
+		//	graphicsPipeline.vertexShader = VKShader::Create(mRenderer->GetDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
+		//	graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->GetDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
+		//	graphicsPipeline.cullMode = VK_CULL_MODE_FRONT_BIT;
+		//
+		//	mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->GetDevice(), graphicsPipeline);
+		//
+		//	mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Cube"] = mGraphicsPipeline;
+		//}
 	}
 
 	void Cube::CreateBuffers()
 	{
-		mVertexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Vertex,
-			sizeof(mVertices[0]) * mVertices.size(),
-			mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
-			mVertices.data()
-		);
-		
-		mIndexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Index,
-			sizeof(mIndices[0]) * mIndices.size(),
-			mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
-			mIndices.data()
-		);
+		//mVertexBuffer = VKBuffer::Create
+		//(
+		//	mRenderer->GetDevice(),
+		//	VKBuffer::Type::Vertex,
+		//	sizeof(mVertices[0]) * mVertices.size(),
+		//	mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
+		//	mVertices.data()
+		//);
+		//
+		//mIndexBuffer = VKBuffer::Create
+		//(
+		//	mRenderer->GetDevice(),
+		//	VKBuffer::Type::Index,
+		//	sizeof(mIndices[0]) * mIndices.size(),
+		//	mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
+		//	mIndices.data()
+		//);
 	}
 }

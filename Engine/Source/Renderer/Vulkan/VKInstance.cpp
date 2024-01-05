@@ -89,6 +89,26 @@ namespace Cosmos
 		vkDestroyInstance(mInstance, nullptr);
 	}
 
+	VkInstance& VKInstance::GetInstance()
+	{
+		return mInstance;
+	}
+
+	VkDebugUtilsMessengerEXT VKInstance::GetDebugger()
+	{
+		return mDebugMessenger;
+	}
+
+	bool VKInstance::GetValidations()
+	{
+		return mValidations;
+	}
+
+	const std::vector<const char*> VKInstance::GetValidationsList()
+	{
+		return mValidationList;
+	}
+
 	std::vector<const char*> VKInstance::GetRequiredExtensions()
 	{
 		uint32_t glfwExtensionCount = 0;

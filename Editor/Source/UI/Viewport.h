@@ -42,6 +42,9 @@ namespace Cosmos
 		// creates the command entry resources
 		void CreateResources();
 
+		// displays a side menu only on viewport view
+		void DisplaySideMenu();
+
 	private:
 
 		std::shared_ptr<GUI>& mUI;
@@ -53,6 +56,7 @@ namespace Cosmos
 		ImVec2 mCurrentSize;
 		ImVec2 mContentRegionMin;
 		ImVec2 mContentRegionMax;
+		ImVec2 mViewportPosition;
 
 		VkSampler mSampler = VK_NULL_HANDLE;
 

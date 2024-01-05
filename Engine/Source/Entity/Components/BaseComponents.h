@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Renderer/Texture.h"
+
 #include "Util/Math.h"
 #include "Util/UUID.h"
 #include "Util/Serializer.h"
@@ -34,6 +36,9 @@ namespace Cosmos
 
 	struct SpriteComponent
 	{
+		std::shared_ptr<Texture2D> sprite;
 
+		// constructor
+		SpriteComponent() = default;
 	};
 }

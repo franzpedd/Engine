@@ -6,17 +6,17 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKDevice> VKDevice::Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance)
+	std::shared_ptr<VKDevice> VKDevice::Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance)
 	{
 		return std::make_shared<VKDevice>(window, instance);
 	}
 
-	VKDevice::VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance)
+	VKDevice::VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance)
 		: mWindow(window), mInstance(instance)
 	{
 		Logger() << "Creating VKDevice";
 
-		mWindow->CreateWindowSurface(instance->Instance(), &mSurface, nullptr);
+		mWindow->CreateWindowSurface(instance->GetInstance(), &mSurface, nullptr);
 		SelectPhysicalDevice();
 
 		// get physical device properties
@@ -41,7 +41,57 @@ namespace Cosmos
 		mCommandEntry->Destroy();
 
 		vkDestroyDevice(mDevice, nullptr);
-		vkDestroySurfaceKHR(mInstance->Instance(), mSurface, nullptr);
+		vkDestroySurfaceKHR(mInstance->GetInstance(), mSurface, nullptr);
+	}
+
+	VkSurfaceKHR& VKDevice::GetSurface()
+	{
+		return mSurface;
+	}
+
+	VkDevice& VKDevice::GetDevice()
+	{
+		return mDevice;
+	}
+
+	VkPhysicalDevice& VKDevice::GetPhysicalDevice()
+	{
+		return mPhysicalDevice;
+	}
+
+	VkPhysicalDeviceFeatures& VKDevice::GetFeatures()
+	{
+		return mFeatures;
+	}
+
+	VkPhysicalDeviceProperties& VKDevice::GetProperties()
+	{
+		return mProperties;
+	}
+
+	VkQueue& VKDevice::GetGraphicsQueue()
+	{
+		return mGraphicsQueue;
+	}
+
+	VkQueue& VKDevice::GetPresentQueue()
+	{
+		return mPresentQueue;
+	}
+
+	VkQueue& VKDevice::GetComputeQueue()
+	{
+		return mComputeQueue;
+	}
+
+	VkSampleCountFlagBits VKDevice::GetMSAA()
+	{
+		return mMSAACount;
+	}
+
+	std::shared_ptr<CommandEntry>& VKDevice::GetMainCommandEntry()
+	{
+		return mCommandEntry;
 	}
 
 	QueueFamilyIndices VKDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
@@ -140,10 +190,10 @@ namespace Cosmos
 	void VKDevice::SelectPhysicalDevice()
 	{
 		uint32_t gpuCount = 0;
-		vkEnumeratePhysicalDevices(mInstance->Instance(), &gpuCount, nullptr);
+		vkEnumeratePhysicalDevices(mInstance->GetInstance(), &gpuCount, nullptr);
 
 		std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-		vkEnumeratePhysicalDevices(mInstance->Instance(), &gpuCount, physicalDevices.data());
+		vkEnumeratePhysicalDevices(mInstance->GetInstance(), &gpuCount, physicalDevices.data());
 
 		LOG_ASSERT(gpuCount > 0, "Could not find any GPU");
 
@@ -193,7 +243,7 @@ namespace Cosmos
 		std::vector<const char*> extensions = {};
 		extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-		std::vector<const char*> validations = mInstance->ValidationsList();
+		std::vector<const char*> validations = mInstance->GetValidationsList();
 
 #if defined VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 		extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
@@ -209,7 +259,7 @@ namespace Cosmos
 		deviceCI.enabledExtensionCount = (uint32_t)extensions.size();
 		deviceCI.ppEnabledExtensionNames = extensions.data();
 
-		if (mInstance->Validations())
+		if (mInstance->GetValidations())
 		{
 			deviceCI.enabledLayerCount = (uint32_t)validations.size();
 			deviceCI.ppEnabledLayerNames = validations.data();

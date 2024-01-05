@@ -2,6 +2,7 @@
 #include "GUI.h"
 
 #include "Icons.h"
+#include "Spectrum.h"
 #include "Platform/Window.h"
 #include "Renderer/Commander.h"
 #include "Renderer/Vulkan/VKBuffer.h"
@@ -33,7 +34,7 @@ namespace Cosmos
 	GUI::GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
 		: mWindow(window), mRenderer(renderer)
 	{
-		mCommandEntry = CommandEntry::Create(mRenderer->BackendDevice()->Device(), "UI");
+		mCommandEntry = CommandEntry::Create(mRenderer->GetDevice()->GetDevice(), "UI");
 		Commander::Get().Add(mCommandEntry);
 
 		CreateResources();
@@ -90,24 +91,24 @@ namespace Cosmos
 		{
 			for (auto framebuffer : mCommandEntry->framebuffers)
 			{
-				vkDestroyFramebuffer(mRenderer->BackendDevice()->Device(), framebuffer, nullptr);
+				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
 
-			mCommandEntry->framebuffers.resize(mRenderer->BackendSwapchain()->ImageViews().size());
+			mCommandEntry->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
 
-			for (size_t i = 0; i < mRenderer->BackendSwapchain()->ImageViews().size(); i++)
+			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
 			{
-				VkImageView attachments[] = { mRenderer->BackendSwapchain()->ImageViews()[i] };
+				VkImageView attachments[] = { mRenderer->GetSwapchain()->GetImageViews()[i] };
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 				framebufferCI.renderPass = mCommandEntry->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
-				framebufferCI.width = mRenderer->BackendSwapchain()->Extent().width;
-				framebufferCI.height = mRenderer->BackendSwapchain()->Extent().height;
+				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				LOG_ASSERT(vkCreateFramebuffer(mRenderer->BackendDevice()->Device(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+				LOG_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
 			}
 		}
 
@@ -142,22 +143,21 @@ namespace Cosmos
 
 		static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 
-		ImFontConfig robotoCFG;
-		robotoCFG.MergeMode = false;
-
 		ImFontConfig iconCFG;
 		iconCFG.MergeMode = true;
-		iconCFG.GlyphMinAdvanceX = 13.0f;
+		iconCFG.GlyphMinAdvanceX = 18.0f;
 
-		mFonts.vera = io.Fonts->AddFontFromFileTTF("Data/Fonts/vera.ttf", 16.0f, &robotoCFG);
-		mFonts.icons = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 13.0f, &iconCFG, iconRanges);
+		io.Fonts->Clear();
+		LoadFont(18.0f);
+
+		mFonts.icons = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 18.0f, &iconCFG, iconRanges);
 		io.Fonts->Build();
 
 		io.IniFilename = "ui.ini";
 		io.WantCaptureMouse = true;
 
 		ImGui::StyleColorsDark();
-		SetupCustomStyle();
+		StyleColorsSpectrum();
 
 		// create descriptor pool
 		VkDescriptorPoolSize poolSizes[] =
@@ -182,20 +182,20 @@ namespace Cosmos
 		poolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
 		poolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolCI.pPoolSizes = poolSizes;
-		VK_ASSERT(vkCreateDescriptorPool(mRenderer->BackendDevice()->Device(), &poolCI, nullptr, &mCommandEntry->descriptorPool), "Failed to create descriptor pool for the User Interface");
+		VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &poolCI, nullptr, &mCommandEntry->descriptorPool), "Failed to create descriptor pool for the User Interface");
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
 		ImGui_ImplGlfw_InitForVulkan(mWindow->NativeWindow(), true);
 
 		ImGui_ImplVulkan_InitInfo initInfo = {};
-		initInfo.Instance = mRenderer->BackendInstance()->Instance();
-		initInfo.PhysicalDevice = mRenderer->BackendDevice()->PhysicalDevice();
-		initInfo.Device = mRenderer->BackendDevice()->Device();
-		initInfo.Queue = mRenderer->BackendDevice()->GraphicsQueue();
+		initInfo.Instance = mRenderer->GetInstance()->GetInstance();
+		initInfo.PhysicalDevice = mRenderer->GetDevice()->GetPhysicalDevice();
+		initInfo.Device = mRenderer->GetDevice()->GetDevice();
+		initInfo.Queue = mRenderer->GetDevice()->GetGraphicsQueue();
 		initInfo.DescriptorPool = mCommandEntry->descriptorPool;
-		initInfo.MinImageCount = mRenderer->BackendSwapchain()->ImageCount();
-		initInfo.ImageCount = mRenderer->BackendSwapchain()->ImageCount();
+		initInfo.MinImageCount = mRenderer->GetSwapchain()->GetImageCount();
+		initInfo.ImageCount = mRenderer->GetSwapchain()->GetImageCount();
 		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		initInfo.Allocator = nullptr;
 		ImGui_ImplVulkan_Init(&initInfo, mCommandEntry->renderPass);
@@ -211,7 +211,7 @@ namespace Cosmos
 		// render pass
 		{
 			VkAttachmentDescription attachment = {};
-			attachment.format = mRenderer->BackendSwapchain()->SurfaceFormat().format;
+			attachment.format = mRenderer->GetSwapchain()->GetSurfaceFormat().format;
 			attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 			attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -245,18 +245,18 @@ namespace Cosmos
 			info.pSubpasses = &subpass;
 			info.dependencyCount = 1;
 			info.pDependencies = &dependency;
-			VK_ASSERT(vkCreateRenderPass(mRenderer->BackendDevice()->Device(), &info, nullptr, &mCommandEntry->renderPass), "Failed to create render pass");
+			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &info, nullptr, &mCommandEntry->renderPass), "Failed to create render pass");
 		}
 
 		// command pool
 		{
-			QueueFamilyIndices indices = mRenderer->BackendDevice()->FindQueueFamilies(mRenderer->BackendDevice()->PhysicalDevice(), mRenderer->BackendDevice()->Surface());
+			QueueFamilyIndices indices = mRenderer->GetDevice()->FindQueueFamilies(mRenderer->GetDevice()->GetPhysicalDevice(), mRenderer->GetDevice()->GetSurface());
 
 			VkCommandPoolCreateInfo cmdPoolInfo = {};
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(mRenderer->BackendDevice()->Device(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
+			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
 		}
 
 		// command buffers
@@ -268,26 +268,26 @@ namespace Cosmos
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocInfo.commandPool = mCommandEntry->commandPool;
 			cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandEntry->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->BackendDevice()->Device(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to allocate command buffers");
+			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to allocate command buffers");
 		}
 
 		// frame buffers
 		{
-			mCommandEntry->framebuffers.resize(mRenderer->BackendSwapchain()->ImageViews().size());
+			mCommandEntry->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
 
-			for (size_t i = 0; i < mRenderer->BackendSwapchain()->ImageViews().size(); i++)
+			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
 			{
-				VkImageView attachments[] = { mRenderer->BackendSwapchain()->ImageViews()[i] };
+				VkImageView attachments[] = { mRenderer->GetSwapchain()->GetImageViews()[i] };
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 				framebufferCI.renderPass = mCommandEntry->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
-				framebufferCI.width = mRenderer->BackendSwapchain()->Extent().width;
-				framebufferCI.height = mRenderer->BackendSwapchain()->Extent().height;
+				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mRenderer->BackendDevice()->Device(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
@@ -440,6 +440,13 @@ namespace Cosmos
 		}
 
 		return descriptorSet;
+	}
+
+	void RemoveTexture(VkDescriptorSet descriptor)
+	{
+		ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+		ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+		vkFreeDescriptorSets(v->Device, v->DescriptorPool, 1, &descriptor);
 	}
 
 	void ToogleMouseCursor(bool hide)

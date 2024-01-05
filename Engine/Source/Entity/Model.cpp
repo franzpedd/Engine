@@ -10,7 +10,7 @@ namespace Cosmos
 	Texture::Texture(std::shared_ptr<Renderer>& renderer)
 		: mRenderer(renderer)
 	{
-
+		LOG_TO_TERMINAL(Logger::Error, "Model is not working at the moment");
 	}
 
 	Texture::~Texture()
@@ -27,16 +27,17 @@ namespace Cosmos
 
 	void Texture::Cleanup()
 	{
-		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
+		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
 
-		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageView, nullptr);
-		vkDestroyImage(mRenderer->BackendDevice()->Device(), mImage, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemory, nullptr);
-		vkDestroySampler(mRenderer->BackendDevice()->Device(), mSampler, nullptr);
+		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageView, nullptr);
+		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImage, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemory, nullptr);
+		vkDestroySampler(mRenderer->GetDevice()->GetDevice(), mSampler, nullptr);
 	}
 
 	void Texture::LoadFromGLTFImage(tinygltf::Image& img, Sampler sampler)
 	{
+		/*
 		unsigned char* buffer = nullptr;
 		VkDeviceSize bufferSize = 0;
 		bool deleteBuffer = false;
@@ -79,7 +80,7 @@ namespace Cosmos
 
 		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 		VkFormatProperties properties = {};
-		vkGetPhysicalDeviceFormatProperties(mRenderer->BackendDevice()->PhysicalDevice(), format, &properties);
+		vkGetPhysicalDeviceFormatProperties(mRenderer->GetDevice()->GetPhysicalDevice(), format, &properties);
 		LOG_ASSERT(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT, "Physical device doesnt support blit from source");
 		LOG_ASSERT(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT, "Physical device doesnt support blit from destiny");
 
@@ -98,23 +99,23 @@ namespace Cosmos
 			bufferCI.size = bufferSize;
 			bufferCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			VK_ASSERT(vkCreateBuffer(mRenderer->BackendDevice()->Device(), &bufferCI, nullptr, &stagingBuffer), "Failed to create buffer");
+			VK_ASSERT(vkCreateBuffer(mRenderer->GetDevice()->GetDevice(), &bufferCI, nullptr, &stagingBuffer), "Failed to create buffer");
 
 			VkMemoryRequirements memReqs = {};
-			vkGetBufferMemoryRequirements(mRenderer->BackendDevice()->Device(), stagingBuffer, &memReqs);
+			vkGetBufferMemoryRequirements(mRenderer->GetDevice()->GetDevice(), stagingBuffer, &memReqs);
 
 			VkMemoryAllocateInfo memAllocInfo = {};
 			memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			memAllocInfo.pNext = nullptr;
 			memAllocInfo.allocationSize = memReqs.size;
-			memAllocInfo.memoryTypeIndex = mRenderer->BackendDevice()->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			VK_ASSERT(vkAllocateMemory(mRenderer->BackendDevice()->Device(), &memAllocInfo, nullptr, &stagingMemory), "Failed to allocate memory for staging buffer");
-			VK_ASSERT(vkBindBufferMemory(mRenderer->BackendDevice()->Device(), stagingBuffer, stagingMemory, 0), "Failed to bind staging buffer with staging memory");
+			memAllocInfo.memoryTypeIndex = mRenderer->GetDevice()->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VK_ASSERT(vkAllocateMemory(mRenderer->GetDevice()->GetDevice(), &memAllocInfo, nullptr, &stagingMemory), "Failed to allocate memory for staging buffer");
+			VK_ASSERT(vkBindBufferMemory(mRenderer->GetDevice()->GetDevice(), stagingBuffer, stagingMemory, 0), "Failed to bind staging buffer with staging memory");
 
 			// copy staging buffer to mapped memory and unmaps it
-			VK_ASSERT(vkMapMemory(mRenderer->BackendDevice()->Device(), stagingMemory, 0, memReqs.size, 0, (void**)&data), "Failed to map staging memory for copy");
+			VK_ASSERT(vkMapMemory(mRenderer->GetDevice()->GetDevice(), stagingMemory, 0, memReqs.size, 0, (void**)&data), "Failed to map staging memory for copy");
 			memcpy(data, buffer, bufferSize);
-			vkUnmapMemory(mRenderer->BackendDevice()->Device(), stagingMemory);
+			vkUnmapMemory(mRenderer->GetDevice()->GetDevice(), stagingMemory);
 		}
 
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Check for MSAA when creating image");
@@ -137,25 +138,25 @@ namespace Cosmos
 			imageCI.extent.height = mHeight;
 			imageCI.extent.depth = 1;
 			imageCI.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-			VK_ASSERT(vkCreateImage(mRenderer->BackendDevice()->Device(), &imageCI, nullptr, &mImage), "Failed to create image");
+			VK_ASSERT(vkCreateImage(mRenderer->GetDevice()->GetDevice(), &imageCI, nullptr, &mImage), "Failed to create image");
 
 			VkMemoryRequirements memReqs = {};
-			vkGetBufferMemoryRequirements(mRenderer->BackendDevice()->Device(), stagingBuffer, &memReqs);
+			vkGetBufferMemoryRequirements(mRenderer->GetDevice()->GetDevice(), stagingBuffer, &memReqs);
 
 			VkMemoryAllocateInfo memAllocInfo = {};
 			memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			memAllocInfo.pNext = nullptr;
 			memAllocInfo.allocationSize = memReqs.size;
-			memAllocInfo.memoryTypeIndex = mRenderer->BackendDevice()->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			VK_ASSERT(vkAllocateMemory(mRenderer->BackendDevice()->Device(), &memAllocInfo, nullptr, &mImageMemory), "Failed to allocate memory for image");
-			VK_ASSERT(vkBindImageMemory(mRenderer->BackendDevice()->Device(), mImage, mImageMemory, 0), "Failed to bind memory with image");
+			memAllocInfo.memoryTypeIndex = mRenderer->GetDevice()->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VK_ASSERT(vkAllocateMemory(mRenderer->GetDevice()->GetDevice(), &memAllocInfo, nullptr, &mImageMemory), "Failed to allocate memory for image");
+			VK_ASSERT(vkBindImageMemory(mRenderer->GetDevice()->GetDevice(), mImage, mImageMemory, 0), "Failed to bind memory with image");
 		}
 
 		// record the command buffer
 		VkCommandBuffer cmd = CreateCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			true
 		);
@@ -205,18 +206,18 @@ namespace Cosmos
 		// send the command buffer to be processed
 		FlushCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			cmd,
-			mRenderer->BackendDevice()->GraphicsQueue(),
+			mRenderer->GetDevice()->GetGraphicsQueue(),
 			true
 		);
 
 		// generate the mipmap chain
 		VkCommandBuffer blitCmd = CreateCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			true
 		);
@@ -293,10 +294,10 @@ namespace Cosmos
 
 		FlushCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			blitCmd,
-			mRenderer->BackendDevice()->GraphicsQueue(),
+			mRenderer->GetDevice()->GetGraphicsQueue(),
 			true
 		);
 
@@ -317,7 +318,7 @@ namespace Cosmos
 			samplerCI.maxLod = (float)mMipLevels;
 			samplerCI.maxAnisotropy = 8.0f;
 			samplerCI.anisotropyEnable = VK_TRUE;
-			VK_ASSERT(vkCreateSampler(mRenderer->BackendDevice()->Device(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
+			VK_ASSERT(vkCreateSampler(mRenderer->GetDevice()->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
 		}
 
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Modify CreateImageView() to support custom miplevels");
@@ -333,7 +334,7 @@ namespace Cosmos
 			imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			imageViewCI.subresourceRange.layerCount = 1;
 			imageViewCI.subresourceRange.levelCount = mMipLevels;
-			VK_ASSERT(vkCreateImageView(mRenderer->BackendDevice()->Device(), &imageViewCI, nullptr, &mImageView), "Failed to create image view");
+			VK_ASSERT(vkCreateImageView(mRenderer->GetDevice()->GetDevice(), &imageViewCI, nullptr, &mImageView), "Failed to create image view");
 		}
 
 		// update descriptor
@@ -343,13 +344,14 @@ namespace Cosmos
 			mDescriptor.imageLayout = mImageLayout;
 		}
 
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), stagingMemory, nullptr);
-		vkDestroyBuffer(mRenderer->BackendDevice()->Device(), stagingBuffer, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), stagingMemory, nullptr);
+		vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), stagingBuffer, nullptr);
 
 		if (deleteBuffer)
 		{
 			delete[] buffer;
 		}
+		*/
 	}
 
 	Primitive::Primitive(Material& material, uint32_t firstIndex, uint32_t indexCount, uint32_t vertexCount)
@@ -368,9 +370,10 @@ namespace Cosmos
 	Mesh::Mesh(std::shared_ptr<Renderer>& renderer, glm::mat4 matrix)
 		: mRenderer(renderer)
 	{
+		/*
 		mUniformBlock.matrix = matrix;
 
-		VK_ASSERT(BufferCreate(mRenderer->BackendDevice(),
+		VK_ASSERT(BufferCreate(mRenderer->GetDevice(),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			sizeof(UniformBlock),
@@ -378,12 +381,13 @@ namespace Cosmos
 			&mUBO.memory,
 			&mUniformBlock
 		), "Failed to create buffer");
+		*/
 	}
 
 	Mesh::~Mesh()
 	{
-		vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mUBO.buffer, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), mUBO.memory, nullptr);
+		vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mUBO.buffer, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mUBO.memory, nullptr);
 
 		for (Primitive* p : mPrimitives)
 		{
@@ -607,6 +611,7 @@ namespace Cosmos
 
 	void Model::LoadFromFile(std::string path, float scale)
 	{
+		/*
 		tinygltf::Model mdl;
 		tinygltf::TinyGLTF gltfContext;
 
@@ -700,7 +705,7 @@ namespace Cosmos
 		(
 			BufferCreate
 			(
-				mRenderer->BackendDevice(),
+				mRenderer->GetDevice(),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				(VkDeviceSize)vertexBufferSize,
@@ -715,7 +720,7 @@ namespace Cosmos
 		(
 			BufferCreate
 			(
-				mRenderer->BackendDevice(),
+				mRenderer->GetDevice(),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				(VkDeviceSize)indexBufferSize,
@@ -730,7 +735,7 @@ namespace Cosmos
 		(
 			BufferCreate
 			(
-				mRenderer->BackendDevice(),
+				mRenderer->GetDevice(),
 				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				(VkDeviceSize)vertexBufferSize,
@@ -746,7 +751,7 @@ namespace Cosmos
 			(
 				BufferCreate
 				(
-					mRenderer->BackendDevice(),
+					mRenderer->GetDevice(),
 					VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					(VkDeviceSize)indexBufferSize,
 					&mIndices.buffer,
@@ -759,8 +764,8 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Create custom command entry for models. using swapchain's (witch also should be modified)");
 		VkCommandBuffer copyCmd = CreateCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			true
 		);
@@ -781,43 +786,44 @@ namespace Cosmos
 
 		FlushCommandBuffer
 		(
-			mRenderer->BackendDevice(),
-			mRenderer->BackendDevice()->MainCommandEntry()->commandPool,
+			mRenderer->GetDevice(),
+			mRenderer->GetDevice()->GetMainCommandEntry()->commandPool,
 			copyCmd,
-			mRenderer->BackendDevice()->GraphicsQueue(),
+			mRenderer->GetDevice()->GetGraphicsQueue(),
 			true
 		);
 
 		// free staging buffers
-		vkDestroyBuffer(mRenderer->BackendDevice()->Device(), vertexStaging.buffer, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), vertexStaging.memory, nullptr);;
+		vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), vertexStaging.buffer, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), vertexStaging.memory, nullptr);;
 
 		if (indexBufferSize > 0)
 		{
-			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), indexStaging.buffer, nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), indexStaging.memory, nullptr);
+			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), indexStaging.buffer, nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), indexStaging.memory, nullptr);
 		}
 
 		delete[] loaderInfo.vertexBuffer;
 		delete[] loaderInfo.indexBuffer;
 
 		GetModelDimensions();
+		*/
 	}
 
 	void Model::Destroy()
 	{
 		if (mVertices.buffer != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mVertices.buffer, nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mVertices.memory, nullptr);
+			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mVertices.buffer, nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mVertices.memory, nullptr);
 			mVertices.buffer = VK_NULL_HANDLE;
 			mVertices.memory = VK_NULL_HANDLE;
 		}
 
 		if (mIndices.buffer != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mIndices.buffer, nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mIndices.memory, nullptr);
+			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mIndices.buffer, nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mIndices.memory, nullptr);
 			mVertices.buffer = VK_NULL_HANDLE;
 			mVertices.memory = VK_NULL_HANDLE;
 		}

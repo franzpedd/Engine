@@ -14,9 +14,11 @@
 #include "Platform/FileDialog.h"
 
 #include "Renderer/Renderer.h"
+#include "Renderer/Vulkan/VKDevice.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 #include "Renderer/Vulkan/VKImage.h"
+#include "Renderer/Vulkan/VKTexture.h"
 
 #include "UI/GUI.h"
 #include "UI/Icons.h"

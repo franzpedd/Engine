@@ -9,45 +9,6 @@ namespace Cosmos
 	// forward declarations
 	class VKDevice;
 
-	class VKTexture2D
-	{
-	public:
-
-		// constructor
-		VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
-
-		// destructor
-		~VKTexture2D();
-
-	public:
-
-		// returns a reference to the image view
-		inline VkImageView View() { return mView; }
-
-		// returns a reference to the image sampler
-		inline VkSampler& Sampler() { return mSampler; }
-
-	private:
-
-		// loads the texture
-		void LoadTexture();
-
-		// creates the vulkan resources for the image
-		void CreateResources();
-
-	private:
-
-		std::shared_ptr<VKDevice>& mDevice;
-		const char* mPath = nullptr;
-		VkSampleCountFlagBits mMSAA = VK_SAMPLE_COUNT_1_BIT;
-		bool mKTX = false;
-
-		VkImage mImage = VK_NULL_HANDLE;
-		VkDeviceMemory mMemory = VK_NULL_HANDLE;
-		VkImageView mView = VK_NULL_HANDLE;
-		VkSampler mSampler = VK_NULL_HANDLE;
-	};
-
 	// creates an image
 	void CreateImage(std::shared_ptr<VKDevice>& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory);
 

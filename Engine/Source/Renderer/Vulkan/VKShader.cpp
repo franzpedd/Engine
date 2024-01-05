@@ -48,7 +48,7 @@ namespace Cosmos
 
 	void VKShader::Destroy()
 	{
-		vkDestroyShaderModule(mDevice->Device(), mShaderModule, nullptr);
+		vkDestroyShaderModule(mDevice->GetDevice(), mShaderModule, nullptr);
 	}
 
 	std::vector<char> VKShader::ReadSPIRV()
@@ -97,7 +97,7 @@ namespace Cosmos
 		shaderModuleCI.codeSize = binary.size();
 		shaderModuleCI.pCode = reinterpret_cast<const uint32_t*>(binary.data());
 
-		VK_ASSERT(vkCreateShaderModule(mDevice->Device(), &shaderModuleCI, nullptr, &mShaderModule), "Failed to create shader module");
+		VK_ASSERT(vkCreateShaderModule(mDevice->GetDevice(), &shaderModuleCI, nullptr, &mShaderModule), "Failed to create shader module");
 	}
 
 	void VKShader::CreateShaderStage()

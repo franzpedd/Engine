@@ -11,6 +11,7 @@ namespace Cosmos
 		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Plane Primitive";
+		LOG_TO_TERMINAL(Logger::Error, "Plane is not working");
 
 		// setup initial config
 		mVertices.resize(4);
@@ -65,45 +66,45 @@ namespace Cosmos
 
 	void Plane::CreatePipeline()
 	{
-		// if already created just reference it
-		auto& graphicsLibrary = mRenderer->GetPipelineLibrary().AccessGraphicsTable();
-		if (graphicsLibrary.find("Plane") != graphicsLibrary.end())
-		{
-			mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"];
-		}
-		
-		else
-		{
-			VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
-			graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
-			graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
-			graphicsPipeline.vertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
-			graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
-		
-			mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->BackendDevice(), graphicsPipeline);
-		
-			mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"] = mGraphicsPipeline;
-		}
+		//// if already created just reference it
+		//auto& graphicsLibrary = mRenderer->GetPipelineLibrary().AccessGraphicsTable();
+		//if (graphicsLibrary.find("Plane") != graphicsLibrary.end())
+		//{
+		//	mGraphicsPipeline = mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"];
+		//}
+		//
+		//else
+		//{
+		//	VKGraphicsPipeline::InitializerList graphicsPipeline(mRenderer->GetCommander().AccessMainCommandEntry()->renderPass, mRenderer->PipelineCache());
+		//	graphicsPipeline.bindings = Vertex::GetBindingDescriptions();
+		//	graphicsPipeline.attributes = Vertex::GetAttributeDescriptions();
+		//	graphicsPipeline.vertexShader = VKShader::Create(mRenderer->GetDevice(), VKShader::ShaderType::Vertex, "Primitive Vert", "Data/Shaders/primitive.vert");
+		//	graphicsPipeline.fragmentShader = VKShader::Create(mRenderer->GetDevice(), VKShader::ShaderType::Fragment, "Primitive Frag", "Data/Shaders/primitive.frag");
+		//
+		//	mGraphicsPipeline = VKGraphicsPipeline::Create(mRenderer->GetDevice(), graphicsPipeline);
+		//
+		//	mRenderer->GetPipelineLibrary().AccessGraphicsTable()["Plane"] = mGraphicsPipeline;
+		//}
 	}
 
 	void Plane::CreateBuffers()
 	{
-		mVertexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Vertex,
-			sizeof(mVertices[0]) * mVertices.size(),
-			mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
-			mVertices.data()
-		);
-
-		mIndexBuffer = VKBuffer::Create
-		(
-			mRenderer->BackendDevice(),
-			VKBuffer::Type::Index,
-			sizeof(mIndices[0]) * mIndices.size(),
-			mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
-			mIndices.data()
-		);
+		//mVertexBuffer = VKBuffer::Create
+		//(
+		//	mRenderer->GetDevice(),
+		//	VKBuffer::Type::Vertex,
+		//	sizeof(mVertices[0]) * mVertices.size(),
+		//	mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
+		//	mVertices.data()
+		//);
+		//
+		//mIndexBuffer = VKBuffer::Create
+		//(
+		//	mRenderer->GetDevice(),
+		//	VKBuffer::Type::Index,
+		//	sizeof(mIndices[0]) * mIndices.size(),
+		//	mRenderer->GetCommander().AccessMainCommandEntry()->commandPool,
+		//	mIndices.data()
+		//);
 	}
 }

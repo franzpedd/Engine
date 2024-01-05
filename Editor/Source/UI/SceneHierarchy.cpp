@@ -175,12 +175,16 @@ namespace Cosmos
 				Vector3Control("Translation", component.translation);
 
 				// rotation
-				glm::vec3 rotation = glm::degrees(component.rotation);
 				Vector3Control("Rotation", component.rotation);
-				component.rotation = glm::radians(rotation);
 
 				// scale
 				Vector3Control("Scale", component.scale, 1.0f);
+			});
+
+		// Sprite
+		DrawComponent<SpriteComponent>("Sprite", mSelectedEntity, [](SpriteComponent& component)
+			{
+
 			});
 	}
 

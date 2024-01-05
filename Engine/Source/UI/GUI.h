@@ -100,6 +100,9 @@ namespace Cosmos
 	// adds a texture in the user interface for later usage
 	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout);
 
+	// removes a texture in the user interface backend
+	void RemoveTexture(VkDescriptorSet descriptor);
+
 	// hidens or unhides the mouse iteraction with mouse and ui
 	void ToogleMouseCursor(bool hide);
 

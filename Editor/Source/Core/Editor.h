@@ -13,6 +13,7 @@ namespace Cosmos
 	class Gizmo;
 	class Mainmenu;
 	class SceneHierarchy;
+	class TextureBrowser;
 	class Viewport;
 
 	class Editor : public Application
@@ -37,6 +38,7 @@ namespace Cosmos
 		Viewport* mViewport;
 		Mainmenu* mMainmenu;
 		SceneHierarchy* mSceneHierarchy;
+		TextureBrowser* mTextureBrowser;
 
 		// entity
 		Camera* mCamera;

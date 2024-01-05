@@ -51,9 +51,9 @@ namespace Cosmos
 
 		// map memory area(lData) and copy buffer to it
 		void* lData = nullptr;
-		vkMapMemory(mDevice->Device(), stagingBufferMemory, 0, mSize, 0, &lData);
+		vkMapMemory(mDevice->GetDevice(), stagingBufferMemory, 0, mSize, 0, &lData);
 		memcpy(lData, mData, (size_t)mSize);
-		vkUnmapMemory(mDevice->Device(), stagingBufferMemory);
+		vkUnmapMemory(mDevice->GetDevice(), stagingBufferMemory);
 
 		// create buffer
 		CreateBuffer
@@ -67,14 +67,14 @@ namespace Cosmos
 		// copies staging to buffer
 		CopyBuffer(stagingBuffer, mBuffer);
 
-		vkDestroyBuffer(mDevice->Device(), stagingBuffer, nullptr);
-		vkFreeMemory(mDevice->Device(), stagingBufferMemory, nullptr);
+		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingBufferMemory, nullptr);
 	}
 
 	void VKBuffer::Destroy()
 	{
-		vkDestroyBuffer(mDevice->Device(), mBuffer, nullptr);
-		vkFreeMemory(mDevice->Device(), mBufferMemory, nullptr);
+		vkDestroyBuffer(mDevice->GetDevice(), mBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mBufferMemory, nullptr);
 	}
 
 	void VKBuffer::CreateBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
@@ -85,24 +85,24 @@ namespace Cosmos
 		bufferCI.size = mSize;
 		bufferCI.usage = usage;
 		bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		VK_ASSERT(vkCreateBuffer(mDevice->Device(), &bufferCI, nullptr, buffer), "Failed to create buffer");
+		VK_ASSERT(vkCreateBuffer(mDevice->GetDevice(), &bufferCI, nullptr, buffer), "Failed to create buffer");
 
 		// alocate memory for specified buffer 
 		VkMemoryRequirements memoryReqs = {};
-		vkGetBufferMemoryRequirements(mDevice->Device(), *buffer, &memoryReqs);
+		vkGetBufferMemoryRequirements(mDevice->GetDevice(), *buffer, &memoryReqs);
 
 		VkMemoryAllocateInfo memoryAllocInfo = {};
 		memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memoryAllocInfo.pNext = nullptr;
 		memoryAllocInfo.allocationSize = memoryReqs.size;
 		memoryAllocInfo.memoryTypeIndex = mDevice->GetMemoryType(memoryReqs.memoryTypeBits, properties);
-		VK_ASSERT(vkAllocateMemory(mDevice->Device(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
+		VK_ASSERT(vkAllocateMemory(mDevice->GetDevice(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
 
 		// data is not null, must map the buffer and copy the data
 		if (data != nullptr)
 		{
 			void* mapped;
-			VK_ASSERT(vkMapMemory(mDevice->Device(), *memory, 0, mSize, 0, &mapped), "Faled to map memory");
+			VK_ASSERT(vkMapMemory(mDevice->GetDevice(), *memory, 0, mSize, 0, &mapped), "Faled to map memory");
 			memcpy(mapped, data, mSize);
 
 			// if host coherency hasn't been requested, do a manual flush to make writes visible
@@ -113,14 +113,14 @@ namespace Cosmos
 				mappedRange.memory = *memory;
 				mappedRange.offset = 0;
 				mappedRange.size = mSize;
-				vkFlushMappedMemoryRanges(mDevice->Device(), 1, &mappedRange);
+				vkFlushMappedMemoryRanges(mDevice->GetDevice(), 1, &mappedRange);
 			}
 
-			vkUnmapMemory(mDevice->Device(), *memory);
+			vkUnmapMemory(mDevice->GetDevice(), *memory);
 		}
 
 		// link buffer with allocated memory
-		VK_ASSERT(vkBindBufferMemory(mDevice->Device(), *buffer, *memory, 0), "Failed to bind buffer with memory");
+		VK_ASSERT(vkBindBufferMemory(mDevice->GetDevice(), *buffer, *memory, 0), "Failed to bind buffer with memory");
 	}
 
 	void VKBuffer::CopyBuffer(VkBuffer src, VkBuffer dst)
@@ -132,7 +132,7 @@ namespace Cosmos
 		cmdBufferAllocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(mDevice->Device(), &cmdBufferAllocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(mDevice->GetDevice(), &cmdBufferAllocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -151,10 +151,10 @@ namespace Cosmos
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(mDevice->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(mDevice->GraphicsQueue());
+		vkQueueSubmit(mDevice->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(mDevice->GetGraphicsQueue());
 
-		vkFreeCommandBuffers(mDevice->Device(), mCmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(mDevice->GetDevice(), mCmdPool, 1, &commandBuffer);
 	}
 
 	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
@@ -165,24 +165,24 @@ namespace Cosmos
 		bufferCI.size = size;
 		bufferCI.usage = usage;
 		bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		VK_ASSERT(vkCreateBuffer(device->Device(), &bufferCI, nullptr, buffer), "Failed to create buffer");
+		VK_ASSERT(vkCreateBuffer(device->GetDevice(), &bufferCI, nullptr, buffer), "Failed to create buffer");
 
 		// alocate memory for specified buffer 
 		VkMemoryRequirements memoryReqs;
-		vkGetBufferMemoryRequirements(device->Device(), *buffer, &memoryReqs);
+		vkGetBufferMemoryRequirements(device->GetDevice(), *buffer, &memoryReqs);
 
 		VkMemoryAllocateInfo memoryAllocInfo = {};
 		memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memoryAllocInfo.pNext = nullptr;
 		memoryAllocInfo.allocationSize = memoryReqs.size;
 		memoryAllocInfo.memoryTypeIndex = device->GetMemoryType(memoryReqs.memoryTypeBits, properties);
-		VK_ASSERT(vkAllocateMemory(device->Device(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
+		VK_ASSERT(vkAllocateMemory(device->GetDevice(), &memoryAllocInfo, nullptr, memory), "Failed to allocate memory for buffer");
 
 		// data is not null, must map the buffer and copy the data
 		if (data != nullptr)
 		{
 			void* mapped;
-			VK_ASSERT(vkMapMemory(device->Device(), *memory, 0, size, 0, &mapped), "Faled to map memory");
+			VK_ASSERT(vkMapMemory(device->GetDevice(), *memory, 0, size, 0, &mapped), "Faled to map memory");
 			memcpy(mapped, data, size);
 
 			// if host coherency hasn't been requested, do a manual flush to make writes visible
@@ -193,14 +193,14 @@ namespace Cosmos
 				mappedRange.memory = *memory;
 				mappedRange.offset = 0;
 				mappedRange.size = size;
-				vkFlushMappedMemoryRanges(device->Device(), 1, &mappedRange);
+				vkFlushMappedMemoryRanges(device->GetDevice(), 1, &mappedRange);
 			}
 
-			vkUnmapMemory(device->Device(), *memory);
+			vkUnmapMemory(device->GetDevice(), *memory);
 		}
 
 		// link buffer with allocated memory
-		VK_ASSERT(vkBindBufferMemory(device->Device(), *buffer, *memory, 0), "Failed to bind buffer with memory");
+		VK_ASSERT(vkBindBufferMemory(device->GetDevice(), *buffer, *memory, 0), "Failed to bind buffer with memory");
 
 		return VK_SUCCESS;
 	}
@@ -214,7 +214,7 @@ namespace Cosmos
 		cmdBufferAllocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(device->GetDevice(), &cmdBufferAllocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 		cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -234,13 +234,13 @@ namespace Cosmos
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(device->GraphicsQueue());
+		vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device->GetGraphicsQueue());
 
-		vkFreeCommandBuffers(device->Device(), commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 	}
 
-	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
+	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<Device>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
 	{
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -250,7 +250,7 @@ namespace Cosmos
 		cmdBufferAllocInfo.level = level;
 
 		VkCommandBuffer cmdBuffer;
-		VK_ASSERT(vkAllocateCommandBuffers(device->Device(), &cmdBufferAllocInfo, &cmdBuffer), "Failed to allocate command buffers");
+		VK_ASSERT(vkAllocateCommandBuffers(device->GetDevice(), &cmdBufferAllocInfo, &cmdBuffer), "Failed to allocate command buffers");
 
 		if (begin)
 		{
@@ -289,15 +289,15 @@ namespace Cosmos
 		fenceCI.flags = 0;
 
 		VkFence fence;
-		VK_ASSERT(vkCreateFence(device->Device(), &fenceCI, nullptr, &fence), "Failed to create fence for command buffer submission");
+		VK_ASSERT(vkCreateFence(device->GetDevice(), &fenceCI, nullptr, &fence), "Failed to create fence for command buffer submission");
 		VK_ASSERT(vkQueueSubmit(queue, 1, &submitInfo, fence), "Failed to submit command buffer");
-		VK_ASSERT(vkWaitForFences(device->Device(), 1, &fence, VK_TRUE, 100000000000), "Failed to wait for fences");
+		VK_ASSERT(vkWaitForFences(device->GetDevice(), 1, &fence, VK_TRUE, 100000000000), "Failed to wait for fences");
 
-		vkDestroyFence(device->Device(), fence, nullptr);
+		vkDestroyFence(device->GetDevice(), fence, nullptr);
 
 		if (free)
 		{
-			vkFreeCommandBuffers(device->Device(), cmdPool, 1, &cmdBuffer);
+			vkFreeCommandBuffers(device->GetDevice(), cmdPool, 1, &cmdBuffer);
 		}
 	}
 }

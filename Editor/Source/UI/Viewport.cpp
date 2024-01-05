@@ -8,7 +8,7 @@ namespace Cosmos
 		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera)
 
 	{
-		mCommandEntry = CommandEntry::Create(renderer->BackendDevice()->Device(), "Viewport");
+		mCommandEntry = CommandEntry::Create(renderer->GetDevice()->GetDevice(), "Viewport");
 		Commander::Get().Add(mCommandEntry);
 
 		// set viewport renderpass to main renderpass
@@ -18,7 +18,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Rework Commander class and main RenderPass usage");
 
 		mSurfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
-		mDepthFormat = FindDepthFormat(mRenderer->BackendDevice());
+		mDepthFormat = FindDepthFormat(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()));
 
 		// render pass
 		{
@@ -89,18 +89,18 @@ namespace Cosmos
 			renderPassCI.pSubpasses = &subpassDescription;
 			renderPassCI.dependencyCount = (uint32_t)dependencies.size();
 			renderPassCI.pDependencies = dependencies.data();
-			VK_ASSERT(vkCreateRenderPass(mRenderer->BackendDevice()->Device(), &renderPassCI, nullptr, &mCommandEntry->renderPass), "Failed to create renderpass");
+			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &renderPassCI, nullptr, &mCommandEntry->renderPass), "Failed to create renderpass");
 		}
 
 		// command pool
 		{
-			QueueFamilyIndices indices = mRenderer->BackendDevice()->FindQueueFamilies(mRenderer->BackendDevice()->PhysicalDevice(), mRenderer->BackendDevice()->Surface());
+			QueueFamilyIndices indices = mRenderer->GetDevice()->FindQueueFamilies(mRenderer->GetDevice()->GetPhysicalDevice(), mRenderer->GetDevice()->GetSurface());
 
 			VkCommandPoolCreateInfo cmdPoolInfo = {};
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(mRenderer->BackendDevice()->Device(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
+			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
 		}
 
 		// command buffers
@@ -112,7 +112,7 @@ namespace Cosmos
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocInfo.commandPool = mCommandEntry->commandPool;
 			cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandEntry->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->BackendDevice()->Device(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to allocate command buffers");
+			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to allocate command buffers");
 		}
 
 		// sampler
@@ -125,13 +125,13 @@ namespace Cosmos
 			samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerCI.anisotropyEnable = VK_TRUE;
-			samplerCI.maxAnisotropy = mRenderer->BackendDevice()->Properties().limits.maxSamplerAnisotropy;
+			samplerCI.maxAnisotropy = mRenderer->GetDevice()->GetProperties().limits.maxSamplerAnisotropy;
 			samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 			samplerCI.unnormalizedCoordinates = VK_FALSE;
 			samplerCI.compareEnable = VK_FALSE;
 			samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
 			samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			VK_ASSERT(vkCreateSampler(mRenderer->BackendDevice()->Device(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
+			VK_ASSERT(vkCreateSampler(mRenderer->GetDevice()->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
 		}
 
 		CreateResources();
@@ -139,40 +139,45 @@ namespace Cosmos
 
 	void Viewport::OnUpdate()
 	{
-		ImGui::Begin("Scene viewport");
-		ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
+		if (ImGui::Begin("Viewport"))
+		{
+			ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
+			
+			// updating aspect ratio for the docking
+			mCurrentSize = ImGui::GetWindowSize();
+			mCamera->SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
+			
+			// viewport boundaries
+			mContentRegionMin = ImGui::GetWindowContentRegionMin();
+			mContentRegionMax = ImGui::GetWindowContentRegionMax();
+			mContentRegionMin.x += ImGui::GetWindowPos().x;
+			mContentRegionMin.y += ImGui::GetWindowPos().y;
+			mContentRegionMax.x += ImGui::GetWindowPos().x;
+			mContentRegionMax.y += ImGui::GetWindowPos().y;
 
-		// updating aspect ratio for the docking
-		mCurrentSize = ImGui::GetWindowSize();
-		mCamera->SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
-
-		// viewport boundaries
-		mContentRegionMin = ImGui::GetWindowContentRegionMin();
-		mContentRegionMax = ImGui::GetWindowContentRegionMax();
-		mContentRegionMin.x += ImGui::GetWindowPos().x;
-		mContentRegionMin.y += ImGui::GetWindowPos().y;
-		mContentRegionMax.x += ImGui::GetWindowPos().x;
-		mContentRegionMax.y += ImGui::GetWindowPos().y;
+			// hacky
+			DisplaySideMenu();
+		}
 
 		ImGui::End();
 	}
 
 	void Viewport::OnWindowResize()
 	{
-		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->BackendDevice()->Device(), mDepthImage, nullptr);
+		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
 
-		for (size_t i = 0; i < mRenderer->BackendSwapchain()->Images().size(); i++)
+		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
 		{
-			vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->BackendDevice()->Device(), mImages[i], nullptr);
+			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
 		}
 
 		for (auto& framebuffer : mCommandEntry->framebuffers)
 		{
-			vkDestroyFramebuffer(mRenderer->BackendDevice()->Device(), framebuffer, nullptr);
+			vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
 		}
 
 		CreateResources();
@@ -180,19 +185,19 @@ namespace Cosmos
 
 	void Viewport::OnDestroy()
 	{
-		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
+		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
 		
-		vkDestroySampler(mRenderer->BackendDevice()->Device(), mSampler, nullptr);
+		vkDestroySampler(mRenderer->GetDevice()->GetDevice(), mSampler, nullptr);
 		
-		vkDestroyImageView(mRenderer->BackendDevice()->Device(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->BackendDevice()->Device(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->BackendDevice()->Device(), mDepthImage, nullptr);
+		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
 		
-		for (size_t i = 0; i < mRenderer->BackendSwapchain()->Images().size(); i++)
+		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
 		{
-			vkDestroyImageView(mRenderer->BackendDevice()->Device(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->BackendDevice()->Device(), mImages[i], nullptr);
+			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
 		}
 		
 		mCommandEntry->Destroy();
@@ -200,15 +205,15 @@ namespace Cosmos
 
 	void Viewport::CreateResources()
 	{
-		size_t size = mRenderer->BackendSwapchain()->Images().size();
+		size_t size = mRenderer->GetSwapchain()->GetImages().size();
 
 		// depth buffer
 		{
 			CreateImage
 			(
-				mRenderer->BackendDevice(),
-				mRenderer->BackendSwapchain()->Extent().width,
-				mRenderer->BackendSwapchain()->Extent().height,
+				std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
+				mRenderer->GetSwapchain()->GetExtent().width,
+				mRenderer->GetSwapchain()->GetExtent().height,
 				1,
 				VK_SAMPLE_COUNT_1_BIT,
 				mDepthFormat,
@@ -219,7 +224,7 @@ namespace Cosmos
 				mDepthMemory
 			);
 
-			mDepthView = CreateImageView(mRenderer->BackendDevice(), mDepthImage, mDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+			mDepthView = CreateImageView(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mDepthImage, mDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
 
 		// images
@@ -234,9 +239,9 @@ namespace Cosmos
 			{
 				CreateImage
 				(
-					mRenderer->BackendDevice(),
-					mRenderer->BackendSwapchain()->Extent().width,
-					mRenderer->BackendSwapchain()->Extent().height,
+					std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
+					mRenderer->GetSwapchain()->GetExtent().width,
+					mRenderer->GetSwapchain()->GetExtent().height,
 					1,
 					VK_SAMPLE_COUNT_1_BIT,
 					mSurfaceFormat,
@@ -247,7 +252,7 @@ namespace Cosmos
 					mImageMemories[i]
 				);
 
-				VkCommandBuffer command = BeginSingleTimeCommand(mRenderer->BackendDevice(), mCommandEntry->commandPool);
+				VkCommandBuffer command = BeginSingleTimeCommand(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mCommandEntry->commandPool);
 
 				InsertImageMemoryBarrier
 				(
@@ -262,9 +267,9 @@ namespace Cosmos
 					VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 				);
 
-				EndSingleTimeCommand(mRenderer->BackendDevice(), mCommandEntry->commandPool, command);
+				EndSingleTimeCommand(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mCommandEntry->commandPool, command);
 
-				mImageViews[i] = CreateImageView(mRenderer->BackendDevice(), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+				mImageViews[i] = CreateImageView(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 				mDescriptorSets[i] = AddTexture(mSampler, mImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 				std::array<VkImageView, 2> attachments = { mImageViews[i], mDepthView };
@@ -274,11 +279,31 @@ namespace Cosmos
 				framebufferCI.renderPass = mCommandEntry->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
-				framebufferCI.width = mRenderer->BackendSwapchain()->Extent().width;
-				framebufferCI.height = mRenderer->BackendSwapchain()->Extent().height;
+				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mRenderer->BackendDevice()->Device(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
+	}
+
+	void Viewport::DisplaySideMenu()
+	{
+		ImGui::SetCursorPos(ImVec2(15, 40));
+
+		if (ImGui::BeginChild("##Sidebar"))
+		{
+			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(30, 30)))
+			{
+
+			}
+
+			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(30, 30)))
+			{
+
+			}
+		}
+
+		ImGui::EndChild();
 	}
 }

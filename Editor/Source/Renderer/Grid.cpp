@@ -39,21 +39,18 @@ namespace Cosmos
 
 	void Grid::OnDestroy()
 	{
-		vkDeviceWaitIdle(mRenderer->BackendDevice()->Device());
-
-		mVertexShader->Destroy();
-		mFragmentShader->Destroy();
+		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
 
 		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			vkDestroyBuffer(mRenderer->BackendDevice()->Device(), mUniformBuffers[i], nullptr);
-			vkFreeMemory(mRenderer->BackendDevice()->Device(), mUniformBuffersMemory[i], nullptr);
+			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
 		}
 
-		vkDestroyDescriptorPool(mRenderer->BackendDevice()->Device(), mDescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(mRenderer->BackendDevice()->Device(), mDescriptorSetLayout, nullptr);
-		vkDestroyPipelineLayout(mRenderer->BackendDevice()->Device(), mPipelineLayout, nullptr);
-		vkDestroyPipeline(mRenderer->BackendDevice()->Device(), mGraphicsPipeline, nullptr);
+		vkDestroyDescriptorPool(mRenderer->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), mDescriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mRenderer->GetDevice()->GetDevice(), mPipelineLayout, nullptr);
+		vkDestroyPipeline(mRenderer->GetDevice()->GetDevice(), mGraphicsPipeline, nullptr);
 	}
 
 	void Grid::ToogleOnOff()
@@ -65,8 +62,8 @@ namespace Cosmos
 	{
 		// create graphics pipeline related (shaders, descriptor set layout, pipeline layout, graphics pipeline)
 		{
-			mVertexShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Vertex, "Grid.vert", "Data/Shaders/grid.vert");
-			mFragmentShader = VKShader::Create(mRenderer->BackendDevice(), VKShader::Fragment, "Grid.frag", "Data/Shaders/grid.frag");
+			mVertexShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Vertex, "Grid.vert", "Data/Shaders/grid.vert");
+			mFragmentShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Fragment, "Grid.frag", "Data/Shaders/grid.frag");
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { mVertexShader->Stage(), mFragmentShader->Stage() };
@@ -84,7 +81,7 @@ namespace Cosmos
 			descSetLayoutCI.flags = 0;
 			descSetLayoutCI.bindingCount = 1;
 			descSetLayoutCI.pBindings = &uboLayoutBinding;
-			VK_ASSERT(vkCreateDescriptorSetLayout(mRenderer->BackendDevice()->Device(), &descSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
+			VK_ASSERT(vkCreateDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
 
 			VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
 			pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -92,7 +89,7 @@ namespace Cosmos
 			pipelineLayoutCI.flags = 0;
 			pipelineLayoutCI.setLayoutCount = 1;
 			pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayout;
-			VK_ASSERT(vkCreatePipelineLayout(mRenderer->BackendDevice()->Device(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create descriptor set layout");
+			VK_ASSERT(vkCreatePipelineLayout(mRenderer->GetDevice()->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create descriptor set layout");
 
 			VkPipelineVertexInputStateCreateInfo VISCI = {};
 			VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -190,7 +187,7 @@ namespace Cosmos
 			pipelineCI.renderPass = mRenderer->GetCommander().AccessMainCommandEntry()->renderPass;
 			pipelineCI.subpass = 0;
 			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
-			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->BackendDevice()->Device(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
+			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->GetDevice()->GetDevice(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 		}
 
 		// matrix ubo
@@ -203,7 +200,7 @@ namespace Cosmos
 			{
 				BufferCreate
 				(
-					mRenderer->BackendDevice(),
+					std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					sizeof(UniformBufferObject),
@@ -211,7 +208,7 @@ namespace Cosmos
 					&mUniformBuffersMemory[i]
 				);
 
-				vkMapMemory(mRenderer->BackendDevice()->Device(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+				vkMapMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
 			}
 		}
 
@@ -226,7 +223,7 @@ namespace Cosmos
 			descPoolCI.poolSizeCount = 1;
 			descPoolCI.pPoolSizes = &poolSize;
 			descPoolCI.maxSets = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
-			VK_ASSERT(vkCreateDescriptorPool(mRenderer->BackendDevice()->Device(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
+			VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
 			std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
 			
@@ -237,7 +234,7 @@ namespace Cosmos
 			descSetAllocInfo.pSetLayouts = layouts.data();
 
 			mDescriptorSets.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
-			VK_ASSERT(vkAllocateDescriptorSets(mRenderer->BackendDevice()->Device(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
+			VK_ASSERT(vkAllocateDescriptorSets(mRenderer->GetDevice()->GetDevice(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
 		
 			for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 			{
@@ -255,8 +252,12 @@ namespace Cosmos
 				descriptorWrite.descriptorCount = 1;
 				descriptorWrite.pBufferInfo = &bufferInfo;
 				
-				vkUpdateDescriptorSets(mRenderer->BackendDevice()->Device(), 1, &descriptorWrite, 0, nullptr);
+				vkUpdateDescriptorSets(mRenderer->GetDevice()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 			}
 		}
+
+		// destroy the shader module after usage
+		mVertexShader->Destroy();
+		mFragmentShader->Destroy();
 	}
 }

@@ -75,12 +75,7 @@ namespace Cosmos
 
 	void Explorer::OnDestroy()
 	{
-		for (auto& texture : mExtensionTexture)
-		{
-			delete texture;
-		}
 
-		delete mFolderTexture;
 	}
 
 	void Explorer::Clicked(ItemProperties& item)
@@ -100,8 +95,8 @@ namespace Cosmos
 			texturePath /= "textures";
 			texturePath /= "editor";
 			texturePath /= "folder.png";
-			mFolderTexture = new VKTexture2D(mRenderer->BackendDevice(), texturePath.string().c_str());
-			mFolderDescriptorSet = AddTexture(mFolderTexture->Sampler(), mFolderTexture->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			mFolderTexture = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
+			mFolderDescriptorSet = AddTexture(mFolderTexture->GetSampler(), mFolderTexture->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 
 		// extensions
@@ -112,8 +107,8 @@ namespace Cosmos
 				texturePath /= "textures";
 				texturePath /= "editor";
 				texturePath /= mExtensionTexturePaths[i];
-				mExtensionTexture[i] = new VKTexture2D(mRenderer->BackendDevice(), texturePath.string().c_str());
-				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->Sampler(), mExtensionTexture[i]->View(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				mExtensionTexture[i] = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
+				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->GetSampler(), mExtensionTexture[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			}
 		}
 	}

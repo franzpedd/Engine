@@ -17,12 +17,12 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKTexture> VKTexture::Create(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
+	std::shared_ptr<VKTexture2D> VKTexture2D::Create(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
 	{
-		return std::make_shared<VKTexture>(device, path, msaa, ktx);
+		return std::make_shared<VKTexture2D>(device, path, msaa, ktx);
 	}
 
-	VKTexture::VKTexture(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
+	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
 		: mDevice(device), mPath(path), mMSAA(msaa), mKTX(ktx)
 	{
 		LOG_ASSERT(!ktx, "Khronos Texture format not yet implemented");
@@ -31,15 +31,25 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	VKTexture::~VKTexture()
+	VKTexture2D::~VKTexture2D()
 	{
-		vkDestroySampler(mDevice->Device(), mSampler, nullptr);
-		vkDestroyImageView(mDevice->Device(), mView, nullptr);
-		vkDestroyImage(mDevice->Device(), mImage, nullptr);
-		vkFreeMemory(mDevice->Device(), mMemory, nullptr);
+		vkDestroySampler(mDevice->GetDevice(), mSampler, nullptr);
+		vkDestroyImageView(mDevice->GetDevice(), mView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
 	}
 
-	void VKTexture::LoadTexture()
+	VkImageView VKTexture2D::GetView()
+	{
+		return mView;
+	}
+
+	VkSampler& VKTexture2D::GetSampler()
+	{
+		return mSampler;
+	}
+
+	void VKTexture2D::LoadTexture()
 	{
 		int width;
 		int height;
@@ -70,9 +80,9 @@ namespace Cosmos
 		);
 
 		void* data = nullptr;
-		vkMapMemory(mDevice->Device(), stagingMemory, 0, imgSize, 0, &data);
+		vkMapMemory(mDevice->GetDevice(), stagingMemory, 0, imgSize, 0, &data);
 		memcpy(data, pixels, (size_t)imgSize);
-		vkUnmapMemory(mDevice->Device(), stagingMemory);
+		vkUnmapMemory(mDevice->GetDevice(), stagingMemory);
 
 		stbi_image_free(pixels);
 
@@ -96,7 +106,7 @@ namespace Cosmos
 		TransitionImageLayout
 		(
 			mDevice,
-			mDevice->MainCommandEntry()->commandPool,
+			mDevice->GetMainCommandEntry()->commandPool,
 			mImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
@@ -104,7 +114,7 @@ namespace Cosmos
 
 		// copy buffer to image
 		{
-			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, mDevice->MainCommandEntry()->commandPool);
+			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool);
 
 			VkBufferImageCopy region = {};
 			region.bufferOffset = 0;
@@ -122,25 +132,25 @@ namespace Cosmos
 			region.imageExtent.depth = 1;
 			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-			EndSingleTimeCommand(mDevice, mDevice->MainCommandEntry()->commandPool, cmdBuffer);
+			EndSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool, cmdBuffer);
 		}
 
 		// transition image layout to shader optimal
 		TransitionImageLayout
 		(
 			mDevice,
-			mDevice->MainCommandEntry()->commandPool,
+			mDevice->GetMainCommandEntry()->commandPool,
 			mImage,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 		);
 
 		// free staging buffer
-		vkDestroyBuffer(mDevice->Device(), stagingBuffer, nullptr);
-		vkFreeMemory(mDevice->Device(), stagingMemory, nullptr);
+		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingMemory, nullptr);
 	}
 
-	void VKTexture::CreateResources()
+	void VKTexture2D::CreateResources()
 	{
 		// image view
 		mView = CreateImageView
@@ -160,12 +170,12 @@ namespace Cosmos
 		samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerCI.anisotropyEnable = VK_TRUE;
-		samplerCI.maxAnisotropy = mDevice->Properties().limits.maxSamplerAnisotropy; //properties.limits.maxSamplerAnisotropy;
+		samplerCI.maxAnisotropy = mDevice->GetProperties().limits.maxSamplerAnisotropy; //properties.limits.maxSamplerAnisotropy;
 		samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerCI.unnormalizedCoordinates = VK_FALSE;
 		samplerCI.compareEnable = VK_FALSE;
 		samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		VK_ASSERT(vkCreateSampler(mDevice->Device(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
+		VK_ASSERT(vkCreateSampler(mDevice->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
 	}
 }

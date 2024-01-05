@@ -22,21 +22,21 @@ namespace Cosmos
 
 	void VKGraphicsPipeline::Destroy()
 	{
-		vkDeviceWaitIdle(mDevice->Device());
+		vkDeviceWaitIdle(mDevice->GetDevice());
 
 		mInitializerList.vertexShader->Destroy();
 		mInitializerList.fragmentShader->Destroy();
 
 		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			vkDestroyBuffer(mDevice->Device(), mUniformBuffers[i], nullptr);
-			vkFreeMemory(mDevice->Device(), mUniformBuffersMemory[i], nullptr);
+			vkDestroyBuffer(mDevice->GetDevice(), mUniformBuffers[i], nullptr);
+			vkFreeMemory(mDevice->GetDevice(), mUniformBuffersMemory[i], nullptr);
 		}
 		
-		vkDestroyDescriptorPool(mDevice->Device(), mDescriptorPool, nullptr);
-		vkDestroyPipeline(mDevice->Device(), mPipeline, nullptr);
-		vkDestroyPipelineLayout(mDevice->Device(), mPipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice->Device(), mDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorPool(mDevice->GetDevice(), mDescriptorPool, nullptr);
+		vkDestroyPipeline(mDevice->GetDevice(), mPipeline, nullptr);
+		vkDestroyPipelineLayout(mDevice->GetDevice(), mPipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mDevice->GetDevice(), mDescriptorSetLayout, nullptr);
 	}
 
 	void VKGraphicsPipeline::CreatePipeline()
@@ -54,7 +54,7 @@ namespace Cosmos
 		uboDescSetLayoutCI.flags = 0;
 		uboDescSetLayoutCI.bindingCount = 1;
 		uboDescSetLayoutCI.pBindings = &uboDescSetLayoutBinding;
-		VK_ASSERT(vkCreateDescriptorSetLayout(mDevice->Device(), &uboDescSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
+		VK_ASSERT(vkCreateDescriptorSetLayout(mDevice->GetDevice(), &uboDescSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
 
 		// graphics pipeline
 		VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
@@ -65,7 +65,7 @@ namespace Cosmos
 		pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayout;
 		pipelineLayoutCI.pPushConstantRanges = mInitializerList.pushConstantRange.data();
 		pipelineLayoutCI.pushConstantRangeCount = (uint32_t)mInitializerList.pushConstantRange.size();
-		VK_ASSERT(vkCreatePipelineLayout(mDevice->Device(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
+		VK_ASSERT(vkCreatePipelineLayout(mDevice->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
 
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCI = {};
 		vertexInputStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -170,7 +170,10 @@ namespace Cosmos
 		graphicsPipelineCI.renderPass = mInitializerList.renderPass;
 		graphicsPipelineCI.subpass = 0;
 		graphicsPipelineCI.basePipelineHandle = VK_NULL_HANDLE;
-		VK_ASSERT(vkCreateGraphicsPipelines(mDevice->Device(), mInitializerList.pipelineCache, 1, &graphicsPipelineCI, nullptr, &mPipeline), "Failed to create graphics pipeline");
+		VK_ASSERT(vkCreateGraphicsPipelines(mDevice->GetDevice(), mInitializerList.pipelineCache, 1, &graphicsPipelineCI, nullptr, &mPipeline), "Failed to create graphics pipeline");
+		
+		mInitializerList.vertexShader->Destroy();
+		mInitializerList.fragmentShader->Destroy();
 	}
 
 	void VKGraphicsPipeline::CreateUniformBufferObject()
@@ -191,7 +194,7 @@ namespace Cosmos
 				&mUniformBuffersMemory[i]
 			);
 
-			vkMapMemory(mDevice->Device(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+			vkMapMemory(mDevice->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
 		}
 	}
 
@@ -206,7 +209,7 @@ namespace Cosmos
 		descPoolCI.poolSizeCount = 1;
 		descPoolCI.pPoolSizes = &poolSize;
 		descPoolCI.maxSets = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
-		VK_ASSERT(vkCreateDescriptorPool(mDevice->Device(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
+		VK_ASSERT(vkCreateDescriptorPool(mDevice->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
 		std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
 
@@ -217,7 +220,7 @@ namespace Cosmos
 		descSetAllocInfo.pSetLayouts = layouts.data();
 
 		mDescriptorSets.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
-		VK_ASSERT(vkAllocateDescriptorSets(mDevice->Device(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
+		VK_ASSERT(vkAllocateDescriptorSets(mDevice->GetDevice(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
 
 		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -235,7 +238,7 @@ namespace Cosmos
 			descriptorWrite.descriptorCount = 1;
 			descriptorWrite.pBufferInfo = &bufferInfo;
 
-			vkUpdateDescriptorSets(mDevice->Device(), 1, &descriptorWrite, 0, nullptr);
+			vkUpdateDescriptorSets(mDevice->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 		}
 	}
 

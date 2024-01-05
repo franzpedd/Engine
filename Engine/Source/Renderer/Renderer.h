@@ -4,13 +4,11 @@
 #include "Commander.h"
 #include "Entity/Entity.h"
 
-#include "Vulkan/VKBuffer.h"
-#include "Vulkan/VKInstance.h"
-#include "Vulkan/VKDevice.h"
+#include "Instance.h"
+#include "Device.h"
 #include "Vulkan/VKPipeline.h"
-#include "Vulkan/VKSwapchain.h"
+#include "Swapchain.h"
 
-#include <vulkan/vulkan.h>
 #include <memory>
 
 namespace Cosmos
@@ -24,77 +22,57 @@ namespace Cosmos
 	{
 	public:
 
-		// returns a smart poitner to a new renderer
+		// returns a smart pointer to a new renderer
 		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window, Scene* scene);
 
 		// constructor
-		Renderer(std::shared_ptr<Window>& window, Scene* scene);
+		Renderer() = default;
 
 		// destructor
-		~Renderer();
+		virtual ~Renderer() = default;
 
 	public:
 
 		// returns the backend instance class object
-		inline std::shared_ptr<VKInstance>& BackendInstance() { return mInstance; }
+		virtual std::shared_ptr<Instance> GetInstance() = 0;
 
 		// returns the backend device class object
-		inline std::shared_ptr<VKDevice>& BackendDevice() { return mDevice; }
+		virtual std::shared_ptr<Device> GetDevice() = 0;
 
 		// returns the backend swapchain class object
-		inline std::shared_ptr<VKSwapchain>& BackendSwapchain() { return mSwapchain; }
+		virtual std::shared_ptr<Swapchain> GetSwapchain() = 0;
 
 	public:
 
 		// returns the vulkan pipeline cache
-		inline VkPipelineCache& PipelineCache() { return mPipelineCache; }
+		virtual VkPipelineCache& PipelineCache() = 0;
 
 		// returns the current in-process frame
-		inline uint32_t CurrentFrame() { return mCurrentFrame; }
+		virtual uint32_t CurrentFrame() = 0;
 
 		// returns the current image index
-		inline uint32_t ImageIndex() { return mImageIndex; }
+		virtual uint32_t ImageIndex() = 0;
 
 		// returns a reference to the commander
-		inline Commander& GetCommander() { return mCommander; }
+		virtual Commander& GetCommander() = 0;
 
 		// returns a reference to the pipeline library
-		inline VKPipelineLibrary& GetPipelineLibrary() { return mPipelineLibrary; }
+		virtual VKPipelineLibrary& GetPipelineLibrary() = 0;
 
 	public:
 
 		// updates the renderer
-		void OnUpdate();
+		virtual void OnUpdate() = 0;
 
 		// links the user interface to the renderer
-		inline void ConnectUI(std::shared_ptr<GUI>& ui) { mUI = ui; }
+		virtual void ConnectUI(std::shared_ptr<GUI>& ui) = 0;
 
 	private:
 
 		// submit all render passes
-		void ManageRenderPasses(uint32_t& imageIndex);
+		virtual void ManageRenderPasses(uint32_t& imageIndex) = 0;
 
 		// creates global structures shared across the renderer
-		void CreateGlobalStates();
-
-	private:
-
-		std::shared_ptr<Window>& mWindow;
-		Scene* mScene;
-		std::shared_ptr<VKInstance> mInstance;
-		std::shared_ptr<VKDevice> mDevice;
-		std::shared_ptr<VKSwapchain> mSwapchain;
-
-		Commander mCommander;
-		VKPipelineLibrary mPipelineLibrary;
-		VkPipelineCache mPipelineCache;
-
-		std::vector<VkSemaphore> mImageAvailableSemaphores;
-		std::vector<VkSemaphore> mRenderFinishedSemaphores;
-		std::vector<VkFence> mInFlightFences;
-		uint32_t mCurrentFrame = 0;
-		uint32_t mImageIndex = 0;
-
-		std::shared_ptr<GUI> mUI;
+		virtual void CreateGlobalStates() = 0;
 	};
 }

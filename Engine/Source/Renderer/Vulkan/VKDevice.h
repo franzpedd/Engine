@@ -2,6 +2,7 @@
 
 #include "Defines.h"
 #include "Renderer/Commander.h"
+#include "Renderer/Device.h"
 #include <vulkan/vulkan.h>
 #include <memory>
 #include <optional>
@@ -13,72 +14,59 @@ namespace Cosmos
 	class VKInstance;
 	class Window;
 
-	// main queues used by the vulkan renderer backend
-	struct QueueFamilyIndices
-	{
-		std::optional<uint32_t> graphics;
-		std::optional<uint32_t> present;
-		std::optional<uint32_t> compute;
-
-		// returns if found all queues
-		inline bool IsComplete() { return graphics.has_value() && present.has_value() && compute.has_value(); }
-	};
-
-	class VKDevice
+	class VKDevice : public Device
 	{
 	public:
 
 		// returns a smart pointer to a new device
-		static std::shared_ptr<VKDevice> Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance);
+		static std::shared_ptr<VKDevice> Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance);
 
 		// constructor
-		VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance);
+		VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance);
 
 		// destructor
 		~VKDevice();
 
 		// returns a reference to the vulkan surface
-		inline VkSurfaceKHR& Surface() { return mSurface; }
+		virtual VkSurfaceKHR& GetSurface() override;
 
 		// returns a reference to the vulkan device
-		inline VkDevice& Device() { return mDevice; }
+		virtual VkDevice& GetDevice() override;
 
 		// returns a reference to the vulkan physical device
-		inline VkPhysicalDevice& PhysicalDevice() { return mPhysicalDevice; }
+		virtual VkPhysicalDevice& GetPhysicalDevice() override;
 
 		// returns a reference to the vulkan physical device features
-		inline VkPhysicalDeviceFeatures& Features() { return mFeatures; }
+		virtual VkPhysicalDeviceFeatures& GetFeatures() override;
 
 		// returns a reference to the vulkan physical device properties
-		inline VkPhysicalDeviceProperties& Properties() { return mProperties; }
+		virtual VkPhysicalDeviceProperties& GetProperties() override;
 
 		// returns the graphics queue
-		inline VkQueue& GraphicsQueue() { return mGraphicsQueue; }
+		virtual VkQueue& GetGraphicsQueue() override;
 
 		// returns the presentation queue
-		inline VkQueue& PresentQueue() { return mPresentQueue; }
+		virtual VkQueue& GetPresentQueue() override;
 
 		// returns the compute queue
-		inline VkQueue& ComputeQueue() { return mComputeQueue; }
+		virtual VkQueue& GetComputeQueue() override;
 
 		// returns the sampling in use
-		inline VkSampleCountFlagBits MSAA() { return mMSAACount; }
-
-	public:
+		virtual VkSampleCountFlagBits GetMSAA() override;
 
 		// returns a reference to the renderer command entry
-		inline std::shared_ptr<CommandEntry>& MainCommandEntry() { return mCommandEntry; }
+		virtual std::shared_ptr<CommandEntry>& GetMainCommandEntry() override;
 
 	public:
 
 		// returns the queue indices for all available queues
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+		virtual QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) override;
 
 		// returns the index of requested type of memory
-		uint32_t GetMemoryType(uint32_t bits, VkMemoryPropertyFlags properties, VkBool32* found = nullptr);
+		virtual uint32_t GetMemoryType(uint32_t bits, VkMemoryPropertyFlags properties, VkBool32* found = nullptr) override;
 
 		// returns the maximum MSAA sample the physical device handles
-		VkSampleCountFlagBits GetMaxUsableSamples();
+		virtual VkSampleCountFlagBits GetMaxUsableSamples() override;
 
 	private:
 
@@ -96,7 +84,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<VKInstance>& mInstance;
+		std::shared_ptr<VKInstance> mInstance;
 		std::shared_ptr<Window>& mWindow;
 
 		std::shared_ptr<CommandEntry> mCommandEntry;

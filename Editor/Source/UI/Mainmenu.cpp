@@ -18,7 +18,11 @@ namespace Cosmos
 
 		HandleMenuAction();
 
-		ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoTitleBar);
+		ImGuiWindowFlags flags = {}; //ImGuiWindowFlags_;
+		//flags |= ImGuiWindowFlags_NoDecoration;
+		//flags |= ImGuiWindowFlags_NoBackground;
+
+		ImGui::Begin("Info", nullptr, flags);
 		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetAverageFPS());
 		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::Get()->GetTimeStep());
 		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", mCamera->GetPosition().x, mCamera->GetPosition().y, mCamera->GetPosition().z);
@@ -26,7 +30,7 @@ namespace Cosmos
 
 		ImGui::End();
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 
 	void Mainmenu::DisplayMainMenu()

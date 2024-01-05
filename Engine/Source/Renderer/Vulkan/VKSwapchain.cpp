@@ -28,20 +28,65 @@ namespace Cosmos
 
 	VKSwapchain::~VKSwapchain()
 	{
-		vkDestroyImageView(mDevice->Device(), mDepthView, nullptr);
-		vkDestroyImage(mDevice->Device(), mDepthImage, nullptr);
-		vkFreeMemory(mDevice->Device(), mDepthMemory, nullptr);
+		vkDestroyImageView(mDevice->GetDevice(), mDepthView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mDepthImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mDepthMemory, nullptr);
 
-		vkDestroyImageView(mDevice->Device(), mColorView, nullptr);
-		vkDestroyImage(mDevice->Device(), mColorImage, nullptr);
-		vkFreeMemory(mDevice->Device(), mColorMemory, nullptr);
+		vkDestroyImageView(mDevice->GetDevice(), mColorView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mColorImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mColorMemory, nullptr);
 
 		for (auto imageView : mImageViews)
 		{
-			vkDestroyImageView(mDevice->Device(), imageView, nullptr);
+			vkDestroyImageView(mDevice->GetDevice(), imageView, nullptr);
 		}
 
-		vkDestroySwapchainKHR(mDevice->Device(), mSwapchain, nullptr);
+		vkDestroySwapchainKHR(mDevice->GetDevice(), mSwapchain, nullptr);
+	}
+
+	VkSwapchainKHR& VKSwapchain::GetSwapchain()
+	{
+		return mSwapchain;
+	}
+
+	std::vector<VkImage>& VKSwapchain::GetImages()
+	{
+		return mImages;
+	}
+
+	std::vector<VkImageView> VKSwapchain::GetImageViews()
+	{
+		return mImageViews;
+	}
+
+	uint32_t VKSwapchain::GetImageCount()
+	{
+		return mImageCount;
+	}
+
+	VkSurfaceFormatKHR& VKSwapchain::GetSurfaceFormat()
+	{
+		return mSurfaceFormat;
+	}
+
+	VkPresentModeKHR& VKSwapchain::GetPresentMode()
+	{
+		return mPresentMode;
+	}
+
+	VkExtent2D& VKSwapchain::GetExtent()
+	{
+		return mExtent;
+	}
+
+	VkImageView& VKSwapchain::GetColorView()
+	{
+		return mColorView;
+	}
+
+	VkImageView& VKSwapchain::GetDepthView()
+	{
+		return mDepthView;
 	}
 
 	void VKSwapchain::CreateRenderPass()
@@ -51,7 +96,7 @@ namespace Cosmos
 
 		// color
 		attachments[0].format = mSurfaceFormat.format;
-		attachments[0].samples = mDevice->MSAA();
+		attachments[0].samples = mDevice->GetMSAA();
 		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -61,7 +106,7 @@ namespace Cosmos
 
 		// depth
 		attachments[1].format = FindDepthFormat(mDevice);
-		attachments[1].samples = mDevice->MSAA();
+		attachments[1].samples = mDevice->GetMSAA();
 		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -114,7 +159,7 @@ namespace Cosmos
 		renderPassCI.pSubpasses = &subpass;
 		renderPassCI.dependencyCount = 1;
 		renderPassCI.pDependencies = &dependency;
-		VK_ASSERT(vkCreateRenderPass(mDevice->Device(), &renderPassCI, nullptr, &mDevice->MainCommandEntry()->renderPass), "Failed to create render pass");
+		VK_ASSERT(vkCreateRenderPass(mDevice->GetDevice(), &renderPassCI, nullptr, &mDevice->GetMainCommandEntry()->renderPass), "Failed to create render pass");
 	}
 
 	void VKSwapchain::CreateSwapchain()
@@ -136,14 +181,14 @@ namespace Cosmos
 
 		// create the swapchain
 		{
-			QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->PhysicalDevice(), mDevice->Surface());
+			QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
 			uint32_t queueFamilyIndices[] = { indices.graphics.value(), indices.present.value() };
 
 			VkSwapchainCreateInfoKHR swapchainCI = {};
 			swapchainCI.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 			swapchainCI.pNext = nullptr;
 			swapchainCI.flags = 0;
-			swapchainCI.surface = mDevice->Surface();
+			swapchainCI.surface = mDevice->GetSurface();
 			swapchainCI.minImageCount = mImageCount;
 			swapchainCI.imageFormat = mSurfaceFormat.format;
 			swapchainCI.imageColorSpace = mSurfaceFormat.colorSpace;
@@ -169,12 +214,12 @@ namespace Cosmos
 			swapchainCI.presentMode = mPresentMode;
 			swapchainCI.clipped = VK_TRUE;
 
-			VK_ASSERT(vkCreateSwapchainKHR(mDevice->Device(), &swapchainCI, nullptr, &mSwapchain), "Swapchain: Failed to create the Swapchain");
+			VK_ASSERT(vkCreateSwapchainKHR(mDevice->GetDevice(), &swapchainCI, nullptr, &mSwapchain), "Swapchain: Failed to create the Swapchain");
 
 			// get the images in the swapchain
-			vkGetSwapchainImagesKHR(mDevice->Device(), mSwapchain, &mImageCount, nullptr);
+			vkGetSwapchainImagesKHR(mDevice->GetDevice(), mSwapchain, &mImageCount, nullptr);
 			mImages.resize(mImageCount);
-			vkGetSwapchainImagesKHR(mDevice->Device(), mSwapchain, &mImageCount, mImages.data());
+			vkGetSwapchainImagesKHR(mDevice->GetDevice(), mSwapchain, &mImageCount, mImages.data());
 		}
 	}
 
@@ -200,7 +245,7 @@ namespace Cosmos
 				mExtent.width,
 				mExtent.height,
 				1,
-				mDevice->MSAA(),
+				mDevice->GetMSAA(),
 				format,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -222,7 +267,7 @@ namespace Cosmos
 				mExtent.width,
 				mExtent.height,
 				1,
-				mDevice->MSAA(),
+				mDevice->GetMSAA(),
 				format,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -236,7 +281,7 @@ namespace Cosmos
 
 		// create frame buffers
 		{
-			mDevice->MainCommandEntry()->framebuffers.resize(mImageViews.size());
+			mDevice->GetMainCommandEntry()->framebuffers.resize(mImageViews.size());
 
 			for (size_t i = 0; i < mImageViews.size(); i++)
 			{
@@ -244,38 +289,38 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = mDevice->MainCommandEntry()->renderPass;
+				framebufferCI.renderPass = mDevice->GetMainCommandEntry()->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
 				framebufferCI.width = mExtent.width;
 				framebufferCI.height = mExtent.height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mDevice->Device(), &framebufferCI, nullptr, &mDevice->MainCommandEntry()->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mDevice->GetDevice(), &framebufferCI, nullptr, &mDevice->GetMainCommandEntry()->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
 
 	void VKSwapchain::Cleanup()
 	{
-		vkDestroyImageView(mDevice->Device(), mDepthView, nullptr);
-		vkDestroyImage(mDevice->Device(), mDepthImage, nullptr);
-		vkFreeMemory(mDevice->Device(), mDepthMemory, nullptr);
+		vkDestroyImageView(mDevice->GetDevice(), mDepthView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mDepthImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mDepthMemory, nullptr);
 
-		vkDestroyImageView(mDevice->Device(), mColorView, nullptr);
-		vkDestroyImage(mDevice->Device(), mColorImage, nullptr);
-		vkFreeMemory(mDevice->Device(), mColorMemory, nullptr);
+		vkDestroyImageView(mDevice->GetDevice(), mColorView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mColorImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mColorMemory, nullptr);
 
-		for (uint32_t i = 0; i < mDevice->MainCommandEntry()->framebuffers.size(); i++)
+		for (uint32_t i = 0; i < mDevice->GetMainCommandEntry()->framebuffers.size(); i++)
 		{
-			vkDestroyFramebuffer(mDevice->Device(), mDevice->MainCommandEntry()->framebuffers[i], nullptr);
+			vkDestroyFramebuffer(mDevice->GetDevice(), mDevice->GetMainCommandEntry()->framebuffers[i], nullptr);
 		}
 
 		for (auto imageView : mImageViews)
 		{
-			vkDestroyImageView(mDevice->Device(), imageView, nullptr);
+			vkDestroyImageView(mDevice->GetDevice(), imageView, nullptr);
 		}
 
-		vkDestroySwapchainKHR(mDevice->Device(), mSwapchain, nullptr);
+		vkDestroySwapchainKHR(mDevice->GetDevice(), mSwapchain, nullptr);
 	}
 
 	void VKSwapchain::Recreate()
@@ -290,7 +335,7 @@ namespace Cosmos
 			mWindow->WaitEvents();
 		}
 
-		vkDeviceWaitIdle(mDevice->Device());
+		vkDeviceWaitIdle(mDevice->GetDevice());
 
 		Cleanup();
 
@@ -302,24 +347,24 @@ namespace Cosmos
 	VKSwapchain::Details VKSwapchain::QueryDetails()
 	{
 		Details details = {};
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mDevice->PhysicalDevice(), mDevice->Surface(), &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mDevice->GetPhysicalDevice(), mDevice->GetSurface(), &details.capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->PhysicalDevice(), mDevice->Surface(), &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->GetPhysicalDevice(), mDevice->GetSurface(), &formatCount, nullptr);
 
 		if (formatCount != 0)
 		{
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->PhysicalDevice(), mDevice->Surface(), &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(mDevice->GetPhysicalDevice(), mDevice->GetSurface(), &formatCount, details.formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->PhysicalDevice(), mDevice->Surface(), &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->GetPhysicalDevice(), mDevice->GetSurface(), &presentModeCount, nullptr);
 
 		if (presentModeCount != 0)
 		{
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->PhysicalDevice(), mDevice->Surface(), &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(mDevice->GetPhysicalDevice(), mDevice->GetSurface(), &presentModeCount, details.presentModes.data());
 		}
 
 		return details;

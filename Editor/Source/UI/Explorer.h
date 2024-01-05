@@ -14,7 +14,7 @@ namespace Cosmos
 		{
 			std::filesystem::directory_entry dirEntry;
 			std::string ext;
-			VKTexture2D* texture = nullptr;
+			std::shared_ptr<Texture2D> texture = nullptr;
 			VkDescriptorSet* descriptor = VK_NULL_HANDLE;
 		};
 
@@ -51,7 +51,7 @@ namespace Cosmos
 		std::string mRoot = "Data";
 
 		// folder 
-		VKTexture2D* mFolderTexture;
+		std::shared_ptr<Texture2D> mFolderTexture;
 		VkDescriptorSet mFolderDescriptorSet;
 
 		// extensions
@@ -72,7 +72,7 @@ namespace Cosmos
 			"png.png", "jpg.png", "ktx.png"			// textures
 		};
 
-		std::array<VKTexture2D*, 11> mExtensionTexture;
+		std::array<std::shared_ptr<Texture2D>, 11> mExtensionTexture;
 		std::array<VkDescriptorSet, 11> mExtensionDescriptors;
 	};
 }
