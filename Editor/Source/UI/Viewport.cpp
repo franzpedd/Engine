@@ -1,11 +1,13 @@
 #include "Viewport.h"
 
+#include "TextureBrowser.h"
+
 #include <array>
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera)
-		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera)
+	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, TextureBrowser* texBrowser)
+		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera), mTexBrowser(texBrowser)
 
 	{
 		mCommandEntry = CommandEntry::Create(renderer->GetDevice()->GetDevice(), "Viewport");
@@ -295,12 +297,12 @@ namespace Cosmos
 		{
 			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(30, 30)))
 			{
-
+				mTexBrowser->ToogleOnOff(false);
 			}
 
 			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(30, 30)))
 			{
-
+				mTexBrowser->ToogleOnOff(true);
 			}
 		}
 

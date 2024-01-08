@@ -52,7 +52,7 @@ namespace Cosmos
 			// end fps system
 			{
 				mEnd = std::chrono::high_resolution_clock::now();	// ends timer
-				mFrames++;										// add frame to the count
+				mFrames++;											// add frame to the count
 			
 				// calculates time taken by the renderer updating
 				mTimeDifference = std::chrono::duration<double, std::milli>(mEnd - mStart).count(); 

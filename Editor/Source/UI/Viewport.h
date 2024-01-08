@@ -4,12 +4,15 @@
 
 namespace Cosmos
 {
+	// forward declaration
+	class TextureBrowser;
+
 	class Viewport : public Widget
 	{
 	public:
 
 		// constructor
-		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera);
+		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, TextureBrowser* texBrowser);
 
 		// destructor
 		virtual ~Viewport() = default;
@@ -50,6 +53,7 @@ namespace Cosmos
 		std::shared_ptr<GUI>& mUI;
 		std::shared_ptr<Renderer>& mRenderer;
 		Camera* mCamera;
+		TextureBrowser* mTexBrowser;
 
 		std::shared_ptr<CommandEntry> mCommandEntry;
 

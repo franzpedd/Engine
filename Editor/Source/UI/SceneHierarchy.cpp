@@ -31,33 +31,22 @@ namespace Cosmos
 		// displays edit menu
 		if (ImGui::BeginMenuBar())
 		{
-			ImGui::Text(ICON_FA_PAINT_BRUSH " Edit Entity");
-
-			float itemSize = 20.0f;
-			float itemCount = 2.0f;
-
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize * itemCount);
-			itemCount--;
-
-			if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
+			ImGui::BeginGroup();
 			{
-				mScene->CreateEntity();
-			}
+				ImGui::Text(ICON_FA_PAINT_BRUSH " Edit Entity");
 
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize * itemCount);
-			itemCount--;
-
-			if (ImGui::MenuItem(ICON_FA_MINUS_SQUARE))
-			{
-				if (mSelectedEntity)
+				float itemSize = 35.0f;
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize);
+				
+				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
 				{
-					mScene->DestroyEntity(mSelectedEntity);
-					mSelectedEntity = {};
+					mScene->CreateEntity();
 				}
 			}
-
-			ImGui::EndMenuBar();
+			ImGui::EndGroup();
 		}
+
+		ImGui::EndMenuBar();
 		
 		// draws all existing entity nodes
 		for (auto& entid : mScene->GetEntityMap())
@@ -88,10 +77,10 @@ namespace Cosmos
 		{
 			ImGui::Text(ICON_FA_PAINT_BRUSH " Edit Components");
 
-			float itemSize = 20.0f;
+			float itemSize = 35.0f;
 			float itemCount = 1.0f;
 
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize * itemCount);
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (itemSize * itemCount));
 			itemCount--;
 
 			if (ImGui::BeginMenu(ICON_FA_PLUS_SQUARE))
@@ -121,7 +110,7 @@ namespace Cosmos
 		
 		// window behavior
 		ImGuiTreeNodeFlags windowFlags = {};
-		windowFlags |= ((mSelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+		windowFlags |= ((mSelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_SpanAvailWidth;
 		
 		// tree-node name
 		if (ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, windowFlags, name.c_str()))
@@ -131,61 +120,81 @@ namespace Cosmos
 				mSelectedEntity = entity;
 			}
 
+			if (ImGui::BeginPopupContextItem("##RightClickEntity"))
+			{
+				if (ImGui::MenuItem("Remove Entity"))
+				{
+					if (mSelectedEntity)
+					{
+						mScene->DestroyEntity(mSelectedEntity);
+						mSelectedEntity = {};
+					}
+				}
+			
+				ImGui::EndPopup();
+			}
+
 			ImGui::TreePop();
 		}
 	}
 
 	void SceneHierarchy::DrawComponents(Entity entity)
 	{
-		// id
+		// id and name (general info)
 		{
-			if (ImGui::TreeNodeEx("##ID", 0, "ID"))
+			ImGui::Separator();
+
 			{
 				uint64_t id = entity.GetComponent<IDComponent>().id;
-				ImGui::Text("%ju", id);
+				std::string idStr = "ID: ";
+				idStr.append(std::to_string(id));
 
-				ImGui::TreePop();
+				ImGui::Text("%s", idStr.c_str());
 			}
-		}
-		
-		// Name
-		{
-			auto& name = entity.GetComponent<NameComponent>().name;
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strncpy_s(buffer, sizeof(buffer), name.c_str(), sizeof(buffer));
-		
-			if (ImGui::TreeNodeEx("##Name", 0, "Name"))
+
+			ImGui::Text("Name: ");
+			ImGui::SameLine();
+
 			{
+				auto& name = entity.GetComponent<NameComponent>().name;
+				char buffer[ENTITY_NAME_MAX_CHARS];
+				memset(buffer, 0, sizeof(buffer));
+				strncpy_s(buffer, sizeof(buffer), name.c_str(), sizeof(buffer));
+
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
 
 				if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 				{
 					name = std::string(buffer);
 				}
+
 				ImGui::PopStyleVar();
-				ImGui::TreePop();
 			}
+
+			ImGui::Separator();
 		}
-		
-		// 3D Transformation matrix
+
 		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [](TransformComponent& component)
 			{
-				// translation
+				ImGui::Text("T: ");
+				ImGui::SameLine();
 				Vector3Control("Translation", component.translation);
 
-				// rotation
+				ImGui::Text("R: ");
+				ImGui::SameLine();
 				Vector3Control("Rotation", component.rotation);
 
-				// scale
-				Vector3Control("Scale", component.scale, 1.0f);
+				ImGui::Text("S: ");
+				ImGui::SameLine();
+				Vector3Control("Scale", component.scale);
+
 			});
 
 		// Sprite
-		DrawComponent<SpriteComponent>("Sprite", mSelectedEntity, [](SpriteComponent& component)
-			{
-
-			});
+		//DrawComponent<SpriteComponent>("Sprite", mSelectedEntity, [](SpriteComponent& component)
+		//	{
+		//
+		//	});
 	}
 
 	template<typename T>
@@ -215,14 +224,14 @@ namespace Cosmos
 				ImGui::TreePop();
 			}
 
-			ImGui::SameLine();
-
-			float itemSize = 30.0f;
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize);
-
-			if (ImGui::SmallButton(ICON_FA_MINUS_CIRCLE))
+			if (ImGui::BeginPopupContextItem("##RightClickComponent"))
 			{
-				entity.RemoveComponent<T>();
+				if (ImGui::MenuItem("Remove Component"))
+				{
+					entity.RemoveComponent<T>();
+				}
+
+				ImGui::EndPopup();
 			}
 		}
 	}

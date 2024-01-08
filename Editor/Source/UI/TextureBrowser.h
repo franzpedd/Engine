@@ -41,10 +41,15 @@ namespace Cosmos
 		// for user interface drawing
 		virtual void OnUpdate() override;
 
-	private:
+	public:
 
-		// searchs for textures and returns a vector of valid ones
-		std::vector<TextureProperties> SearchTextures(std::string str);
+		// opens/closes the widget
+		void ToogleOnOff(bool value);
+
+		// returns a copy of the last selected texture in the texture browser
+		inline TextureProperties GetSelectedTexture() { return mLastSelectedTexture; }
+
+	private:
 
 		// free current textures, searches for textures in the path
 		void RefreshFilesExplorer(std::string path);
@@ -53,11 +58,14 @@ namespace Cosmos
 
 		std::shared_ptr<Renderer>& mRenderer;
 		std::string mRoot = "Data";
+		bool mShowWindow = false;
 		std::string mSearchStr;
 		bool mUpdatedStr = false;
 		const std::array<const char*, EXTENSION_MAX> mValidExtensions = { ".jpg", ".png", ".tga", ".bmp" };
 		uint32_t mFoundTextures = 0;
 		ImVec2 mTextureSize = { 128.0f, 128.0f };
+
+		TextureProperties mLastSelectedTexture;
 
 		std::vector<TextureProperties> mTextures;
 	};

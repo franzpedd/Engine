@@ -61,7 +61,7 @@ namespace Cosmos
 				}
 
 				currentPos = ImGui::GetCursorPos();
-				ImGui::SetCursorPos({ currentPos.x + offSet, currentPos.y });
+				ImGui::SetCursorPosX({ currentPos.x + offSet});
 
 				ImGui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
 

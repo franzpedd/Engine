@@ -46,9 +46,6 @@ namespace Cosmos
 		
 			ImGui::Separator();
 		
-			if (ImGui::MenuItem(ICON_FA_UNDO " Undo")) mMenuAction = Action::Undo;
-			if (ImGui::MenuItem(ICON_FA_FAST_FORWARD " Redo")) mMenuAction = Action::Redo;
-		
 			ImGui::EndMenu();
 		}
 
@@ -75,21 +72,6 @@ namespace Cosmos
 			}
 			
 			ImGui::EndMenu();
-		}
-
-		if (ImGui::Button(ICON_FA_PLAY_CIRCLE))
-		{
-
-		}
-
-		if (ImGui::Button(ICON_FA_PAUSE_CIRCLE))
-		{
-
-		}
-
-		if (ImGui::Button(ICON_FA_STOP_CIRCLE))
-		{
-
 		}
 	}
 

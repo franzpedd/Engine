@@ -75,7 +75,7 @@ namespace Cosmos
 	};
 }
 
-#define ENGINE_PROFILER 1
+//#define ENGINE_PROFILER 1
 #if defined(ENGINE_PROFILER)
 	#if defined (_MSC_VER)
 		#define FUNC_SIG __FUNCSIG__
@@ -90,8 +90,8 @@ namespace Cosmos
 	#define PROFILER_SCOPE(name) Cosmos::Profiler::Timer timer##__LINE__(name);
 	#define PROFILER_FUNCTION() PROFILER_SCOPE(FUNC_SIG)
 #else
-	#define PROFILER_BEGIN_SESSION(name, filepath)
-	#define PROFILER_END_SESSION()
+	#define PROFILER_BEGIN(name, filepath)
+	#define PROFILER_END()
 	#define PROFILER_SCOPE(name)
 	#define PROFILER_FUNCTION()
 #endif

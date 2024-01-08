@@ -21,12 +21,12 @@ namespace Cosmos
 
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
-		mViewport = new Viewport(mUI, mRenderer, mCamera);
+		mTextureBrowser = new TextureBrowser(mRenderer);
+		mViewport = new Viewport(mUI, mRenderer, mCamera, mTextureBrowser);
 		mGrid = new Grid(mRenderer, mScene, mCamera);
 		mGizmo = new Gizmo(mWindow, mRenderer, mScene, mCamera, mViewport);
 		mMainmenu = new Mainmenu(mProject, mCamera, mGrid);
 		mSceneHierarchy = new SceneHierarchy(mScene, mGizmo);
-		mTextureBrowser = new TextureBrowser(mRenderer);
 		mDockspace = new Dockspace();
 
 		// widgets
@@ -55,5 +55,6 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Todo, "Fix new layout for existing windows");
 		LOG_TO_TERMINAL(Logger::Todo, "Move side menu to viewport overlay");
 		LOG_TO_TERMINAL(Logger::Todo, "ECS: Implement Texture Component");
+		LOG_TO_TERMINAL(Logger::Todo, "TextureBrowser: Add default texture on disk for initialization");
 	}
 }

@@ -17,79 +17,97 @@ namespace Cosmos
 
 	void TextureBrowser::OnUpdate()
 	{
+		if (!mShowWindow) return;
+
 		ImGuiWindowFlags flags = {};
 		//ImGuiWindowFlags_;
 
 		flags |= ImGuiWindowFlags_HorizontalScrollbar;
 		flags |= ImGuiWindowFlags_MenuBar;
+		flags |= ImGuiWindowFlags_NoDocking;
 
-		ImGui::Begin("Texture Browser", 0, flags);
+		ImGui::Begin("Texture Browser", &mShowWindow, flags);
 
 		if (ImGui::BeginMenuBar())
 		{
-			ImGui::Text("Texture Name:");
-			ImGui::Separator();
+			ImGui::Text(ICON_FA_SEARCH " Search: ");
 			ImGui::SameLine();
 
 			char buffer[MAX_SEARCH_PATH_SIZE];
 			memset(buffer, 0, sizeof(buffer));
 			strncpy_s(buffer, sizeof(buffer), mSearchStr.c_str(), sizeof(buffer));
-		
+			
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
 			{
 				mSearchStr = std::string(buffer);
 			}
 
-			if (ImGui::SmallButton("Refresh"))
+			if (ImGui::BeginMenu("Display Size"))
 			{
-
+				if (ImGui::MenuItem("64x64"))
+					mTextureSize = ImVec2(64.0f, 64.0f);
+				
+				if (ImGui::MenuItem("128x128"))
+					mTextureSize = ImVec2(128.0f, 128.0f);
+				
+				if (ImGui::MenuItem("256x256"))
+					mTextureSize = ImVec2(256.0f, 256.0f);
+				
+				ImGui::EndMenu();
 			}
-		
+
+			if (ImGui::MenuItem("Refresh Folder"))
+			{
+				RefreshFilesExplorer(mRoot);
+			}
+
 			ImGui::EndMenuBar();
 		}
 
-		auto& textures = SearchTextures(mSearchStr);
+		ImGui::Separator();
+		ImGui::NewLine();
 
 		ImVec2 currentPos = {};
 		float offSet = 5.0f;
 
-		for (auto& tex : textures)
+		for (auto& tex : mTextures)
 		{
-			// checks if must draw in the same line
-			if ((currentPos.x + (mTextureSize.x * 2)) <= ImGui::GetContentRegionAvail().x)
-				ImGui::SameLine();
-
-			ImGui::BeginGroup();
-
-			currentPos = ImGui::GetCursorPos();
-			ImGui::SetCursorPos({ currentPos.x + offSet, currentPos.y });
-
-			if (ImGui::ImageButton(tex.descriptor, mTextureSize))
+			if (tex.path.string().find(mSearchStr) != std::string::npos)
 			{
+				if ((currentPos.x + (mTextureSize.x * 2)) <= ImGui::GetContentRegionAvail().x)
+				{
+					ImGui::SameLine();
+				}
+
+				ImGui::BeginGroup();
 				
+				currentPos = ImGui::GetCursorPos();
+				ImGui::SetCursorPosX({ currentPos.x + offSet });
+				
+				if (ImGui::ImageButton(tex.descriptor, mTextureSize))
+				{
+					mLastSelectedTexture = tex;
+					mShowWindow = false;
+				}
+				
+				ImGui::Text(tex.path.filename().string().c_str());
+				
+				ImGui::EndGroup();
 			}
-
-			ImGui::Text(tex.path.filename().string().c_str());
-
-			ImGui::EndGroup();
 		}
 
 		ImGui::End();
 	}
 
-	std::vector<TextureBrowser::TextureProperties> TextureBrowser::SearchTextures(std::string str)
+	void TextureBrowser::ToogleOnOff(bool value)
 	{
-		std::vector<TextureBrowser::TextureProperties> textures;
-
-		for (auto& tex : mTextures)
+		if (value)
 		{
-			if (tex.path.string().find(str) != std::string::npos)
-			{
-				textures.emplace_back(tex);
-			}
+			mShowWindow = true;
+			return;
 		}
 
-		return textures;
+		mShowWindow = false;
 	}
 
 	void TextureBrowser::RefreshFilesExplorer(std::string path)
