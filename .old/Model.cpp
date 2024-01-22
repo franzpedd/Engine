@@ -131,7 +131,6 @@ namespace Cosmos
 			imageCI.arrayLayers = 1;
 			imageCI.samples = VK_SAMPLE_COUNT_1_BIT; // check for MSAA ?
 			imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-			imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 			imageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageCI.extent.width = mWidth;
@@ -314,7 +313,6 @@ namespace Cosmos
 			samplerCI.compareOp = VK_COMPARE_OP_NEVER;
 			samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 			samplerCI.maxAnisotropy = 1.0;
-			samplerCI.anisotropyEnable = VK_FALSE;
 			samplerCI.maxLod = (float)mMipLevels;
 			samplerCI.maxAnisotropy = 8.0f;
 			samplerCI.anisotropyEnable = VK_TRUE;

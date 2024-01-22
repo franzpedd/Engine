@@ -69,6 +69,7 @@ project "GLFW"
 		disablewarnings { "6011" }
 
 	filter "configurations:Debug"
+		warnings "Off"
 		runtime "Debug"
 		symbols "on"
 

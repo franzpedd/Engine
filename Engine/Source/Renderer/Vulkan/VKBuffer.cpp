@@ -240,7 +240,7 @@ namespace Cosmos
 		vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 	}
 
-	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<Device>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
+	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
 	{
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

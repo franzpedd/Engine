@@ -12,6 +12,7 @@ namespace Cosmos
 	class Grid;
 	class Gizmo;
 	class Mainmenu;
+	class ModelBrowser;
 	class SceneHierarchy;
 	class TextureBrowser;
 	class Viewport;
@@ -39,6 +40,7 @@ namespace Cosmos
 		Mainmenu* mMainmenu;
 		SceneHierarchy* mSceneHierarchy;
 		TextureBrowser* mTextureBrowser;
+		ModelBrowser* mModelBrowser;
 
 		// entity
 		Camera* mCamera;

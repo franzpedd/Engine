@@ -25,6 +25,7 @@ namespace Cosmos
 
 		// connect the UI to the renderer to handle resize events
 		mRenderer->ConnectUI(mUI);
+		mScene->ConnectRenderer(mRenderer);
 	}
 
 	void Application::Run()
@@ -70,6 +71,9 @@ namespace Cosmos
 				}
 			}
 		}
+
+		// re-enable default console to catch quiting errors
+		Logger::Get().UseExternalConsole(false);
 
 		mScene->Destroy();
 		mUI->Destroy();

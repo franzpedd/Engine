@@ -10,7 +10,7 @@ namespace Cosmos
 
 	void Explorer::OnUpdate()
 	{
-		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot, true);
+		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot);
 		ImVec2 buttonSize = { 50, 50 };
 		ImVec2 currentPos = {};
 		float offSet = 5.0f;
@@ -19,7 +19,6 @@ namespace Cosmos
 		parentPath = parentPath.parent_path();
 
 		ImGui::Begin("Explorer");
-		ImGui::BeginChild("Items");
 
 		// draw back folder
 		{
@@ -33,7 +32,10 @@ namespace Cosmos
 				item.ext = "";
 				item.texture = mFolderTexture;
 
-				Clicked(item);
+				if (item.dirEntry.is_directory())
+				{
+					mRoot = item.dirEntry.path().string();
+				}
 			}
 
 			currentPos = { ImGui::GetCursorPos().x, ImGui::GetCursorPos().y };
@@ -49,27 +51,41 @@ namespace Cosmos
 		for (size_t i = 0; i < currDirItems.size(); i++)
 		{
 			// checks if must draw in the same line
-			if ((currentPos.x + (buttonSize.x * 2)) <= ImGui::GetContentRegionAvail().x) ImGui::SameLine();
+			if ((currentPos.x + (buttonSize.x * 2)) <= ImGui::GetContentRegionAvail().x)
+				ImGui::SameLine();
 
 			// draws
+			ImGui::BeginGroup();
+
+			if (ImGui::ImageButton(currDirItems[i].dirEntry.path().string().c_str(), *currDirItems[i].descriptor, buttonSize))
 			{
-				ImGui::BeginGroup();
-
-				if (ImGui::ImageButton(currDirItems[i].dirEntry.path().string().c_str(), *currDirItems[i].descriptor, buttonSize))
+				if (currDirItems[i].dirEntry.is_directory())
 				{
-					Clicked(currDirItems[i]);
+					mRoot = currDirItems[i].dirEntry.path().string();
 				}
+			}
 
-				currentPos = ImGui::GetCursorPos();
-				ImGui::SetCursorPosX({ currentPos.x + offSet});
+			currentPos = ImGui::GetCursorPos();
+			ImGui::SetCursorPosX({ currentPos.x + offSet });
 
-				ImGui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
+			ImGui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
 
-				ImGui::EndGroup();
+			ImGui::EndGroup();
+
+			// drag and drop behaviour
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			{
+				ImGui::SetDragDropPayload
+				(
+					"EXPLORER",
+					currDirItems[i].dirEntry.path().string().c_str(),
+					currDirItems[i].dirEntry.path().string().size() + 1,
+					ImGuiCond_Once
+				);
+				ImGui::EndDragDropSource();
 			}
 		}
 
-		ImGui::EndChild();
 		ImGui::End();
 	}
 
@@ -78,22 +94,14 @@ namespace Cosmos
 
 	}
 
-	void Explorer::Clicked(ItemProperties& item)
-	{
-		if (item.dirEntry.is_directory())
-		{
-			mRoot = item.dirEntry.path().string();
-		}
-	}
-
 	void Explorer::CreateTextures()
 	{
 		std::filesystem::path texturePath = mRoot;
 
 		// folder
 		{
-			texturePath /= "textures";
-			texturePath /= "editor";
+			texturePath /= "Textures";
+			texturePath /= "Editor";
 			texturePath /= "folder.png";
 			mFolderTexture = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
 			mFolderDescriptorSet = AddTexture(mFolderTexture->GetSampler(), mFolderTexture->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -104,8 +112,8 @@ namespace Cosmos
 			for (size_t i = 0; i < mExtensionTexturePaths.size(); i++)
 			{
 				texturePath = mRoot;
-				texturePath /= "textures";
-				texturePath /= "editor";
+				texturePath /= "Textures";
+				texturePath /= "Editor";
 				texturePath /= mExtensionTexturePaths[i];
 				mExtensionTexture[i] = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
 				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->GetSampler(), mExtensionTexture[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -113,51 +121,13 @@ namespace Cosmos
 		}
 	}
 
-	std::vector<Explorer::ItemProperties> Explorer::RefreshExplorer(std::string root, bool onlyCurrentFolder)
+	std::vector<Explorer::ItemProperties> Explorer::RefreshExplorer(std::string root)
 	{
 		std::filesystem::path currPath = mRoot;
 		std::vector<std::filesystem::directory_entry> dirItems = {};
 		std::vector<Explorer::ItemProperties> items = {};
 
-		if (onlyCurrentFolder)
-		{
-			for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(mRoot))
-			{
-				if (std::filesystem::is_directory(dirEntry))
-				{
-					ItemProperties item;
-					item.dirEntry = dirEntry;
-					item.ext = "";
-					item.texture = mFolderTexture;
-					item.descriptor = &mFolderDescriptorSet;
-					items.push_back(item);
-
-					dirItems.push_back(dirEntry);
-					continue;
-				}
-
-				// file, check for valid extensions
-				std::string fileExt = dirEntry.path().extension().string();
-				for (size_t i = 0; i < mValidExtensions.size(); i++)
-				{
-					if (strcmp(mValidExtensions[i], fileExt.c_str()) == 0)
-					{
-						ItemProperties item;
-						item.dirEntry = dirEntry;
-						item.ext = mValidExtensions[i];
-						item.texture = mExtensionTexture[i];
-						item.descriptor = &mExtensionDescriptors[i];
-						items.push_back(item);
-
-						dirItems.push_back(dirEntry);
-					}
-				}
-			}
-
-			return items;
-		}
-
-		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(mRoot))
+		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(mRoot))
 		{
 			if (std::filesystem::is_directory(dirEntry))
 			{

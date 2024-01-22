@@ -13,11 +13,9 @@ namespace Cosmos
 	{
 	public:
 
-		// creates a texture from an input file
-		static std::shared_ptr<VKTexture2D> Create(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
-
 		// constructor
 		VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
+		VKTexture2D(std::shared_ptr<VKDevice>& device, tinygltf::Image& image, TextureSampler sampler, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT);
 
 		// destructor
 		~VKTexture2D();
@@ -34,9 +32,10 @@ namespace Cosmos
 
 		// loads the texture
 		void LoadTexture();
+		void LoadTexture(tinygltf::Image& image);
 
-		// creates the vulkan resources for the image
-		void CreateResources();
+		// creates mipmaps for the current bound texture
+		void CreateMipmaps();
 
 	private:
 
@@ -49,5 +48,12 @@ namespace Cosmos
 		VkDeviceMemory mMemory = VK_NULL_HANDLE;
 		VkImageView mView = VK_NULL_HANDLE;
 		VkSampler mSampler = VK_NULL_HANDLE;
+		VkImageLayout mLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VkDescriptorImageInfo mDescriptor = {};
+
+		int32_t mWidth = 0;
+		int32_t mHeight = 0;
+		int32_t mChannels = 0;
+		int32_t mMipLevels = 0;
 	};
 }

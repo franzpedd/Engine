@@ -77,5 +77,4 @@ namespace Cosmos
 
 	// finishes the recording of a command buffer and send it to the queue
 	void FlushCommandBuffer(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free = false);
-
 }

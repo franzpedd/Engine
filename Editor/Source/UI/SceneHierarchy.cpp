@@ -86,6 +86,7 @@ namespace Cosmos
 			if (ImGui::BeginMenu(ICON_FA_PLUS_SQUARE))
 			{
 				DisplayAddComponentEntry<TransformComponent>("Transform");
+				DisplayAddComponentEntry<ModelComponent>("Model");
 
 				ImGui::EndMenu();
 			}
@@ -103,23 +104,15 @@ namespace Cosmos
 
 	void SceneHierarchy::DrawEntityNode(Entity entity)
 	{
-		if (!entity.HasComponent<NameComponent>() || !entity.HasComponent<IDComponent>()) return;
-		
-		// entity name
 		std::string name = entity.GetComponent<NameComponent>().name;
 		
-		// window behavior
 		ImGuiTreeNodeFlags windowFlags = {};
 		windowFlags |= ((mSelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_SpanAvailWidth;
-		
-		// tree-node name
+
 		if (ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, windowFlags, name.c_str()))
 		{
-			if (ImGui::IsItemClicked())
-			{
-				mSelectedEntity = entity;
-			}
-
+			mSelectedEntity = entity;
+		
 			if (ImGui::BeginPopupContextItem("##RightClickEntity"))
 			{
 				if (ImGui::MenuItem("Remove Entity"))
@@ -130,10 +123,8 @@ namespace Cosmos
 						mSelectedEntity = {};
 					}
 				}
-			
 				ImGui::EndPopup();
 			}
-
 			ImGui::TreePop();
 		}
 	}
@@ -174,6 +165,7 @@ namespace Cosmos
 			ImGui::Separator();
 		}
 
+		// 3d world-position
 		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [](TransformComponent& component)
 			{
 				ImGui::Text("T: ");
@@ -190,11 +182,43 @@ namespace Cosmos
 
 			});
 
-		// Sprite
-		//DrawComponent<SpriteComponent>("Sprite", mSelectedEntity, [](SpriteComponent& component)
-		//	{
-		//
-		//	});
+		// 3d geometry
+		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
+			{
+				if (!component.model)
+					component.model = Model::Create(mScene->GetRenderer()->GetDevice());
+
+				ImGui::BeginGroup();
+
+				ImGui::Text(ICON_FA_CUBE " ");
+				ImGui::SameLine();
+
+				auto& modelPath = component.model->GetPath();
+				char buffer[ENTITY_NAME_MAX_CHARS];
+				memset(buffer, 0, sizeof(buffer));
+				strncpy_s(buffer, sizeof(buffer), modelPath.c_str(), sizeof(buffer));
+
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
+				ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+				ImGui::PopStyleVar();
+
+				ImGui::EndGroup();
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+					{
+						std::filesystem::path path = (const char*)payload->Data;
+
+						if (path.extension().compare(".gltf") == 0)
+						{
+							component.model->LoadFromFile(path.string());
+						}
+					}
+
+					ImGui::EndDragDropTarget();
+				}
+			});
 	}
 
 	template<typename T>

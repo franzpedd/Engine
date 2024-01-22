@@ -34,16 +34,13 @@ namespace Cosmos
 		// called for freeing resources
 		virtual void OnDestroy() override;
 
-	public:
-
-		// clicked an item
-		void Clicked(ItemProperties& item);
+	private:
 
 		// creates all textures used by the explorer tab
 		void CreateTextures();
 
 		// reloads the files the explorer have
-		std::vector<ItemProperties> RefreshExplorer(std::string root, bool onlyCurrentFolder);
+		std::vector<ItemProperties> RefreshExplorer(std::string root);
 
 	private:
 

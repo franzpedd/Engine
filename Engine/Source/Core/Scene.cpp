@@ -3,6 +3,7 @@
 
 #include "Entity/Entity.h"
 #include "Entity/Camera.h"
+#include "Renderer/Renderer.h"
 #include "Platform/Window.h"
 
 #include <iostream>

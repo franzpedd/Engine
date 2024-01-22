@@ -225,7 +225,7 @@ namespace Cosmos
 	class Mesh
 	{
 	public:
-
+	
 		struct UBO
 		{
 			VkBuffer buffer = VK_NULL_HANDLE;

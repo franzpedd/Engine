@@ -20,8 +20,6 @@ namespace Cosmos
 		if (!mShowWindow) return;
 
 		ImGuiWindowFlags flags = {};
-		//ImGuiWindowFlags_;
-
 		flags |= ImGuiWindowFlags_HorizontalScrollbar;
 		flags |= ImGuiWindowFlags_MenuBar;
 		flags |= ImGuiWindowFlags_NoDocking;

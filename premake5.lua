@@ -19,7 +19,6 @@ includelist["GLFW"] = "%{wks.location}/Thirdparty/glfw/include"
 includelist["GLI"] = "%{wks.location}/Thirdparty/gli"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["TinyGLTF"] = "%{wks.location}/Thirdparty/tinygltf"
-includelist["STB"] = "%{wks.location}/Thirdparty/stb"
 includelist["EnTT"] = "%{wks.location}/Thirdparty/entt/single_include"
 includelist["JSON"] = "%{wks.location}/Thirdparty/json/single_include"
 

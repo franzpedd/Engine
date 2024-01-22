@@ -2,9 +2,6 @@
 
 #include <Engine.h>
 
-#define MAX_SEARCH_PATH_SIZE 256
-#define MAX_CHARS_TEXTURE_NAME 16
-
 namespace Cosmos
 {
 	class TextureBrowser : public Widget
@@ -62,7 +59,6 @@ namespace Cosmos
 		std::string mSearchStr;
 		bool mUpdatedStr = false;
 		const std::array<const char*, EXTENSION_MAX> mValidExtensions = { ".jpg", ".png", ".tga", ".bmp" };
-		uint32_t mFoundTextures = 0;
 		ImVec2 mTextureSize = { 128.0f, 128.0f };
 
 		TextureProperties mLastSelectedTexture;

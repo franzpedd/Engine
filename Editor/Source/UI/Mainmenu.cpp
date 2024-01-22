@@ -30,7 +30,7 @@ namespace Cosmos
 
 		ImGui::End();
 
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 
 	void Mainmenu::DisplayMainMenu()
@@ -102,11 +102,6 @@ namespace Cosmos
 				mProject->SaveAs();
 				break;
 			}
-
-			default:
-			{
-				break;
-			}
 		}
 
 		if (ImGui::BeginPopupModal("Save current Project?"))
@@ -116,6 +111,7 @@ namespace Cosmos
 			if (ImGui::Button("Save"))
 			{
 				mProject->Save();
+				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::SameLine();
@@ -123,6 +119,7 @@ namespace Cosmos
 			if (ImGui::Button("Save As"))
 			{
 				mProject->SaveAs();
+				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::SameLine();

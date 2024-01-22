@@ -41,6 +41,30 @@ namespace Cosmos
 		vkBindImageMemory(device->GetDevice(), image, memory, 0);
 	}
 
+	VkSampler CreateSampler(std::shared_ptr<VKDevice>& device, VkFilter min, VkFilter mag, VkSamplerAddressMode u, VkSamplerAddressMode v, VkSamplerAddressMode w, float mipLevels)
+	{
+		VkSampler sampler = VK_NULL_HANDLE;
+
+		VkSamplerCreateInfo samplerCI = {};
+		samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerCI.magFilter = mag;
+		samplerCI.minFilter = min;
+		samplerCI.addressModeU = u;
+		samplerCI.addressModeV = v;
+		samplerCI.addressModeW = w;
+		samplerCI.anisotropyEnable = VK_TRUE;
+		samplerCI.maxAnisotropy = device->GetProperties().limits.maxSamplerAnisotropy;
+		samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerCI.unnormalizedCoordinates = VK_FALSE;
+		samplerCI.compareEnable = VK_FALSE;
+		samplerCI.maxLod = mipLevels;
+		samplerCI.compareOp = VK_COMPARE_OP_NEVER;
+		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		VK_ASSERT(vkCreateSampler(device->GetDevice(), &samplerCI, nullptr, &sampler), "Failed to create sampler");
+
+		return sampler;
+	}
+
 	void TransitionImageLayout(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
 		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(device, cmdPool);
@@ -101,7 +125,7 @@ namespace Cosmos
 		EndSingleTimeCommand(device, cmdPool, cmdBuffer);
 	}
 
-	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
+	VkImageView CreateImageView(std::shared_ptr<VKDevice>& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevel)
 	{
 		VkImageViewCreateInfo imageViewCI = {};
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -110,7 +134,7 @@ namespace Cosmos
 		imageViewCI.format = format;
 		imageViewCI.subresourceRange.aspectMask = aspectFlags;
 		imageViewCI.subresourceRange.baseMipLevel = 0;
-		imageViewCI.subresourceRange.levelCount = 1;
+		imageViewCI.subresourceRange.levelCount = mipLevel;
 		imageViewCI.subresourceRange.baseArrayLayer = 0;
 		imageViewCI.subresourceRange.layerCount = 1;
 

@@ -11,6 +11,7 @@ namespace Cosmos
 	class Entity;
 	class EntityStack;
 	class Window;
+	class Renderer;
 
 	class Scene
 	{
@@ -30,6 +31,12 @@ namespace Cosmos
 
 		// returns a reference to the entity unordered map
 		inline std::unordered_map<UUID, entt::entity, UUID::Hash> GetEntityMap() { return mEntityMap; }
+
+		// connects the scene to the renderer
+		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
+
+		// returns a rendere's reference
+		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
 
 	public:
 
@@ -67,6 +74,9 @@ namespace Cosmos
 		std::shared_ptr<Window>& mWindow;
 		std::unique_ptr<EntityStack> mEntities;
 		entt::registry mRegistry;
+
+		// must be connected, at the moment the scene is initialized before renderer
+		std::shared_ptr<Renderer> mRenderer;
 		
 		// stores all scene ents (will replace entitystack)
 		std::unordered_map<UUID, entt::entity, UUID::Hash> mEntityMap;

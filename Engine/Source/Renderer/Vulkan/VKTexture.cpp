@@ -5,30 +5,79 @@
 #include "VKDevice.h"
 #include "VKImage.h"
 
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 26819 26451 26495 6262)
-#endif
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+#include <stb_image.h>
 
 namespace Cosmos
 {
-	std::shared_ptr<VKTexture2D> VKTexture2D::Create(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
-	{
-		return std::make_shared<VKTexture2D>(device, path, msaa, ktx);
-	}
-
 	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
 		: mDevice(device), mPath(path), mMSAA(msaa), mKTX(ktx)
 	{
 		LOG_ASSERT(!ktx, "Khronos Texture format not yet implemented");
 
 		LoadTexture();
-		CreateResources();
+
+		// image view
+		mView = CreateImageView
+		(
+			mDevice,
+			mImage,
+			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_ASPECT_COLOR_BIT
+		);
+		
+		// sampler
+		mSampler = CreateSampler
+		(
+			mDevice,
+			VK_FILTER_LINEAR,
+			VK_FILTER_LINEAR,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT
+		);
+		
+		// update descriptor
+		mDescriptor.sampler = mSampler;
+		mDescriptor.imageView = mView;
+		mDescriptor.imageLayout = mLayout;
+		mLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
+
+	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice>& device, tinygltf::Image& image, TextureSampler sampler, VkSampleCountFlagBits msaa)
+		: mDevice(device), mMSAA(msaa)
+	{
+		LOG_TO_TERMINAL(Logger::Warn, "Rework this to match the other constructor and use previously built functions");
+
+		LoadTexture(image);
+		CreateMipmaps();
+
+		// image view
+		mView = CreateImageView
+		(
+			mDevice,
+			mImage,
+			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			mMipLevels
+		);
+
+		// sampler
+		mSampler = CreateSampler
+		(
+			mDevice,
+			(VkFilter)sampler.min,
+			(VkFilter)sampler.mag,
+			(VkSamplerAddressMode)sampler.u,
+			(VkSamplerAddressMode)sampler.v,
+			(VkSamplerAddressMode)sampler.w,
+			(float)mMipLevels
+		);
+
+		// update descriptor
+		mDescriptor.sampler = mSampler;
+		mDescriptor.imageView = mView;
+		mDescriptor.imageLayout = mLayout;
+		mLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 	VKTexture2D::~VKTexture2D()
@@ -51,11 +100,7 @@ namespace Cosmos
 
 	void VKTexture2D::LoadTexture()
 	{
-		int width;
-		int height;
-		int channels;
-
-		stbi_uc* pixels = stbi_load(mPath, &width, &height, &channels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(mPath, &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
 
 		if (pixels == nullptr)
 		{
@@ -63,7 +108,8 @@ namespace Cosmos
 			return;
 		}
 
-		VkDeviceSize imgSize = (VkDeviceSize)(width * height * 4);
+		mMipLevels = (int32_t)(std::floor(std::log2(std::max(mWidth, mHeight))) + 1.0);
+		VkDeviceSize imgSize = (VkDeviceSize)(mWidth * mHeight * 4);
 
 		// create staging buffer for image
 		VkBuffer stagingBuffer;
@@ -90,8 +136,8 @@ namespace Cosmos
 		CreateImage
 		(
 			mDevice,
-			width,
-			height,
+			mWidth,
+			mHeight,
 			1,
 			mMSAA,
 			VK_FORMAT_R8G8B8A8_SRGB,
@@ -127,8 +173,8 @@ namespace Cosmos
 			region.imageOffset.x = 0;
 			region.imageOffset.y = 0;
 			region.imageOffset.z = 0;
-			region.imageExtent.width = width;
-			region.imageExtent.height = height;
+			region.imageExtent.width = mWidth;
+			region.imageExtent.height = mHeight;
 			region.imageExtent.depth = 1;
 			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -150,32 +196,252 @@ namespace Cosmos
 		vkFreeMemory(mDevice->GetDevice(), stagingMemory, nullptr);
 	}
 
-	void VKTexture2D::CreateResources()
+	void VKTexture2D::LoadTexture(tinygltf::Image& image)
 	{
-		// image view
-		mView = CreateImageView
+		unsigned char* buffer = nullptr;
+		VkDeviceSize bufferSize = 0;
+		bool deleteBuffer = false;
+
+		if (image.component == 3) // covert RGB to RGBA to normalize loading 
+		{
+			bufferSize = (VkDeviceSize)image.width * image.height * 4;
+			buffer = new unsigned char[bufferSize];
+
+			unsigned char* rgba = buffer;
+			unsigned char* rgb = &image.image[0];
+
+			for (int32_t i = 0; i < image.width * image.height; i++)
+			{
+				for (int32_t j = 0; j < 3; j++)
+				{
+					rgba[j] = rgb[j];
+				}
+
+				rgba += 4;
+				rgb += 3;
+			}
+
+			deleteBuffer = true;
+		}
+
+		else
+		{
+			buffer = &image.image[0];
+			bufferSize = image.image.size();
+		}
+
+		mWidth = image.width;
+		mHeight = image.height;
+		mMipLevels = (int32_t)(std::floor(std::log2(std::max(mWidth, mHeight))) + 1.0);
+
+		// create staging buffer for image
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		
+		BufferCreate
 		(
 			mDevice,
-			mImage,
-			VK_FORMAT_R8G8B8A8_SRGB,
-			VK_IMAGE_ASPECT_COLOR_BIT
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			bufferSize,
+			&stagingBuffer,
+			&stagingMemory
 		);
 
-		// sampler
-		VkSamplerCreateInfo samplerCI = {};
-		samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerCI.magFilter = VK_FILTER_LINEAR;
-		samplerCI.minFilter = VK_FILTER_LINEAR;
-		samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerCI.anisotropyEnable = VK_TRUE;
-		samplerCI.maxAnisotropy = mDevice->GetProperties().limits.maxSamplerAnisotropy; //properties.limits.maxSamplerAnisotropy;
-		samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerCI.unnormalizedCoordinates = VK_FALSE;
-		samplerCI.compareEnable = VK_FALSE;
-		samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		VK_ASSERT(vkCreateSampler(mDevice->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
+		void* data = nullptr;
+		vkMapMemory(mDevice->GetDevice(), stagingMemory, 0, bufferSize, 0, &data);
+		memcpy(data, buffer, (size_t)bufferSize);
+		vkUnmapMemory(mDevice->GetDevice(), stagingMemory);
+
+		if(deleteBuffer)
+			delete[] buffer;
+
+		VkFormatProperties properties = {};
+		vkGetPhysicalDeviceFormatProperties(mDevice->GetPhysicalDevice(), VK_FORMAT_R8G8B8A8_SRGB, &properties);
+		LOG_ASSERT(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT, "Physical device doesnt support blit from source");
+		LOG_ASSERT(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT, "Physical device doesnt support blit from destiny");
+
+		// create image resource
+		CreateImage
+		(
+			mDevice,
+			mWidth,
+			mHeight,
+			mMipLevels,
+			mMSAA,
+			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, // also VK_IMAGE_USAGE_TRANSFER_SRC_BIT ?
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			mImage,
+			mMemory
+		);
+
+		// record the command buffer
+		VkCommandBuffer cmd = CreateCommandBuffer
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			true
+		);
+
+
+		// transition layout to transfer data
+		TransitionImageLayout
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			mImage,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		);
+
+		// copy buffer to image
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset.x = 0;
+		region.imageOffset.y = 0;
+		region.imageOffset.z = 0;
+		region.imageExtent.width = mWidth;
+		region.imageExtent.height = mHeight;
+		region.imageExtent.depth = 1;
+		vkCmdCopyBufferToImage(cmd, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		// transition image layout to src optimal
+		TransitionImageLayout
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			mImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+		);
+
+		// send the command buffer to be processed
+		FlushCommandBuffer
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			cmd,
+			mDevice->GetGraphicsQueue(),
+			true
+		);
+
+		// free staging buffer
+		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingMemory, nullptr);
+	}
+
+	void VKTexture2D::CreateMipmaps()
+	{
+		VkCommandBuffer cmd = CreateCommandBuffer
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			true
+		);
+
+		for (int32_t i = 0; i < mMipLevels; i++)
+		{
+			VkImageBlit imageBlit = {};
+			imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageBlit.srcSubresource.layerCount = 1;
+			imageBlit.srcSubresource.mipLevel = i - 1;
+			imageBlit.srcOffsets[1].x = int32_t(mWidth >> (i - 1));
+			imageBlit.srcOffsets[1].y = int32_t(mHeight >> (i - 1));
+			imageBlit.srcOffsets[1].z = 1;
+			
+			imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageBlit.dstSubresource.layerCount = 1;
+			imageBlit.dstSubresource.mipLevel = i;
+			imageBlit.dstOffsets[1].x = int32_t(mWidth >> i);
+			imageBlit.dstOffsets[1].y = int32_t(mHeight >> i);
+			imageBlit.dstOffsets[1].z = 1;
+
+			VkImageSubresourceRange mipSubRange = {};
+			mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			mipSubRange.baseMipLevel = i;
+			mipSubRange.levelCount = 1;
+			mipSubRange.layerCount = 1;
+
+			// insert memory barrier to transfer dst
+			InsertImageMemoryBarrier
+			(
+				cmd,
+				mImage,
+				VK_ACCESS_NONE,
+				VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				mipSubRange
+			);
+
+			// blit the image
+			vkCmdBlitImage
+			(
+				cmd,
+				mImage,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				mImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&imageBlit,
+				VK_FILTER_LINEAR
+			);
+
+			// insert memory barrier to set the image to read only
+			InsertImageMemoryBarrier
+			(
+				cmd,
+				mImage,
+				VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_ACCESS_TRANSFER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				mipSubRange
+			);
+		}
+
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+		subresourceRange.levelCount = mMipLevels;
+
+		// insert memory barrier to read only optimal
+		InsertImageMemoryBarrier
+		(
+			cmd,
+			mImage,
+			VK_ACCESS_TRANSFER_WRITE_BIT,
+			VK_ACCESS_TRANSFER_READ_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			subresourceRange
+		);
+
+		// finish the command buffer
+		FlushCommandBuffer
+		(
+			mDevice,
+			mDevice->GetMainCommandEntry()->commandPool,
+			cmd,
+			mDevice->GetGraphicsQueue(),
+			true
+		);
 	}
 }

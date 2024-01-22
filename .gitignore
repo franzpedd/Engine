@@ -1,5 +1,6 @@
 # folders
 .vs/
+.vscode/
 _Build/
 Thirdparty/entt
 Thirdparty/glfw

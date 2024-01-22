@@ -19,6 +19,7 @@ project "GLI"
     }
 
     filter "configurations:Debug"
+        warnings "Off"
         runtime "Debug"
         symbols "On"
 

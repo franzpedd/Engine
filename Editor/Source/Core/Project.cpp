@@ -26,7 +26,6 @@ namespace Cosmos
 		mPath = dialog.GetFilePath();
 
 		LOG_TO_TERMINAL(Logger::Trace, "Creating new project '%s'", mName.c_str());
-
 	}
 
 	void Project::Open()

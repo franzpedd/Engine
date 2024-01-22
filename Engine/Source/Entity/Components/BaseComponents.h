@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Renderer/Texture.h"
-
+#include "Entity/Primitives/Model.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"
 #include "Util/Serializer.h"
@@ -34,11 +33,11 @@ namespace Cosmos
 		TransformComponent() = default;
 	};
 
-	struct SpriteComponent
+	struct ModelComponent
 	{
-		std::shared_ptr<Texture2D> sprite;
+		std::shared_ptr<Model> model;
 
 		// constructor
-		SpriteComponent() = default;
+		ModelComponent() = default;
 	};
 }

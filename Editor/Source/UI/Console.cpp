@@ -11,6 +11,7 @@ namespace Cosmos
 
 	Console::~Console()
 	{
+
 	}
 
 	void Console::OnUpdate()

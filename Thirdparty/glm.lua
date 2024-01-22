@@ -19,6 +19,7 @@ project "GLM"
     }
 
     filter "configurations:Debug"
+        warnings "Off"
         runtime "Debug"
         symbols "On"
 

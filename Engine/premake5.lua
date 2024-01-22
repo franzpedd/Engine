@@ -29,7 +29,6 @@ project "Engine"
         "%{includelist.GLI}",
         "%{includelist.GLM}",
         "%{includelist.TinyGLTF}",
-		"%{includelist.STB}",
         "%{includelist.EnTT}",
         "%{includelist.JSON}"
     }
