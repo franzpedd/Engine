@@ -22,6 +22,9 @@ namespace Cosmos
 
 	public:
 
+		// free used resoruces before destructor
+		virtual void Destroy() override;
+
 		// returns a reference to the image view
 		virtual VkImageView GetView() override;
 
@@ -30,8 +33,10 @@ namespace Cosmos
 
 	private:
 
-		// loads the texture
+		// loads the texture based on constructor's path
 		void LoadTexture();
+
+		// loads a texture from a tinygltf image
 		void LoadTexture(tinygltf::Image& image);
 
 		// creates mipmaps for the current bound texture

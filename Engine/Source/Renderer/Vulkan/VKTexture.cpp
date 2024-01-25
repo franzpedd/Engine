@@ -88,6 +88,16 @@ namespace Cosmos
 		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
 	}
 
+	void VKTexture2D::Destroy()
+	{
+		vkDeviceWaitIdle(mDevice->GetDevice());
+	
+		vkDestroyImageView(mDevice->GetDevice(), mView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
+		vkDestroySampler(mDevice->GetDevice(), mSampler, nullptr);
+	}
+
 	VkImageView VKTexture2D::GetView()
 	{
 		return mView;
@@ -237,6 +247,12 @@ namespace Cosmos
 		// create staging buffer for image
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingMemory;
+
+		if (buffer == nullptr)
+		{
+			LOG_TO_TERMINAL(Logger::Error, "Buffer is not initialized");
+			return;
+		}
 		
 		BufferCreate
 		(

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity/Primitives/Model.h"
+#include "Entity/Model/Model.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"
 #include "Util/Serializer.h"

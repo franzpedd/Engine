@@ -49,6 +49,9 @@ namespace Cosmos
 
 	public:
 
+		// free used resoruces before destructor
+		virtual void Destroy() = 0;
+
 		// returns a reference to the image view
 		virtual VkImageView GetView() = 0;
 
