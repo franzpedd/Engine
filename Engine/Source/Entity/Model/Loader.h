@@ -5,11 +5,15 @@
 #include "Node.h"
 #include "Primitive.h"
 #include "Skin.h"
-#include "Vertex.h"
 
-#include "Renderer/Device.h"
 #include "Renderer/Material.h"
 #include "Renderer/Texture.h"
+
+namespace Cosmos
+{
+	// forward declaration
+	class Renderer;
+}
 
 namespace Cosmos::ModelHelper
 {
@@ -28,7 +32,7 @@ namespace Cosmos::ModelHelper
 	public:
 
 		// constructor
-		Loader(std::shared_ptr<Device>& device, std::string& path);
+		Loader(std::shared_ptr<Renderer>& renderer, std::string& path);
 
 		// destructor
 		~Loader() = default;
@@ -72,7 +76,7 @@ namespace Cosmos::ModelHelper
 
 	public:
 
-		std::shared_ptr<Device>& device;
+		std::shared_ptr<Renderer>& renderer;
 		std::string& path;
 		tinygltf::Model model;
 

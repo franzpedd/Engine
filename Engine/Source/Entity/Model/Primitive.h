@@ -10,7 +10,11 @@ namespace Cosmos::ModelHelper
 	public:
 
 		// constructor
-		Primitive(Material& material, uint32_t firstIndex, uint32_t indexCount, uint32_t vertexCount);
+		Primitive(Material& material, uint32_t firstIndex, uint32_t indexCount, uint32_t vertexCount)
+			: material(material)
+		{
+			hasIndices = indexCount > 0 ? true : false;
+		}
 
 		// destructor
 		~Primitive() = default;
@@ -18,7 +22,12 @@ namespace Cosmos::ModelHelper
 	public:
 
 		// sets primitive's bounding box
-		void SetBoundingBox(glm::vec3 min, glm::vec3 max);
+		inline void SetBoundingBox(glm::vec3 min, glm::vec3 max)
+		{
+			bb.SetMin(min);
+			bb.SetMax(max);
+			bb.SetValid(true);
+		}
 
 	public:
 

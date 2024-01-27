@@ -49,10 +49,13 @@ namespace Cosmos
 		ImGui::EndMenuBar();
 		
 		// draws all existing entity nodes
-		for (auto& entid : mScene->GetEntityMap())
+		for (auto& ent : mScene->GetEntityMap())
 		{
-			Entity entity{ mScene, entid.second };
-			DrawEntityNode(entity);
+			bool redraw = false;
+			DrawEntityNode(&ent.second, &redraw);
+
+			if (redraw)
+				break;
 		}
 		
 		ImGui::End();
@@ -94,34 +97,32 @@ namespace Cosmos
 			ImGui::EndMenuBar();
 		}
 		
-		if (mSelectedEntity)
-		{
-			DrawComponents(mSelectedEntity);
-		}
+		DrawComponents(mSelectedEntity);
 		
 		ImGui::End();
 	}
 
-	void SceneHierarchy::DrawEntityNode(Entity entity)
+	void SceneHierarchy::DrawEntityNode(Entity* entity, bool* redraw)
 	{
-		std::string name = entity.GetComponent<NameComponent>().name;
-		
+		if (entity == nullptr)
+			return;
+
+		std::string name = entity->GetComponent<NameComponent>().name;
+
 		ImGuiTreeNodeFlags windowFlags = {};
 		windowFlags |= ((mSelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		if (ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, windowFlags, name.c_str()))
+		if (ImGui::TreeNodeEx((void*)(uint64_t)entity, windowFlags, name.c_str()))
 		{
 			mSelectedEntity = entity;
-		
+
 			if (ImGui::BeginPopupContextItem("##RightClickEntity"))
 			{
 				if (ImGui::MenuItem("Remove Entity"))
 				{
-					if (mSelectedEntity)
-					{
-						mScene->DestroyEntity(mSelectedEntity);
-						mSelectedEntity = {};
-					}
+					mScene->DestroyEntity(mSelectedEntity);
+					mSelectedEntity = nullptr;
+					*redraw = true;
 				}
 				ImGui::EndPopup();
 			}
@@ -129,14 +130,17 @@ namespace Cosmos
 		}
 	}
 
-	void SceneHierarchy::DrawComponents(Entity entity)
+	void SceneHierarchy::DrawComponents(Entity* entity)
 	{
+		if (entity == nullptr)
+			return;
+
 		// id and name (general info)
 		{
 			ImGui::Separator();
 
 			{
-				uint64_t id = entity.GetComponent<IDComponent>().id;
+				uint64_t id = entity->GetComponent<IDComponent>().id;
 				std::string idStr = "ID: ";
 				idStr.append(std::to_string(id));
 
@@ -147,7 +151,7 @@ namespace Cosmos
 			ImGui::SameLine();
 
 			{
-				auto& name = entity.GetComponent<NameComponent>().name;
+				auto& name = entity->GetComponent<NameComponent>().name;
 				char buffer[ENTITY_NAME_MAX_CHARS];
 				memset(buffer, 0, sizeof(buffer));
 				strncpy_s(buffer, sizeof(buffer), name.c_str(), sizeof(buffer));
@@ -186,7 +190,7 @@ namespace Cosmos
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
 				if (!component.model)
-					component.model = Model::Create(mScene->GetRenderer()->GetDevice());
+					component.model = Model::Create(mScene->GetRenderer());
 
 				ImGui::BeginGroup();
 
@@ -226,22 +230,25 @@ namespace Cosmos
 	{
 		if (ImGui::MenuItem(name))
 		{
-			if (!mSelectedEntity.HasComponent<T>())
+			if (!mSelectedEntity->HasComponent<T>())
 			{
-				mSelectedEntity.AddComponent<T>();
+				mSelectedEntity->AddComponent<T>();
 				return;
 			}
 			
-			LOG_TO_TERMINAL(Logger::Severity::Warn, "Entity %s already have the component %s", mSelectedEntity.GetComponent<NameComponent>().name.c_str(), name);
+			LOG_TO_TERMINAL(Logger::Severity::Warn, "Entity %s already have the component %s", mSelectedEntity->GetComponent<NameComponent>().name.c_str(), name);
 		}
 	}
 
 	template<typename T, typename F>
-	static void SceneHierarchy::DrawComponent(const char* name, Entity& entity, F func)
+	static void SceneHierarchy::DrawComponent(const char* name, Entity* entity, F func)
 	{
-		if (entity.HasComponent<T>())
+		if (entity == nullptr)
+			return;
+
+		if (entity->HasComponent<T>())
 		{
-			auto& component = entity.GetComponent<T>();
+			auto& component = entity->GetComponent<T>();
 			if (ImGui::TreeNodeEx((void*)typeid(T).hash_code(), 0, name))
 			{
 				func(component);
@@ -252,7 +259,7 @@ namespace Cosmos
 			{
 				if (ImGui::MenuItem("Remove Component"))
 				{
-					entity.RemoveComponent<T>();
+					entity->RemoveComponent<T>();
 				}
 
 				ImGui::EndPopup();

@@ -40,4 +40,12 @@ namespace Cosmos
 		// constructor
 		ModelComponent() = default;
 	};
+
+	struct SkyboxComponent
+	{
+		std::shared_ptr<void*> skybox;
+
+		// constructor
+		SkyboxComponent() = default;
+	};
 }

@@ -1,12 +1,13 @@
 #include "epch.h"
 #include "Loader.h"
 
+#include "Renderer/Renderer.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 
 namespace Cosmos::ModelHelper
 {
-	Loader::Loader(std::shared_ptr<Device>& device, std::string& path)
-		: device(device), path(path)
+	Loader::Loader(std::shared_ptr<Renderer>& renderer, std::string& path)
+		: renderer(renderer), path(path)
 	{
 		Info info = {};
 		size_t vertexCount = 0;
@@ -34,16 +35,16 @@ namespace Cosmos::ModelHelper
 	{
 		if (vertexBuffer != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(device->GetDevice(), vertexBuffer, nullptr);
-			vkFreeMemory(device->GetDevice(), vertexMemory, nullptr);
+			vkDestroyBuffer(renderer->GetDevice()->GetDevice(), vertexBuffer, nullptr);
+			vkFreeMemory(renderer->GetDevice()->GetDevice(), vertexMemory, nullptr);
 			vertexBuffer = VK_NULL_HANDLE;
 			vertexMemory = VK_NULL_HANDLE;
 		}
 		
 		if (indexBuffer != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(device->GetDevice(), indexBuffer, nullptr);
-			vkFreeMemory(device->GetDevice(), indexMemory, nullptr);
+			vkDestroyBuffer(renderer->GetDevice()->GetDevice(), indexBuffer, nullptr);
+			vkFreeMemory(renderer->GetDevice()->GetDevice(), indexMemory, nullptr);
 			vertexBuffer = VK_NULL_HANDLE;
 			vertexMemory = VK_NULL_HANDLE;
 		}
@@ -100,7 +101,7 @@ namespace Cosmos::ModelHelper
 				sampler = samplers[texture.sampler];
 			}
 		
-			std::shared_ptr<Texture2D> tex = Texture2D::Create(device, image, sampler);
+			std::shared_ptr<Texture2D> tex = Texture2D::Create(renderer->GetDevice(), image, sampler);
 			textures.push_back(tex);
 		}
 	}
@@ -449,7 +450,7 @@ namespace Cosmos::ModelHelper
 		(
 			BufferCreate
 			(
-				std::reinterpret_pointer_cast<VKDevice>(device),
+				renderer->GetDevice(),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				(VkDeviceSize)vertexBufferSize,
@@ -460,26 +461,29 @@ namespace Cosmos::ModelHelper
 		);
 
 		// staging index buffer
-		VK_ASSERT
-		(
-			BufferCreate
+		if (indexBufferSize > 0)
+		{
+			VK_ASSERT
 			(
-				std::reinterpret_pointer_cast<VKDevice>(device),
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				(VkDeviceSize)indexBufferSize,
-				&indexStaging.buffer,
-				&indexStaging.memory,
-				info.indexBuffer
-			), "Failed to create Staging Index Buffer"
-		);
+				BufferCreate
+				(
+					renderer->GetDevice(),
+					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					(VkDeviceSize)indexBufferSize,
+					&indexStaging.buffer,
+					&indexStaging.memory,
+					info.indexBuffer
+				), "Failed to create Staging Index Buffer"
+			);
+		}
 
 		// gpu vertex buffer
 		VK_ASSERT
 		(
 			BufferCreate
 			(
-				std::reinterpret_pointer_cast<VKDevice>(device),
+				renderer->GetDevice(),
 				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				(VkDeviceSize)vertexBufferSize,
@@ -489,14 +493,15 @@ namespace Cosmos::ModelHelper
 		);
 
 		// gpu index buffer (if has any)
-		if (indexBufferSize > 1)
+		if (indexBufferSize > 0)
 		{
 			VK_ASSERT
 			(
 				BufferCreate
 				(
-					std::reinterpret_pointer_cast<VKDevice>(device),
-					VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					renderer->GetDevice(),
+					VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					(VkDeviceSize)indexBufferSize,
 					&indexBuffer,
 					&indexMemory
@@ -507,7 +512,7 @@ namespace Cosmos::ModelHelper
 		LOG_TO_TERMINAL(Logger::Todo, "Create custom command entry for models.");
 
 		// copy from staging buffers
-		VkCommandBuffer copyCmd = CreateCommandBuffer(std::reinterpret_pointer_cast<VKDevice>(device), device->GetMainCommandEntry()->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = CreateCommandBuffer(std::reinterpret_pointer_cast<VKDevice>(renderer->GetDevice()), renderer->GetDevice()->GetMainCommandEntry()->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = vertexBufferSize;
@@ -523,16 +528,16 @@ namespace Cosmos::ModelHelper
 			vkCmdCopyBuffer(copyCmd, indexStaging.buffer, indexBuffer, 1, &copyRegion);
 		}
 
-		FlushCommandBuffer(std::reinterpret_pointer_cast<VKDevice>(device), device->GetMainCommandEntry()->commandPool, copyCmd, device->GetGraphicsQueue(), true);
+		FlushCommandBuffer(std::reinterpret_pointer_cast<VKDevice>(renderer->GetDevice()), renderer->GetDevice()->GetMainCommandEntry()->commandPool, copyCmd, renderer->GetDevice()->GetGraphicsQueue(), true);
 
 		// free staging buffers
-		vkDestroyBuffer(device->GetDevice(), vertexStaging.buffer, nullptr);
-		vkFreeMemory(device->GetDevice(), vertexStaging.memory, nullptr);
+		vkDestroyBuffer(renderer->GetDevice()->GetDevice(), vertexStaging.buffer, nullptr);
+		vkFreeMemory(renderer->GetDevice()->GetDevice(), vertexStaging.memory, nullptr);
 
 		if (indexBufferSize > 0)
 		{
-			vkDestroyBuffer(device->GetDevice(), indexStaging.buffer, nullptr);
-			vkFreeMemory(device->GetDevice(), indexStaging.memory, nullptr);
+			vkDestroyBuffer(renderer->GetDevice()->GetDevice(), indexStaging.buffer, nullptr);
+			vkFreeMemory(renderer->GetDevice()->GetDevice(), indexStaging.memory, nullptr);
 		}
 		
 		delete[] info.vertexBuffer;
@@ -582,7 +587,7 @@ namespace Cosmos::ModelHelper
 		if (node.mesh > -1)
 		{
 			const tinygltf::Mesh mesh = model.meshes[node.mesh];
-			Mesh* newMesh = new Mesh(device, newNode->matrix);
+			Mesh* newMesh = new Mesh(renderer, newNode->matrix);
 
 			for (size_t i = 0; i < mesh.primitives.size(); i++)
 			{

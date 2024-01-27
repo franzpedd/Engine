@@ -58,8 +58,22 @@ namespace Cosmos
 		// returns a reference to the image sampler
 		virtual VkSampler& GetSampler() = 0;
 
-	private:
+	public:
 
+		// returns the texture width
+		inline uint32_t GetWidth() const { return mWidth; }
+
+		// returns the texture height
+		inline uint32_t GetHeight() const { return mHeight; }
+
+		// returns the mip levels
+		inline uint32_t GetMipLevels() const { return mMipLevels; }
+
+	protected:
+
+		int32_t mWidth = 0;
+		int32_t mHeight = 0;
+		int32_t mMipLevels = 0;
 	};
 
 	struct TextureSampler

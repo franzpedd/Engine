@@ -6,7 +6,6 @@
 
 #include "Instance.h"
 #include "Device.h"
-#include "Vulkan/VKPipeline.h"
 #include "Swapchain.h"
 
 #include <memory>
@@ -33,6 +32,9 @@ namespace Cosmos
 
 	public:
 
+		// testing
+		void Print();
+
 		// returns the backend instance class object
 		virtual std::shared_ptr<Instance> GetInstance() = 0;
 
@@ -55,9 +57,6 @@ namespace Cosmos
 
 		// returns a reference to the commander
 		virtual Commander& GetCommander() = 0;
-
-		// returns a reference to the pipeline library
-		virtual VKPipelineLibrary& GetPipelineLibrary() = 0;
 
 	public:
 

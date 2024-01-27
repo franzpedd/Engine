@@ -30,39 +30,26 @@ namespace Cosmos
 		mEntityMap[id] = entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void Scene::DestroyEntity(Entity* entity)
 	{
-		mEntityMap.erase(entity.GetUUID());
-		mRegistry.destroy(entity);
+		if (entity == nullptr)
+			return;
+
+		if (entity->HasComponent<ModelComponent>())
+			entity->GetComponent<ModelComponent>().model->Destroy();
+
+		mEntityMap.erase(entity->GetUUID());
 	}
 
-	Entity Scene::FindEntityByName(const char* name)
+	Entity* Scene::FindEntityById(UUID id)
 	{
-		auto view = mRegistry.view<NameComponent>();
+		Entity* found = nullptr;
+		auto it = mEntityMap.find(id);
 		
-		for (auto entity : view)
-		{
-			const NameComponent& nc = view.get<NameComponent>(entity);
+		if (it != mEntityMap.end())
+			found = &(it->second);
 		
-			if (nc.name == name)
-			{
-				return Entity{ this, entity };
-			}
-		}
-
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "Could not find any entity with given name");
-		return nullptr;
-	}
-
-	Entity Scene::FindEntityById(UUID id)
-	{
-		if (mEntityMap.find(id) != mEntityMap.end())
-		{
-			return { this, mEntityMap[id] };
-		}
-
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "Could not find any entity with given id");
-		return nullptr;
+		return found;
 	}
 
 	void Scene::OnUpdate(float timestep)
@@ -100,6 +87,17 @@ namespace Cosmos
 		{
 			ent->OnDestroy();
 		}
+
+		for (auto& ent : mEntityMap)
+		{
+			auto entity = &ent.second;
+
+			// destroy all components before cleaning the entitymap
+			if (entity->HasComponent<ModelComponent>())
+				entity->GetComponent<ModelComponent>().model->Destroy();
+		}
+
+		mEntityMap.clear();
 	}
 
 	void Scene::Load(Serializer& sceneEntities)
@@ -126,8 +124,6 @@ namespace Cosmos
 
 			for (auto& component : entity.second.items())
 			{
-				std::cout << component.key() << " : " << component.value() << "\n";
-
 				try
 				{
 					std::string field = component.value().at(0);
@@ -179,9 +175,9 @@ namespace Cosmos
 		for (auto& entid : mEntityMap)
 		{
 			// entity name
-			std::string uuid = std::to_string(entid.first);
+			std::string uuid = entid.first;
 
-			Entity entity{ this, entid.second };
+			Entity entity{ this, entid.second.GetHandle() };
 			save["Entities"][uuid].push_back({"Name", entity.GetComponent<NameComponent>().name});
 
 			if (entity.HasComponent<TransformComponent>())

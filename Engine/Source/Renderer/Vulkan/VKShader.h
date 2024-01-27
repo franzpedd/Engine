@@ -52,9 +52,6 @@ namespace Cosmos
 
 	public:
 
-		// free used resources
-		void Destroy();
-
 		// reads and returns shader's binary
 		std::vector<char> ReadSPIRV();
 

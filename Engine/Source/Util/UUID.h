@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <string>
 
 namespace Cosmos
 {
@@ -30,7 +31,7 @@ namespace Cosmos
 		~UUID() = default;
 
 		// returns the uuid
-		inline uint64_t GetValue() { return mUUID; }
+		inline uint64_t GetValue() const { return mUUID; }
 
 		// returns the id
 		operator uint64_t() const { return mUUID; }
@@ -40,6 +41,12 @@ namespace Cosmos
 		{
 			if (this->mUUID == id) return true;
 			else return false;
+		}
+
+		// used to stringfy uuid and use it as acessor in Scene entitymap
+		operator std::string() const
+		{
+			return std::to_string(mUUID);
 		}
 
 	private:

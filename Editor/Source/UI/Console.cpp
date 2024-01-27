@@ -55,7 +55,7 @@ namespace Cosmos
 			}
 			case Logger::Severity::Error:
 			{
-				color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+				color = ImVec4(1.0f, 0.65f, 0.0f, 1.0f);
 				ImGui::TextColored(color, ICON_FA_QUESTION_CIRCLE " %s", msg.message.c_str());
 
 				break;

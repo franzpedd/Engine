@@ -34,21 +34,21 @@ namespace Cosmos
 		// sub-menu with selected entity components on display
 		void DisplaySelectedEntityComponents();
 
-		// draws a existing entity node on hierarchy menu
-		void DrawEntityNode(Entity entity);
+		// draws a existing entity node on hierarchy menu, redraw is used to check if entity map was altered and needs to be redrawn
+		void DrawEntityNode(Entity* entity, bool* redraw);
 
 		// draws all components an given entity has
-		void DrawComponents(Entity entity);
+		void DrawComponents(Entity* entity);
 
 		// draws a single component and forwards the function
 		template<typename T, typename F>
-		static void DrawComponent(const char* name, Entity& entity, F func);
+		static void DrawComponent(const char* name, Entity* entity, F func);
 
 	private:
 
 		Scene* mScene;
 		Gizmo* mGizmo;
 
-		Entity mSelectedEntity = {};
+		Entity* mSelectedEntity = nullptr;
 	};
 }

@@ -200,7 +200,7 @@ namespace Cosmos
 			{
 				BufferCreate
 				(
-					std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
+					mRenderer->GetDevice(),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					sizeof(UniformBufferObject),
@@ -257,7 +257,7 @@ namespace Cosmos
 		}
 
 		// destroy the shader module after usage
-		mVertexShader->Destroy();
-		mFragmentShader->Destroy();
+		vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), mVertexShader->Module(), nullptr);
+		vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), mFragmentShader->Module(), nullptr);
 	}
 }

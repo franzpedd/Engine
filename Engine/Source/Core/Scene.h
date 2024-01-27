@@ -30,7 +30,7 @@ namespace Cosmos
 		inline entt::registry& Registry() { return mRegistry; }
 
 		// returns a reference to the entity unordered map
-		inline std::unordered_map<UUID, entt::entity, UUID::Hash> GetEntityMap() { return mEntityMap; }
+		inline std::unordered_map<std::string, Entity>& GetEntityMap() { return mEntityMap; }
 
 		// connects the scene to the renderer
 		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
@@ -44,13 +44,10 @@ namespace Cosmos
 		void CreateEntity(const char* name = "Entity");
 
 		// deleste an entity and free it's resources
-		void DestroyEntity(Entity entity);
-
-		// finds an entity given it's name (wich may not be unique)
-		Entity FindEntityByName(const char* name);
+		void DestroyEntity(Entity* entity);
 
 		// finds an entity given it's id (wich is unique)
-		Entity FindEntityById(UUID id);
+		Entity* FindEntityById(UUID id);
 
 	public:
 
@@ -77,8 +74,7 @@ namespace Cosmos
 
 		// must be connected, at the moment the scene is initialized before renderer
 		std::shared_ptr<Renderer> mRenderer;
-		
-		// stores all scene ents (will replace entitystack)
-		std::unordered_map<UUID, entt::entity, UUID::Hash> mEntityMap;
+
+		std::unordered_map<std::string, Entity> mEntityMap;
 	};
 }

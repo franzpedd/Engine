@@ -24,40 +24,22 @@ namespace Cosmos
 		// constructor with an id already assigned
 		Entity(Scene* scene, entt::entity id);
 
-		// copy constructor
-		Entity(const Entity& other) = default;
-
 		// destructor
 		virtual ~Entity() = default;
 
-		// selects/unselects entity, for editor moving
-		inline void SetSelected(bool value) { mSelected = value; }
+		// returns EnTT handle
+		inline entt::entity GetHandle() { return mEntityHandle; }
 
 		// returns the entity uuid
 		inline UUID GetUUID() { return GetComponent<IDComponent>().id; }
 
 	public:
 
-		// returns the Cosmos::Entity has the entt::entity
-		operator entt::entity() const { return mEntityHandle; }
-
-		// checks if a given other entity object is the same (has same id)
-		bool operator==(const Entity& other) const
-		{
-			return mEntityHandle == other.mEntityHandle && mScene == other.mScene;
-		}
-
-		// checks if a given other entity object is different (pointers are different)
-		bool operator!=(const Entity& other) const
-		{
-			return !(*this == other);
-		}
+		// returns if entity have a valid id
+		operator bool() const { return mEntityHandle != entt::null; }
 
 		// cast entity id to uint32_t
 		operator uint32_t() const { return (uint32_t)mEntityHandle; }
-
-		// returns if entity have a valid id
-		operator bool() const { return mEntityHandle != entt::null; }
 
 	public:
 

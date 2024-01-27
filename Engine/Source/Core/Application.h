@@ -27,10 +27,10 @@ namespace Cosmos
 		static inline Application* Get() { return sApplication; }
 
 		// returns the average fps calculated
-		inline uint32_t GetAverageFPS() { return mLastFPS; }
+		inline uint32_t GetAverageFPS() const { return mLastFPS; }
 
 		// returns the logic timestep to update logic
-		inline double GetTimeStep() { return mTimeStep; }
+		inline double GetTimeStep() const { return mTimeStep; }
 
 	public:
 

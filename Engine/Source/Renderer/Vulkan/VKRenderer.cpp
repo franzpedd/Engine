@@ -29,23 +29,21 @@ namespace Cosmos
 			vkDestroySemaphore(mDevice->GetDevice(), mRenderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(mDevice->GetDevice(), mImageAvailableSemaphores[i], nullptr);
 		}
-
-		mPipelineLibrary.DestroyAllPipelines();
 	}
 
 	std::shared_ptr<Instance> VKRenderer::GetInstance()
 	{
-		return mInstance;
+		return std::static_pointer_cast<Instance>(mInstance);
 	}
 
 	std::shared_ptr<Device> VKRenderer::GetDevice()
 	{
-		return mDevice;
+		return std::static_pointer_cast<Device>(mDevice);
 	}
 
 	std::shared_ptr<Swapchain> VKRenderer::GetSwapchain()
 	{
-		return mSwapchain;
+		return std::static_pointer_cast<Swapchain>(mSwapchain);
 	}
 
 	VkPipelineCache& VKRenderer::PipelineCache()
@@ -66,11 +64,6 @@ namespace Cosmos
 	Commander& VKRenderer::GetCommander()
 	{
 		return mCommander;
-	}
-
-	VKPipelineLibrary& VKRenderer::GetPipelineLibrary()
-	{
-		return mPipelineLibrary;
 	}
 
 	void VKRenderer::OnUpdate()

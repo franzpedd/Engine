@@ -10,7 +10,7 @@ namespace Cosmos::ModelHelper
 	{
 		if (mesh != nullptr)
 			delete mesh;
-
+			
 		for (auto& child : children)
 			delete child;
 	}

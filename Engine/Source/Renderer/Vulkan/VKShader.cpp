@@ -46,11 +46,6 @@ namespace Cosmos
 		CreateShaderStage();
 	}
 
-	void VKShader::Destroy()
-	{
-		vkDestroyShaderModule(mDevice->GetDevice(), mShaderModule, nullptr);
-	}
-
 	std::vector<char> VKShader::ReadSPIRV()
 	{
 		std::string name = mPath;

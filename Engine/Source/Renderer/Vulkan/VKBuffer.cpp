@@ -157,7 +157,7 @@ namespace Cosmos
 		vkFreeCommandBuffers(mDevice->GetDevice(), mCmdPool, 1, &commandBuffer);
 	}
 
-	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
+	VkResult BufferCreate(std::shared_ptr<Device>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
 	{
 		// specify buffer
 		VkBufferCreateInfo bufferCI = {};

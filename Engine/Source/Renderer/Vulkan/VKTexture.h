@@ -56,9 +56,6 @@ namespace Cosmos
 		VkImageLayout mLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkDescriptorImageInfo mDescriptor = {};
 
-		int32_t mWidth = 0;
-		int32_t mHeight = 0;
 		int32_t mChannels = 0;
-		int32_t mMipLevels = 0;
 	};
 }

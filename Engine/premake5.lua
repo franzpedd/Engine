@@ -57,6 +57,8 @@ project "Engine"
         optimize "Full"
 
     filter "system:windows"
+        optimize "Speed"
+        
         defines 
         {
             "_CRT_SECURE_NO_WARNINGS",

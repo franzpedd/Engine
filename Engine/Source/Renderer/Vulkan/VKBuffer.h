@@ -6,6 +6,7 @@
 namespace Cosmos
 {
 	// forward declarations
+	class Device;
 	class VKDevice;
 
 	class VKBuffer
@@ -60,7 +61,7 @@ namespace Cosmos
 
 	// still used in texture and model class, when testing remove this and rework VKBuffer to support staging only when required
 	// creates a buffer on the gpu, used for buffers without staging (as VKBuffer class uses them)
-	VkResult BufferCreate(std::shared_ptr<VKDevice>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data = nullptr);
+	VkResult BufferCreate(std::shared_ptr<Device>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data = nullptr);
 
 	// command buffer will be handled with a class, using functions at the momment
 	// starts the recording of a once-used command buffer

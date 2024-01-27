@@ -5,18 +5,21 @@
 
 namespace Cosmos
 {
+	// forward declaration
+	class Device;
+
 	class Model
 	{
 	public:
 
 		// returns a smart-ptr to a new mesh
-		static std::shared_ptr<Model> Create(std::shared_ptr<Device>& device);
+		static std::shared_ptr<Model> Create(std::shared_ptr<Renderer>& renderer);
 
 		// constructor
-		Model(std::shared_ptr<Device>& device);
+		Model(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		~Model();
+		~Model() = default;
 
 	public:
 
@@ -24,6 +27,12 @@ namespace Cosmos
 		inline std::string GetPath() { return mPath; }
 
 	public:
+
+		// updates the animation
+		void UpdateAnimations(float timeStep, uint32_t index);
+
+		// draws the model
+		void Draw(VkCommandBuffer commandBuffer);
 
 		// loads a model from file path
 		void LoadFromFile(std::string path);
@@ -33,6 +42,9 @@ namespace Cosmos
 
 	private:
 
+		// draws the node and it's children
+		void DrawNode(VkCommandBuffer commandBuffer, ModelHelper::Node* node);
+
 		// calculates the model's dimension
 		void CalculateDimension();
 		
@@ -41,7 +53,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Device>& mDevice;
+		std::shared_ptr<Renderer>& mRenderer;
 		std::string mPath = {};
 		std::unique_ptr<ModelHelper::Loader> mLoader;
 

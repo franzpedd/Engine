@@ -1,15 +1,15 @@
 #pragma once
 
 #include "Defines.h"
+#include "Primitive.h"
 #include "Physics/BoundingBox.h"
 #include "Util/Math.h"
 
 #include <vulkan/vulkan.h>
 
-// forward declaration
 namespace Cosmos
 {
-	class Device;
+	class Renderer;
 }
 
 namespace Cosmos::ModelHelper
@@ -40,17 +40,19 @@ namespace Cosmos::ModelHelper
 	public:
 
 		// constructor
-		Mesh(std::shared_ptr<Device>& device, glm::mat4 matrix);
+		Mesh(std::shared_ptr<Renderer>& renderer, glm::mat4 matrix);
 
 		// destructor
 		~Mesh();
+
+	public:
 
 		// sets the meshe's bounding box
 		void SetBoundingBox(glm::vec3 min, glm::vec3 max);
 
 	public:
 
-		std::shared_ptr<Device>& device;
+		std::shared_ptr<Renderer>& renderer;
 		std::vector<Primitive*> primitives = {};
 		BoundingBox bb = {};
 		BoundingBox aabb = {};

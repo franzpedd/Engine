@@ -8,7 +8,6 @@
 #include "VKBuffer.h"
 #include "VKInstance.h"
 #include "VKDevice.h"
-#include "VKPipeline.h"
 #include "VKSwapchain.h"
 
 #include <vulkan/vulkan.h>
@@ -56,9 +55,6 @@ namespace Cosmos
 		// returns a reference to the commander
 		virtual Commander& GetCommander() override;
 
-		// returns a reference to the pipeline library
-		virtual VKPipelineLibrary& GetPipelineLibrary() override;
-
 	public:
 
 		// updates the renderer
@@ -84,7 +80,6 @@ namespace Cosmos
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
 		Commander mCommander;
-		VKPipelineLibrary mPipelineLibrary;
 		VkPipelineCache mPipelineCache;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;
