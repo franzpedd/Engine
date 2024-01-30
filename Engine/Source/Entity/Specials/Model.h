@@ -19,10 +19,12 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mesh(std::vector<VKVertex> vertices, std::vector<uint32_t> indices);
+		Mesh(std::shared_ptr<Renderer>& renderer, std::vector<VKVertex> vertices, std::vector<uint32_t> indices);
 
 		// destructor
 		~Mesh() = default;
+
+	public:
 
 		// returns a reference to the vertices vector
 		inline std::vector<VKVertex>& GetVerticesRef() { return mVertices; }
@@ -30,10 +32,39 @@ namespace Cosmos
 		// returns a reference to the indices vector
 		inline std::vector<uint32_t>& GetIndicesRef() { return mIndices; }
 
+		// returns the vertex buffer
+		inline VkBuffer GetVertexBuffer() { return mVertexBuffer; }
+
+		// returns the vertex memory
+		inline VkDeviceMemory GetVertexMemory() { return mVertexMemory; }
+
+		// returns the index buffer
+		inline VkBuffer GetIndexBuffer() { return mVertexBuffer; }
+
+		// returns the index memory
+		inline VkDeviceMemory GetIndexMemory() { return mVertexMemory; }
+
+	public:
+
+		// draws the mesh
+		void Draw(VkCommandBuffer commandBuffer, VkPipelineLayout& layout, VkDescriptorSet& descriptorSet);
+
+		// creates the renderer resources for this mesh
+		void CreateResources();
+
+		// free used resources used by this mesh
+		void DestroyResources();
+
 	private:
 
+		std::shared_ptr<Renderer>& mRenderer;
 		std::vector<VKVertex> mVertices;
 		std::vector<uint32_t> mIndices;
+
+		VkBuffer mVertexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory mVertexMemory = VK_NULL_HANDLE;
+		VkBuffer mIndexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory mIndexMemory = VK_NULL_HANDLE;
 	};
 
 	class Model
@@ -72,11 +103,11 @@ namespace Cosmos
 
 	private:
 
-		// returns a cosmo mesh out of assimp mesh
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-
 		// recursively handle assimp nodes to create a tree of meshes
 		void ProcessNode(aiNode* node, const aiScene* scene);
+
+		// returns a cosmo mesh out of assimp mesh
+		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 		// create renderer resources
 		void CreateResources();
@@ -99,10 +130,5 @@ namespace Cosmos
 		std::vector<VkBuffer> mUniformBuffers;
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 		std::vector<void*> mUniformBuffersMapped;
-
-		VkBuffer mVertexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory mVertexMemory = VK_NULL_HANDLE;
-		VkBuffer mIndexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory mIndexMemory = VK_NULL_HANDLE;
 	};
 }
