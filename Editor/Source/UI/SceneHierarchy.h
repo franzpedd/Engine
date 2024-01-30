@@ -12,7 +12,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		SceneHierarchy(Scene* scene, Gizmo* gizmo);
+		SceneHierarchy(Scene* scene, Gizmo* gizmo, Camera& camera);
 
 		// destructor
 		~SceneHierarchy();
@@ -48,6 +48,7 @@ namespace Cosmos
 
 		Scene* mScene;
 		Gizmo* mGizmo;
+		Camera& mCamera;
 
 		Entity* mSelectedEntity = nullptr;
 	};

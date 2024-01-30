@@ -19,12 +19,15 @@ namespace Cosmos
 		Model(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		~Model() = default;
+		~Model();
 
 	public:
 
 		// return the model's path
 		inline std::string GetPath() { return mPath; }
+
+		// returns if the model is already loaded
+		inline bool IsLoaded() const { return mLoaded; }
 
 	public:
 
@@ -55,11 +58,14 @@ namespace Cosmos
 
 		std::shared_ptr<Renderer>& mRenderer;
 		std::string mPath = {};
-		std::unique_ptr<ModelHelper::Loader> mLoader;
+		ModelHelper::Loader* mLoader = nullptr;
 
 		// model dimension
 		glm::vec3 mDimensionMin = glm::vec3(FLT_MIN);
 		glm::vec3 mDimensionMax = glm::vec3(FLT_MAX);
 		glm::mat4 mAABB = {};
+
+		// tells if any model was loaded into the class
+		bool mLoaded = false;
 	};
 }

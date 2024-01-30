@@ -4,8 +4,8 @@
 
 namespace Cosmos
 {
-	SceneHierarchy::SceneHierarchy(Scene* scene, Gizmo* gizmo)
-		: Widget("UI:Scene Hierarchy"), mScene(scene), mGizmo(gizmo)
+	SceneHierarchy::SceneHierarchy(Scene* scene, Gizmo* gizmo, Camera& camera)
+		: Widget("UI:Scene Hierarchy"), mScene(scene), mGizmo(gizmo), mCamera(camera)
 	{
 		Logger() << "Creating Scene Hierarchy";
 	}
@@ -190,7 +190,7 @@ namespace Cosmos
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
 				if (!component.model)
-					component.model = Model::Create(mScene->GetRenderer());
+					component.model = new Model(mScene->GetRenderer(), mCamera);
 
 				ImGui::BeginGroup();
 
@@ -213,11 +213,7 @@ namespace Cosmos
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
 					{
 						std::filesystem::path path = (const char*)payload->Data;
-
-						if (path.extension().compare(".gltf") == 0)
-						{
-							component.model->LoadFromFile(path.string());
-						}
+						component.model->LoadFromFile(path.string());
 					}
 
 					ImGui::EndDragDropTarget();

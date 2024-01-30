@@ -34,10 +34,10 @@ namespace Cosmos
 		glm::mat4& GetView();
 
 		// returns near value
-		float GetNear() { return mZnear; }
+		float GetNear() const { return mZnear; }
 
 		// returns far value
-		float GetFar() { return mZfar; }
+		float GetFar() const { return mZfar; }
 
 		// returns the current camera position
 		glm::vec3& GetPosition() { return mPosition; }

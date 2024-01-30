@@ -28,9 +28,10 @@ project "Engine"
         "%{includelist.GLFW}",
         "%{includelist.GLI}",
         "%{includelist.GLM}",
-        "%{includelist.TinyGLTF}",
         "%{includelist.EnTT}",
-        "%{includelist.JSON}"
+        "%{includelist.JSON}",
+        "%{includelist.STB}",
+        "%{includelist.Assimp}",
     }
 
     links
@@ -57,8 +58,6 @@ project "Engine"
         optimize "Full"
 
     filter "system:windows"
-        optimize "Speed"
-        
         defines 
         {
             "_CRT_SECURE_NO_WARNINGS",
@@ -66,3 +65,17 @@ project "Engine"
         }
 
         linkoptions { "/ignore:4006" }
+
+    filter {"configurations:Release", "system:windows"}
+        links
+        {
+            "%{librarylist.Assimp}/Release/assimp-vc143-mtd.lib",
+            "%{librarylist.AssimpZLIB}/Release/zlibstaticd.lib"
+        }
+
+    filter {"configurations:Debug", "system:windows"}
+        links
+        {
+            "%{librarylist.Assimp}/Debug/assimp-vc143-mtd.lib",
+            "%{librarylist.AssimpZLIB}/Debug/zlibstaticd.lib"
+        }

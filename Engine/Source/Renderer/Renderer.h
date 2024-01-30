@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Buffer.h"
 #include "Defines.h"
 #include "Commander.h"
 #include "Entity/Entity.h"
@@ -32,9 +33,6 @@ namespace Cosmos
 
 	public:
 
-		// testing
-		void Print();
-
 		// returns the backend instance class object
 		virtual std::shared_ptr<Instance> GetInstance() = 0;
 
@@ -48,6 +46,9 @@ namespace Cosmos
 
 		// returns the vulkan pipeline cache
 		virtual VkPipelineCache& PipelineCache() = 0;
+
+		// returns the pipeline with a given id(name) or nullptr if invalid
+		virtual VkPipeline GetPipeline(std::string name) = 0;
 
 		// returns the current in-process frame
 		virtual uint32_t CurrentFrame() = 0;

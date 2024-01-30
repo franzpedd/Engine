@@ -56,21 +56,22 @@ namespace Cosmos
 	{
 		PROFILER_FUNCTION();
 
-		// discard this update function and perform updating on components
+		// special entities (editor entities like grid and viewport)
 		for (auto& ent : mEntities->GetEntitiesVector())
 		{
 			ent->OnUpdate(timestep);
 		}
 
-		//{ // example on how to iterate on components
-		//	auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		//	for (auto entity : group)
-		//	{
-		//		auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-		//
-		//		Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		//	}
-		//}
+		auto modelsGroup = mRegistry.group<ModelComponent>();
+		for (auto ent : modelsGroup)
+		{
+			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+
+			if (model == nullptr || !model->IsLoaded())
+				continue;
+
+			model->Update(timestep);
+		}
 	}
 
 	void Scene::OnRenderDraw()
@@ -78,6 +79,21 @@ namespace Cosmos
 		for (auto& ent : mEntities->GetEntitiesVector())
 		{
 			ent->OnRenderDraw();
+		}
+
+		uint32_t currentFrame = mRenderer->CurrentFrame();
+		VkDeviceSize offsets[] = { 0 };
+		VkCommandBuffer commandBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
+
+		auto modelsGroup = mRegistry.group<ModelComponent>();
+		for (auto ent : modelsGroup)
+		{
+			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+		
+			if (model == nullptr|| !model->IsLoaded())
+				continue;
+		
+			model->Draw(commandBuffer);
 		}
 	}
 
@@ -93,8 +109,13 @@ namespace Cosmos
 			auto entity = &ent.second;
 
 			// destroy all components before cleaning the entitymap
-			if (entity->HasComponent<ModelComponent>())
-				entity->GetComponent<ModelComponent>().model->Destroy();
+			if (entity->HasComponent<ModelComponent>() && entity->GetComponent<ModelComponent>().model != nullptr)
+			{
+				if (entity->GetComponent<ModelComponent>().model->IsLoaded())
+					entity->GetComponent<ModelComponent>().model->Destroy();
+
+				delete entity->GetComponent<ModelComponent>().model;
+			}
 		}
 
 		mEntityMap.clear();

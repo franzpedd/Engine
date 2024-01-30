@@ -17,6 +17,11 @@ namespace Cosmos
 
 	}
 
+	Model::~Model()
+	{
+		delete mLoader;
+	}
+
 	void Model::UpdateAnimations(float timeStep, uint32_t index)
 	{
 		if (mLoader->animations.empty())
@@ -107,9 +112,10 @@ namespace Cosmos
 	void Model::LoadFromFile(std::string path)
 	{
 		mPath = path;
-		mLoader = std::make_unique<ModelHelper::Loader>(mRenderer, mPath);
+		mLoader = new ModelHelper::Loader(mRenderer, mPath);
 
 		CalculateDimension();
+		mLoaded = true;
 	}
 
 	void Model::Destroy()
@@ -121,7 +127,17 @@ namespace Cosmos
 	{
 		if (node->mesh != nullptr)
 			for (ModelHelper::Primitive* primitive : node->mesh->primitives)
-				vkCmdDrawIndexed(commandBuffer, primitive->indexCount, 1, primitive->firstIndex, 0, 0);
+			{
+				// make alphamode blend pipeline variable ?
+				// bind pipeline
+				// bind descriptor set
+				// push constants
+
+				if(primitive->hasIndices)
+					vkCmdDrawIndexed(commandBuffer, primitive->indexCount, 1, primitive->firstIndex, 0, 0);
+				else
+					vkCmdDraw(commandBuffer, primitive->vertexCount, 1, 0, 0);
+			}
 
 		for (auto& child : node->children)
 			DrawNode(commandBuffer, child);

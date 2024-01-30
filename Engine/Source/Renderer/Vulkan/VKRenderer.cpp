@@ -1,6 +1,8 @@
 #include "epch.h"
 #include "VKRenderer.h"
 
+#include "VKShader.h"
+
 #include "Core/Scene.h"
 #include "Platform/Window.h"
 #include "UI/GUI.h"
@@ -15,6 +17,9 @@ namespace Cosmos
 		mSwapchain = VKSwapchain::Create(mWindow, mInstance, mDevice);
 
 		CreateGlobalStates();
+
+		// create all default pipelines used accross objects
+		CreateModelPipeline();
 	}
 
 	VKRenderer::~VKRenderer()
@@ -29,6 +34,11 @@ namespace Cosmos
 			vkDestroySemaphore(mDevice->GetDevice(), mRenderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(mDevice->GetDevice(), mImageAvailableSemaphores[i], nullptr);
 		}
+
+		// destroy model pipeline
+		vkDestroyPipeline(mDevice->GetDevice(), mPipelines["Model"], nullptr);
+		vkDestroyPipelineLayout(mDevice->GetDevice(), mPipelineLayouts["Model"], nullptr);
+		vkDestroyDescriptorSetLayout(mDevice->GetDevice(), mDescriptorSetLayouts["Model"], nullptr);
 	}
 
 	std::shared_ptr<Instance> VKRenderer::GetInstance()
@@ -49,6 +59,14 @@ namespace Cosmos
 	VkPipelineCache& VKRenderer::PipelineCache()
 	{
 		return mPipelineCache;
+	}
+
+	VkPipeline VKRenderer::GetPipeline(std::string name)
+	{
+		if (mPipelines[name])
+			return mPipelines[name];
+
+		return nullptr;
 	}
 
 	uint32_t VKRenderer::CurrentFrame()
@@ -331,5 +349,10 @@ namespace Cosmos
 			pipelineCacheCI.flags = 0;
 			VK_ASSERT(vkCreatePipelineCache(mDevice->GetDevice(), &pipelineCacheCI, nullptr, &mPipelineCache), "Failed to create pipeline cache");
 		}
+	}
+
+	void VKRenderer::CreateModelPipeline()
+	{
+		const std::string id = "Model";
 	}
 }

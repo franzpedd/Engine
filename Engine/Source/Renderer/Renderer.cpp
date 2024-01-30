@@ -8,9 +8,4 @@ namespace Cosmos
 	{
 		return std::make_shared<VKRenderer>(window, scene);
 	}
-
-	void Renderer::Print()
-	{
-		LOG_TO_TERMINAL(Logger::Trace, "Testing");
-	}
 }

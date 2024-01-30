@@ -898,7 +898,7 @@ namespace Cosmos
 			}
 		}
 
-		// node contains mesh data
+		// node contains mesh data1
 
 		if (node.mesh > -1)
 		{

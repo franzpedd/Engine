@@ -1,14 +1,5 @@
 #pragma once
 
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 26495 )
-#endif
-#include <tiny_gltf.h>
-#if defined(_MSC_VER)
-#pragma warning( pop)
-#endif
-
 #include <vulkan/vulkan.h>
 #include <memory>
 
@@ -37,9 +28,6 @@ namespace Cosmos
 
 		// creates a texture from an input file
 		static std::shared_ptr<Texture2D> Create(std::shared_ptr<Device> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT, bool ktx = false);
-
-		// creates a texture from an tinygltf image
-		static std::shared_ptr<Texture2D> Create(std::shared_ptr<Device> device, tinygltf::Image& image, TextureSampler sampler, MSAA msaa = MSAA::SAMPLE_1_BIT);
 
 		// constructor
 		Texture2D() = default;

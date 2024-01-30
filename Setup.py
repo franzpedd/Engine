@@ -41,6 +41,22 @@ class Util :
         if(os.path.isfile(file) is None) : return;
         shutil.unpack_archive(file, path);
 
+class Dependencies :
+
+    @classmethod
+    def BuildAssimp(itself) :
+        
+        if(os.path.isdir("Thirdparty/assimp") is False) : return;
+
+        print("\n------------------------Building Assimp------------------------\n");
+        scriptdir = os.getcwd();
+        os.chdir("Thirdparty/assimp");
+        subprocess.call("cmake CMakeLists.txt -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON");
+        subprocess.call("cmake --build . --config Debug");
+        subprocess.call("cmake --build . --config Release");
+        os.chdir(scriptdir);
+        print("\n------------------------Assimp building has finished------------------------\n");
+
 class Vulkan : 
 
     @classmethod
@@ -111,8 +127,11 @@ Util.Clone("https://github.com/ocornut/imgui", "imgui", "docking");
 Util.Clone("https://github.com/glfw/glfw", "glfw", "3.3-stable");
 Util.Clone("https://github.com/g-truc/glm", "glm", "0.9.8");
 Util.Clone("https://github.com/g-truc/gli", "gli", "0.8.2");
-Util.Clone("https://github.com/syoyo/tinygltf", "tinygltf", "release");
 Util.Clone("https://github.com/skypjack/entt", "entt", "v3.13.x");
 Util.Clone("https://github.com/nlohmann/json", "json", "develop");
+Util.Clone("https://github.com/assimp/assimp", "assimp", "master")
+
+Dependencies.BuildAssimp();
+
 Premake.Download("5.0.0-beta2");
 Premake.Generate();

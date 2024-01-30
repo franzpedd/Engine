@@ -12,15 +12,6 @@ namespace Cosmos
 	{
 	public:
 
-		struct UniformBufferObject
-		{
-			alignas(16) glm::mat4 model;
-			alignas(16) glm::mat4 view;
-			alignas(16) glm::mat4 proj;
-		};
-
-	public:
-
 		// constructor
 		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera);
 

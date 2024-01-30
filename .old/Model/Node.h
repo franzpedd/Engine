@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vertex.h"
 #include "Physics/BoundingBox.h"
 #include "Util/Math.h"
 
@@ -8,17 +9,6 @@ namespace Cosmos::ModelHelper
 	// forward declaration
 	struct Mesh;
 	struct Skin;
-
-	struct Vertex
-	{
-		glm::vec3 position = {};
-		glm::vec3 normal = {};
-		glm::vec2 uv0 = {};
-		glm::vec2 uv1 = {};
-		glm::vec4 joint = {};
-		glm::vec4 weight = {};
-		glm::vec4 color = {};
-	};
 
 	struct Node
 	{

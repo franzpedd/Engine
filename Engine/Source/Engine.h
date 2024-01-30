@@ -6,7 +6,7 @@
 #include "Core/Scene.h"
 
 #include "Entity/Components/BaseComponents.h"
-#include "Entity/Model/Model.h"
+#include "Entity/Specials/Model.h"
 #include "Entity/Camera.h"
 #include "Entity/Entity.h"
 

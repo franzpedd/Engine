@@ -28,7 +28,7 @@ namespace Cosmos
 		virtual ~Entity() = default;
 
 		// returns EnTT handle
-		inline entt::entity GetHandle() { return mEntityHandle; }
+		inline entt::entity GetHandle() const { return mEntityHandle; }
 
 		// returns the entity uuid
 		inline UUID GetUUID() { return GetComponent<IDComponent>().id; }

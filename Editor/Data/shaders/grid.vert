@@ -1,7 +1,7 @@
 #version 450
 #extension GL_KHR_vulkan_glsl : enable
 
-layout(binding = 0) uniform UniformBufferObject
+layout(binding = 0) uniform MVP_UBO
 {
     mat4 model;
     mat4 view;

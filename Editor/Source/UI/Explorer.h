@@ -52,24 +52,24 @@ namespace Cosmos
 		VkDescriptorSet mFolderDescriptorSet;
 
 		// extensions
-		const std::array<const char*, 11> mValidExtensions =
+		const std::array<const char*, 12> mValidExtensions =
 		{
 			".cfg", ".ini", ".txt",		// misc
-			".gltf", ".glb",			// models
+			".gltf", ".glb", ".obj",	// models
 			".vert", ".frag", ".spv",	// shaders
 			".png", ".jpg", ".ktx"		// textures
 		};
 
 		// extension pictures, must match with above vector
-		const std::array<const char*, 11> mExtensionTexturePaths =
+		const std::array<const char*, 12> mExtensionTexturePaths =
 		{
 			"cfg.png", "ini.png", "txt.png",		// misc
-			"gltf.png", "glb.png",					// models
+			"gltf.png", "glb.png", "obj.png",		// models
 			"vert.png", "frag.png", "spv.png",		// shaders
 			"png.png", "jpg.png", "ktx.png"			// textures
 		};
 
-		std::array<std::shared_ptr<Texture2D>, 11> mExtensionTexture;
-		std::array<VkDescriptorSet, 11> mExtensionDescriptors;
+		std::array<std::shared_ptr<Texture2D>, 12> mExtensionTexture;
+		std::array<VkDescriptorSet, 12> mExtensionDescriptors;
 	};
 }

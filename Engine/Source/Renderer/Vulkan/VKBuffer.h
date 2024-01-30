@@ -35,7 +35,7 @@ namespace Cosmos
 		inline VkBuffer& Buffer() { return mBuffer; }
 
 		// returns a copy of the buffer size
-		inline VkDeviceSize GetSize() { return mSize; }
+		inline VkDeviceSize GetSize() const { return mSize; }
 
 	public:
 

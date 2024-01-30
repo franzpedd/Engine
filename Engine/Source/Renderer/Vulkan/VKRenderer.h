@@ -46,6 +46,9 @@ namespace Cosmos
 		// returns the vulkan pipeline cache
 		virtual VkPipelineCache& PipelineCache() override;
 
+		// returns the pipeline with a given id(name) or nullptr if invalid
+		virtual VkPipeline GetPipeline(std::string name) override;
+
 		// returns the current in-process frame
 		virtual uint32_t CurrentFrame() override;
 
@@ -71,6 +74,9 @@ namespace Cosmos
 		// creates global structures shared across the renderer
 		virtual void CreateGlobalStates() override;
 
+		// creates model pipeline
+		void CreateModelPipeline();
+
 	private:
 
 		std::shared_ptr<Window>& mWindow;
@@ -89,5 +95,9 @@ namespace Cosmos
 		uint32_t mImageIndex = 0;
 
 		std::shared_ptr<GUI> mUI;
+
+		std::unordered_map<std::string, VkPipeline> mPipelines = {};
+		std::unordered_map<std::string, VkDescriptorSetLayout> mDescriptorSetLayouts = {};
+		std::unordered_map<std::string, VkPipelineLayout> mPipelineLayouts = {};
 	};
 }
