@@ -47,7 +47,13 @@ namespace Cosmos
 		virtual VkPipelineCache& PipelineCache() override;
 
 		// returns the pipeline with a given id(name) or nullptr if invalid
-		virtual VkPipeline GetPipeline(std::string name) override;
+		virtual VkPipeline& GetPipeline(std::string nameid) override;
+
+		// returns the descriptor set layout with a given id(name) or nullptr if invalid
+		virtual VkDescriptorSetLayout& GetDescriptorSetLayout(std::string nameid) override;
+
+		// returns the pipeline layout with a given id(name) or nullptr if invalid
+		virtual VkPipelineLayout& GetPipelineLayout(std::string nameid) override;
 
 		// returns the current in-process frame
 		virtual uint32_t CurrentFrame() override;
@@ -59,6 +65,9 @@ namespace Cosmos
 		virtual Commander& GetCommander() override;
 
 	public:
+
+		// setup initial resources (called after main renderpass has been created)
+		virtual void Intialize() override;
 
 		// updates the renderer
 		virtual void OnUpdate() override;
@@ -74,8 +83,8 @@ namespace Cosmos
 		// creates global structures shared across the renderer
 		virtual void CreateGlobalStates() override;
 
-		// creates model pipeline
-		void CreateModelPipeline();
+		// creates custom pipelines
+		void CreatePipelines();
 
 	private:
 
@@ -96,6 +105,7 @@ namespace Cosmos
 
 		std::shared_ptr<GUI> mUI;
 
+		// pipeline objects 
 		std::unordered_map<std::string, VkPipeline> mPipelines = {};
 		std::unordered_map<std::string, VkDescriptorSetLayout> mDescriptorSetLayouts = {};
 		std::unordered_map<std::string, VkPipelineLayout> mPipelineLayouts = {};

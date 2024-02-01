@@ -32,6 +32,8 @@ namespace Cosmos
 	{
 		PROFILER_FUNCTION();
 
+		mRenderer->Intialize();
+
 		while (!mWindow->ShouldQuit())
 		{
 			PROFILER_SCOPE("Run-Loop");

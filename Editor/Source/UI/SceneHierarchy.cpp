@@ -170,7 +170,7 @@ namespace Cosmos
 		}
 
 		// 3d world-position
-		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [](TransformComponent& component)
+		DrawComponent<TransformComponent>("Transform", mSelectedEntity, [&](TransformComponent& component)
 			{
 				ImGui::Text("T: ");
 				ImGui::SameLine();
@@ -178,12 +178,13 @@ namespace Cosmos
 
 				ImGui::Text("R: ");
 				ImGui::SameLine();
-				Vector3Control("Rotation", component.rotation);
+				glm::vec3 rotation = glm::degrees(component.rotation);
+				Vector3Control("Rotation", rotation);
+				component.rotation = glm::radians(rotation);
 
 				ImGui::Text("S: ");
 				ImGui::SameLine();
 				Vector3Control("Scale", component.scale);
-
 			});
 
 		// 3d geometry
@@ -192,31 +193,66 @@ namespace Cosmos
 				if (!component.model)
 					component.model = new Model(mScene->GetRenderer(), mCamera);
 
-				ImGui::BeginGroup();
-
-				ImGui::Text(ICON_FA_CUBE " ");
-				ImGui::SameLine();
-
-				auto& modelPath = component.model->GetPath();
-				char buffer[ENTITY_NAME_MAX_CHARS];
-				memset(buffer, 0, sizeof(buffer));
-				strncpy_s(buffer, sizeof(buffer), modelPath.c_str(), sizeof(buffer));
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
-				ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-				ImGui::PopStyleVar();
-
-				ImGui::EndGroup();
-
-				if (ImGui::BeginDragDropTarget())
+				// model path
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-					{
-						std::filesystem::path path = (const char*)payload->Data;
-						component.model->LoadFromFile(path.string());
-					}
+					ImGui::BeginGroup();
 
-					ImGui::EndDragDropTarget();
+					ImGui::Text(ICON_FA_CUBE " ");
+					ImGui::SameLine();
+
+					auto& modelPath = component.model->GetPath();
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					strncpy_s(buffer, sizeof(buffer), modelPath.c_str(), sizeof(buffer));
+
+					//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
+					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					//ImGui::PopStyleVar();
+
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.model->LoadFromFile(path.string());
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				ImGui::Separator();
+				
+				// model albedo texture
+				{
+					ImGui::BeginGroup();
+					
+					ImGui::Text(ICON_FA_PAINT_BRUSH " ");
+					ImGui::SameLine();
+					
+					auto& texturePath = component.model->GetAlbedoPath();
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					strncpy_s(buffer, sizeof(buffer), texturePath.c_str(), sizeof(buffer));
+					
+					//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
+					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					//ImGui::PopStyleVar();
+					
+					ImGui::EndGroup();
+					
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.model->LoadAlbedoTexture(path.string());
+						}
+					
+						ImGui::EndDragDropTarget();
+					}
 				}
 			});
 	}

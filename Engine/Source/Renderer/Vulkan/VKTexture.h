@@ -17,7 +17,7 @@ namespace Cosmos
 		VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
 
 		// destructor
-		~VKTexture2D();
+		~VKTexture2D() = default;
 
 	public:
 

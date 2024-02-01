@@ -48,7 +48,13 @@ namespace Cosmos
 		virtual VkPipelineCache& PipelineCache() = 0;
 
 		// returns the pipeline with a given id(name) or nullptr if invalid
-		virtual VkPipeline GetPipeline(std::string name) = 0;
+		virtual VkPipeline& GetPipeline(std::string nameid) = 0;
+
+		// returns the descriptor set layout with a given id(name) or nullptr if invalid
+		virtual VkDescriptorSetLayout& GetDescriptorSetLayout(std::string nameid) = 0;
+
+		// returns the pipeline layout with a given id(name) or nullptr if invalid
+		virtual VkPipelineLayout& GetPipelineLayout(std::string nameid) = 0;
 
 		// returns the current in-process frame
 		virtual uint32_t CurrentFrame() = 0;
@@ -60,6 +66,9 @@ namespace Cosmos
 		virtual Commander& GetCommander() = 0;
 
 	public:
+
+		// setup initial resources (called after main renderpass has been created)
+		virtual void Intialize() = 0;
 
 		// updates the renderer
 		virtual void OnUpdate() = 0;

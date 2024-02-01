@@ -43,14 +43,6 @@ namespace Cosmos
 		mLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
-	VKTexture2D::~VKTexture2D()
-	{
-		vkDestroySampler(mDevice->GetDevice(), mSampler, nullptr);
-		vkDestroyImageView(mDevice->GetDevice(), mView, nullptr);
-		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
-		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
-	}
-
 	void VKTexture2D::Destroy()
 	{
 		vkDeviceWaitIdle(mDevice->GetDevice());

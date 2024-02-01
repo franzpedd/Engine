@@ -24,7 +24,7 @@ namespace Cosmos
 		Explorer(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		virtual ~Explorer() = default;
+		virtual ~Explorer();
 
 	public:
 

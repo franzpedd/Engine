@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-    struct VKVertex
+    struct Vertex
     {
         glm::vec3 position;
         glm::vec3 color;
@@ -16,7 +16,7 @@ namespace Cosmos
         {
             std::array<VkVertexInputBindingDescription, 1> bindingDescription = {};
             bindingDescription[0].binding = 0;
-            bindingDescription[0].stride = sizeof(VKVertex);
+            bindingDescription[0].stride = sizeof(Vertex);
             bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
             return bindingDescription;
@@ -29,24 +29,26 @@ namespace Cosmos
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
             attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(VKVertex, position);
+            attributeDescriptions[0].offset = offsetof(Vertex, position);
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
             attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(VKVertex, color);
+            attributeDescriptions[1].offset = offsetof(Vertex, color);
 
             attributeDescriptions[2].binding = 0;
             attributeDescriptions[2].location = 2;
             attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-            attributeDescriptions[2].offset = offsetof(VKVertex, uv0);
+            attributeDescriptions[2].offset = offsetof(Vertex, uv0);
 
             return attributeDescriptions;
         }
 
-        bool operator==(const VKVertex& other) const
+        bool operator==(const Vertex& other) const
         {
-            return position == other.position && color == other.color && uv0 == other.uv0;
+            return position == other.position 
+                && color == other.color 
+                && uv0 == other.uv0;
         }
     };
 }

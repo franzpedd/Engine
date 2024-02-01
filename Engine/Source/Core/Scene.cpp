@@ -36,7 +36,9 @@ namespace Cosmos
 			return;
 
 		if (entity->HasComponent<ModelComponent>())
+		{
 			entity->GetComponent<ModelComponent>().model->Destroy();
+		}
 
 		mEntityMap.erase(entity->GetUUID());
 	}
@@ -62,15 +64,15 @@ namespace Cosmos
 			ent->OnUpdate(timestep);
 		}
 
-		auto modelsGroup = mRegistry.group<ModelComponent>();
+		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
 		for (auto ent : modelsGroup)
 		{
-			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+			auto& [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
 
-			if (model == nullptr || !model->IsLoaded())
+			if (modelComponent.model == nullptr || !modelComponent.model->IsLoaded())
 				continue;
 
-			model->Update(timestep);
+			modelComponent.model->Update(timestep, transformComponent.GetTransform());
 		}
 	}
 
@@ -112,7 +114,9 @@ namespace Cosmos
 			if (entity->HasComponent<ModelComponent>() && entity->GetComponent<ModelComponent>().model != nullptr)
 			{
 				if (entity->GetComponent<ModelComponent>().model->IsLoaded())
+				{
 					entity->GetComponent<ModelComponent>().model->Destroy();
+				}
 
 				delete entity->GetComponent<ModelComponent>().model;
 			}

@@ -2,6 +2,7 @@
 #include "VKRenderer.h"
 
 #include "VKShader.h"
+#include "Entity/Model/Vertex.h"
 
 #include "Core/Scene.h"
 #include "Platform/Window.h"
@@ -17,9 +18,6 @@ namespace Cosmos
 		mSwapchain = VKSwapchain::Create(mWindow, mInstance, mDevice);
 
 		CreateGlobalStates();
-
-		// create all default pipelines used accross objects
-		CreateModelPipeline();
 	}
 
 	VKRenderer::~VKRenderer()
@@ -35,10 +33,14 @@ namespace Cosmos
 			vkDestroySemaphore(mDevice->GetDevice(), mImageAvailableSemaphores[i], nullptr);
 		}
 
-		// destroy model pipeline
-		vkDestroyPipeline(mDevice->GetDevice(), mPipelines["Model"], nullptr);
-		vkDestroyPipelineLayout(mDevice->GetDevice(), mPipelineLayouts["Model"], nullptr);
-		vkDestroyDescriptorSetLayout(mDevice->GetDevice(), mDescriptorSetLayouts["Model"], nullptr);
+		for (auto& pipeline : mPipelines)
+			vkDestroyPipeline(mDevice->GetDevice(), pipeline.second, nullptr);
+
+		for (auto& layout : mPipelineLayouts)
+			vkDestroyPipelineLayout(mDevice->GetDevice(), layout.second, nullptr);
+
+		for(auto& descriptorSetLayout : mDescriptorSetLayouts)
+			vkDestroyDescriptorSetLayout(mDevice->GetDevice(), descriptorSetLayout.second, nullptr);
 	}
 
 	std::shared_ptr<Instance> VKRenderer::GetInstance()
@@ -61,12 +63,31 @@ namespace Cosmos
 		return mPipelineCache;
 	}
 
-	VkPipeline VKRenderer::GetPipeline(std::string name)
+	VkPipeline& VKRenderer::GetPipeline(std::string nameid)
 	{
-		if (mPipelines[name])
-			return mPipelines[name];
+		if (mPipelines[nameid])
+			return mPipelines[nameid];
 
-		return nullptr;
+		LOG_TO_TERMINAL(Logger::Error, "No pipeline with nameid %s exists", nameid.c_str());
+		return mPipelines[0];
+	}
+
+	VkDescriptorSetLayout& VKRenderer::GetDescriptorSetLayout(std::string nameid)
+	{
+		if (mDescriptorSetLayouts[nameid])
+			return mDescriptorSetLayouts[nameid];
+
+		LOG_TO_TERMINAL(Logger::Error, "No descriptor set layout with nameid %s exists", nameid.c_str());
+		return mDescriptorSetLayouts[0];
+	}
+
+	VkPipelineLayout& VKRenderer::GetPipelineLayout(std::string nameid)
+	{
+		if (mPipelineLayouts[nameid])
+			return mPipelineLayouts[nameid];
+
+		LOG_TO_TERMINAL(Logger::Error, "No pipeline layout with nameid %s exists", nameid.c_str());
+		return mPipelineLayouts[0];
 	}
 
 	uint32_t VKRenderer::CurrentFrame()
@@ -82,6 +103,11 @@ namespace Cosmos
 	Commander& VKRenderer::GetCommander()
 	{
 		return mCommander;
+	}
+
+	void VKRenderer::Intialize()
+	{
+		CreatePipelines();
 	}
 
 	void VKRenderer::OnUpdate()
@@ -351,8 +377,150 @@ namespace Cosmos
 		}
 	}
 
-	void VKRenderer::CreateModelPipeline()
+	void VKRenderer::CreatePipelines()
 	{
-		const std::string id = "Model";
+		// model pipeline
+		{
+			const std::string id = "Model";
+			std::shared_ptr<VKShader> vShader = VKShader::Create(mDevice, VKShader::Vertex, "Model.vert", "Data/Shaders/model.vert");
+			std::shared_ptr<VKShader> fShader = VKShader::Create(mDevice, VKShader::Fragment, "Model.frag", "Data/Shaders/model.frag");
+
+			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->Stage(), fShader->Stage() };
+
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = 0;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayoutBinding albedoLayoutBinding = {};
+			albedoLayoutBinding.binding = 1;
+			albedoLayoutBinding.descriptorCount = 1;
+			albedoLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			albedoLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			albedoLayoutBinding.pImmutableSamplers = nullptr;
+
+			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, albedoLayoutBinding };
+
+			VkDescriptorSetLayoutCreateInfo descSetLayoutCI = {};
+			descSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descSetLayoutCI.pNext = nullptr;
+			descSetLayoutCI.flags = 0;
+			descSetLayoutCI.bindingCount = (uint32_t)bindings.size();
+			descSetLayoutCI.pBindings = bindings.data();
+			VK_ASSERT(vkCreateDescriptorSetLayout(mDevice->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayouts[id]), "Failed to create descriptor set layout");
+
+			VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
+			pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			pipelineLayoutCI.pNext = nullptr;
+			pipelineLayoutCI.flags = 0;
+			pipelineLayoutCI.setLayoutCount = 1;
+			pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayouts[id];
+			VK_ASSERT(vkCreatePipelineLayout(mDevice->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayouts[id]), "Failed to create descriptor set layout");
+
+			VkPipelineVertexInputStateCreateInfo VISCI = {};
+			VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+			VISCI.pNext = nullptr;
+			VISCI.flags = 0;
+			VISCI.vertexAttributeDescriptionCount = (uint32_t)Vertex::GetAttributeDescriptions().size();
+			VISCI.pVertexAttributeDescriptions = Vertex::GetAttributeDescriptions().data();
+			VISCI.vertexBindingDescriptionCount = (uint32_t)Vertex::GetBindingDescription().size();
+			VISCI.pVertexBindingDescriptions = Vertex::GetBindingDescription().data();
+
+			VkPipelineInputAssemblyStateCreateInfo IASCI = {};
+			IASCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+			IASCI.pNext = nullptr;
+			IASCI.flags = 0;
+			IASCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			IASCI.primitiveRestartEnable = VK_FALSE;
+
+			VkPipelineViewportStateCreateInfo VSCI = {};
+			VSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+			VSCI.pNext = nullptr;
+			VSCI.flags = 0;
+			VSCI.viewportCount = 1;
+			VSCI.scissorCount = 1;
+
+			VkPipelineRasterizationStateCreateInfo RSCI = {};
+			RSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+			RSCI.pNext = nullptr;
+			RSCI.flags = 0;
+			RSCI.depthClampEnable = VK_FALSE;
+			RSCI.rasterizerDiscardEnable = VK_FALSE;
+			RSCI.polygonMode = VK_POLYGON_MODE_FILL;
+			RSCI.lineWidth = 1.0f;
+			RSCI.cullMode = VK_CULL_MODE_NONE;
+			RSCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			RSCI.depthBiasEnable = VK_FALSE;
+
+			VkPipelineMultisampleStateCreateInfo MSCI = {};
+			MSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+			MSCI.pNext = nullptr;
+			MSCI.flags = 0;
+			MSCI.sampleShadingEnable = VK_FALSE;
+			MSCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+			VkPipelineDepthStencilStateCreateInfo DSSCI = {};
+			DSSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			DSSCI.depthTestEnable = VK_TRUE;
+			DSSCI.depthWriteEnable = VK_TRUE;
+			DSSCI.depthCompareOp = VK_COMPARE_OP_LESS;
+			DSSCI.depthBoundsTestEnable = VK_FALSE;
+			DSSCI.stencilTestEnable = VK_FALSE;
+
+			VkPipelineColorBlendAttachmentState CBAS = {};
+			CBAS.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			CBAS.blendEnable = VK_FALSE;
+			CBAS.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			CBAS.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			CBAS.colorBlendOp = VK_BLEND_OP_ADD;
+			CBAS.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			CBAS.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			CBAS.alphaBlendOp = VK_BLEND_OP_ADD;
+
+			VkPipelineColorBlendStateCreateInfo CBSCI = {};
+			CBSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+			CBSCI.pNext = nullptr;
+			CBSCI.flags = 0;
+			CBSCI.logicOpEnable = VK_FALSE;
+			CBSCI.logicOp = VK_LOGIC_OP_COPY;
+			CBSCI.attachmentCount = 1;
+			CBSCI.pAttachments = &CBAS;
+			CBSCI.blendConstants[0] = 0.0f;
+			CBSCI.blendConstants[1] = 0.0f;
+			CBSCI.blendConstants[2] = 0.0f;
+			CBSCI.blendConstants[3] = 0.0f;
+
+			VkPipelineDynamicStateCreateInfo DSCI = {};
+			DSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+			DSCI.pNext = nullptr;
+			DSCI.flags = 0;
+			DSCI.dynamicStateCount = (uint32_t)dynamicStates.size();
+			DSCI.pDynamicStates = dynamicStates.data();
+
+			VkGraphicsPipelineCreateInfo pipelineCI = {};
+			pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineCI.stageCount = 2;
+			pipelineCI.pStages = shaderStages.data();
+			pipelineCI.pVertexInputState = &VISCI;
+			pipelineCI.pInputAssemblyState = &IASCI;
+			pipelineCI.pViewportState = &VSCI;
+			pipelineCI.pRasterizationState = &RSCI;
+			pipelineCI.pMultisampleState = &MSCI;
+			pipelineCI.pDepthStencilState = &DSSCI;
+			pipelineCI.pColorBlendState = &CBSCI;
+			pipelineCI.pDynamicState = &DSCI;
+			pipelineCI.layout = mPipelineLayouts[id];
+			pipelineCI.renderPass = mCommander.AccessMainCommandEntry()->renderPass;
+			pipelineCI.subpass = 0;
+			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
+			VK_ASSERT(vkCreateGraphicsPipelines(mDevice->GetDevice(), mPipelineCache, 1, &pipelineCI, nullptr, &mPipelines[id]), "Failed to create graphics pipeline");
+		
+			// destroy the shader module after usage
+			vkDestroyShaderModule(mDevice->GetDevice(), vShader->Module(), nullptr);
+			vkDestroyShaderModule(mDevice->GetDevice(), fShader->Module(), nullptr);
+		}
 	}
 }

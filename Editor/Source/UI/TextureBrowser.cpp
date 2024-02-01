@@ -13,6 +13,15 @@ namespace Cosmos
 
 	TextureBrowser::~TextureBrowser()
 	{
+		for (auto& item : mTextures)
+		{
+			item.texture->Destroy();
+		}
+
+		if (mLastSelectedTexture.texture)
+		{
+			mLastSelectedTexture.texture->Destroy();
+		}
 	}
 
 	void TextureBrowser::OnUpdate()

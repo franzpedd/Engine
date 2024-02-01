@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity/Specials/Model.h"
+#include "Entity/Model/Model.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"
 #include "Util/Serializer.h"
@@ -31,6 +31,13 @@ namespace Cosmos
 
 		// constructor
 		TransformComponent() = default;
+
+		// returns the transformed matrix
+		glm::mat4 GetTransform() const
+		{
+			glm::mat4 rot = glm::toMat4(glm::quat(rotation));
+			return glm::translate(glm::mat4(1.0f), translation) * rot * glm::scale(glm::mat4(1.0f), scale);
+		}
 	};
 
 	struct ModelComponent

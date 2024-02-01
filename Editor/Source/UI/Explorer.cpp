@@ -8,6 +8,16 @@ namespace Cosmos
 		CreateTextures();
 	}
 
+	Explorer::~Explorer()
+	{
+		mFolderTexture->Destroy();
+
+		for (auto& texture : mExtensionTexture)
+		{
+			texture->Destroy();
+		}
+	}
+
 	void Explorer::OnUpdate()
 	{
 		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot);
