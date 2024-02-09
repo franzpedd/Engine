@@ -59,9 +59,9 @@ namespace Cosmos
 
 	protected:
 
-		int32_t mWidth = 0;
-		int32_t mHeight = 0;
-		int32_t mMipLevels = 0;
+		uint32_t mWidth = 0;
+		uint32_t mHeight = 0;
+		uint32_t mMipLevels = 0;
 	};
 
 	struct TextureSampler

@@ -57,15 +57,17 @@ namespace Cosmos
 		samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerCI.unnormalizedCoordinates = VK_FALSE;
 		samplerCI.compareEnable = VK_FALSE;
-		samplerCI.maxLod = mipLevels;
-		samplerCI.compareOp = VK_COMPARE_OP_NEVER;
+		samplerCI.maxLod = (float)mipLevels;
+		samplerCI.minLod = 0.0f;
+		samplerCI.mipLodBias = 0.0f;
+		samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		VK_ASSERT(vkCreateSampler(device->GetDevice(), &samplerCI, nullptr, &sampler), "Failed to create sampler");
 
 		return sampler;
 	}
 
-	void TransitionImageLayout(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+	void TransitionImageLayout(std::shared_ptr<VKDevice>& device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
 	{
 		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(device, cmdPool);
 
@@ -78,7 +80,7 @@ namespace Cosmos
 		barrier.image = image;
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.levelCount = mipLevels;
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.layerCount = 1;
 

@@ -26,37 +26,34 @@ namespace Cosmos
 		tm* local_time = new tm();
 		localtime_s(local_time, &ttime);
 
-		std::ostringstream oss;
-
-		if (!mExternalLogger)
+		// external console
 		{
-			oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
-			oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
-			oss << "[" << file << " - " << line << "]";
-		}
-
-		else
-		{
+			std::ostringstream oss;
 			oss << "[" << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
-		}
+			oss << "[" << SeverityToConstChar(severity) << "]";
+			oss << ": " << buffer;
 
-		oss << "[" << SeverityToConstChar(severity) << "]";
-		oss << ": " << buffer;
-		
-		if (mExternalLogger)
-		{
 			if (mConsoleMessages.size() >= LOG_MAX_ENTRIES_SIZE)
 			{
 				mConsoleMessages.clear();
 			}
-		
+
 			oss << std::endl;
-		
-			mConsoleMessages.push_back({ severity, oss.str()});
-			return;
+
+			mConsoleMessages.push_back({ severity, oss.str() });
 		}
 
-		printf("%s\n", oss.str().c_str());
+		// os console
+		{
+			std::ostringstream oss;
+			oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
+			oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+			oss << "[" << file << " - " << line << "]";
+			oss << "[" << SeverityToConstChar(severity) << "]";
+			oss << ": " << buffer;
+
+			printf("%s\n", oss.str().c_str());
+		}	
 
 		delete local_time;
 	}

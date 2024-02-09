@@ -1,11 +1,9 @@
 #include "SceneHierarchy.h"
 
-#include "Renderer/Gizmo.h"
-
 namespace Cosmos
 {
-	SceneHierarchy::SceneHierarchy(Scene* scene, Gizmo* gizmo, Camera& camera)
-		: Widget("UI:Scene Hierarchy"), mScene(scene), mGizmo(gizmo), mCamera(camera)
+	SceneHierarchy::SceneHierarchy(Scene* scene, Camera& camera)
+		: Widget("UI:Scene Hierarchy"), mScene(scene), mCamera(camera)
 	{
 		Logger() << "Creating Scene Hierarchy";
 	}
@@ -20,6 +18,11 @@ namespace Cosmos
 		DisplaySelectedEntityComponents();
 
 		//ImGui::ShowDemoWindow();
+	}
+
+	Entity* SceneHierarchy::GetSelectedEntity()
+	{
+		return mSelectedEntity;
 	}
 
 	void SceneHierarchy::DisplaySceneHierarchy()

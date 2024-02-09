@@ -36,7 +36,8 @@ namespace Cosmos
 		{
 			ImFont* imgui;
 			ImFont* vera;
-			ImFont* icons;
+			ImFont* iconFA;
+			ImFont* iconLC;
 		};
 
 	public:
@@ -98,7 +99,7 @@ namespace Cosmos
 	};
 
 	// adds a texture in the user interface for later usage
-	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout);
+	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// removes a texture in the user interface backend
 	void RemoveTexture(VkDescriptorSet descriptor);

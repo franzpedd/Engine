@@ -49,9 +49,6 @@ namespace Cosmos
 			return *this;
 		}
 
-		// sets/unsets the usage of external console
-		inline void UseExternalConsole(bool value) { mExternalLogger = value; }
-
 		// returns the stored console messages
 		inline std::vector<ConsoleMessage>& GetMessages() { return mConsoleMessages; }
 	
@@ -68,7 +65,6 @@ namespace Cosmos
 	
 	private:
 		
-		bool mExternalLogger = false;
 		std::ostringstream mOutput;
 		std::vector<ConsoleMessage> mConsoleMessages;
 	};

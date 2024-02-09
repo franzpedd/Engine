@@ -7,13 +7,42 @@ namespace Cosmos
 	// forward declaration
 	class ModelBrowser;
 	class TextureBrowser;
+	class SceneHierarchy;
 
 	class Viewport : public Widget
 	{
 	public:
 
+		typedef enum GizmoType
+		{
+			UNDEFINED		= (0u << 0),
+			TRANSLATE_X		= (1u << 0),
+			TRANSLATE_Y		= (1u << 1),
+			TRANSLATE_Z		= (1u << 2),
+			ROTATE_X		= (1u << 3),
+			ROTATE_Y		= (1u << 4),
+			ROTATE_Z		= (1u << 5),
+			ROTATE_SCREEN	= (1u << 6),
+			SCALE_X			= (1u << 7),
+			SCALE_Y			= (1u << 8),
+			SCALE_Z			= (1u << 9),
+			BOUNDS			= (1u << 10),
+			SCALE_XU		= (1u << 11),
+			SCALE_YU		= (1u << 12),
+			SCALE_ZU		= (1u << 13),
+
+			TRANSLATE		= TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
+			ROTATE			= ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
+			SCALE			= SCALE_X | SCALE_Y | SCALE_Z,
+			SCALEU			= SCALE_XU | SCALE_YU | SCALE_ZU, // universal
+			UNIVERSAL		= TRANSLATE | ROTATE | SCALEU
+
+		} GizmoType;
+
+	public:
+
 		// constructor
-		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, 
+		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, SceneHierarchy* sceneHierarcy,
 			TextureBrowser* textureBrowser, ModelBrowser* modelBrowser);
 
 		// destructor
@@ -23,13 +52,13 @@ namespace Cosmos
 		inline std::shared_ptr<CommandEntry>& GetCommandEntry() { return mCommandEntry; }
 
 		// returns the current viewport size
-		inline ImVec2 GetSize() { return mCurrentSize; }
+		inline ImVec2 GetSize() const { return mCurrentSize; }
 
 		// returns the viewport window lower boundaries
-		inline ImVec2 GetWindowContentRegionMin() { return mContentRegionMin; }
+		inline ImVec2 GetWindowContentRegionMin() const { return mContentRegionMin; }
 
 		// returns the viewport window higher boundaries
-		inline ImVec2 GetWindowContentRegionMax() { return mContentRegionMax; }
+		inline ImVec2 GetWindowContentRegionMax() const { return mContentRegionMax; }
 
 	public:
 
@@ -47,14 +76,21 @@ namespace Cosmos
 		// creates the command entry resources
 		void CreateResources();
 
+		// draws the viewport menubar
+		void DrawMenubar();
+
 		// displays a side menu only on viewport view
 		void DisplaySideMenu();
+
+		// draws the gizmos on selected entity
+		void DrawGizmos();
 
 	private:
 
 		std::shared_ptr<GUI>& mUI;
 		std::shared_ptr<Renderer>& mRenderer;
 		Camera* mCamera;
+		SceneHierarchy* mSceneHierarcy;
 		TextureBrowser* mTextureBrowser;
 		ModelBrowser* mModelBrowser;
 
@@ -79,5 +115,7 @@ namespace Cosmos
 		std::vector<VkImageView> mImageViews;
 
 		std::vector<VkDescriptorSet> mDescriptorSets;
+
+		GizmoType mGizmoType = GizmoType::UNDEFINED;
 	};
 }

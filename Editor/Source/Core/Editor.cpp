@@ -1,6 +1,5 @@
 #include "Editor.h"
 
-#include "Renderer/Gizmo.h"
 #include "Renderer/Grid.h"
 
 #include "UI/Console.h"
@@ -24,11 +23,10 @@ namespace Cosmos
 		mExplorer = new Explorer(mRenderer);
 		mModelBrowser = new ModelBrowser(mRenderer);
 		mTextureBrowser = new TextureBrowser(mRenderer);
-		mViewport = new Viewport(mUI, mRenderer, mCamera, mTextureBrowser, mModelBrowser);
+		mSceneHierarchy = new SceneHierarchy(mScene, *mCamera);
+		mViewport = new Viewport(mUI, mRenderer, mCamera, mSceneHierarchy, mTextureBrowser, mModelBrowser);
 		mGrid = new Grid(mRenderer, mScene, mCamera);
-		mGizmo = new Gizmo(mWindow, mRenderer, mScene, mCamera, mViewport);
 		mMainmenu = new Mainmenu(mProject, mCamera, mGrid);
-		mSceneHierarchy = new SceneHierarchy(mScene, mGizmo, *mCamera);
 		mDockspace = new Dockspace();
 
 		// widgets

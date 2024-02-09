@@ -1,17 +1,18 @@
 #include "Viewport.h"
 
 #include "ModelBrowser.h"
+#include "SceneHierarchy.h"
 #include "TextureBrowser.h"
 
+#include <imguizmo.h>
 #include <array>
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera,
+	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, SceneHierarchy* sceneHierarcy,
 		TextureBrowser* textureBrowser, ModelBrowser* modelBrowser)
-		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera),
+		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera), mSceneHierarcy(sceneHierarcy),
 		mTextureBrowser(textureBrowser), mModelBrowser(modelBrowser)
-
 	{
 		mCommandEntry = CommandEntry::Create(renderer->GetDevice()->GetDevice(), "Viewport");
 		Commander::Get().Add(mCommandEntry);
@@ -146,11 +147,13 @@ namespace Cosmos
 	{
 		if (ImGui::Begin("Viewport"))
 		{
+			DrawMenubar();
+
 			ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
 			
 			// updating aspect ratio for the docking
 			mCurrentSize = ImGui::GetWindowSize();
-			mCamera->SetAspectRatio(mCurrentSize.x / mCurrentSize.y);
+			mCamera->SetAspectRatio((float)(mCurrentSize.x / mCurrentSize.y));
 			
 			// viewport boundaries
 			mContentRegionMin = ImGui::GetWindowContentRegionMin();
@@ -160,8 +163,11 @@ namespace Cosmos
 			mContentRegionMax.x += ImGui::GetWindowPos().x;
 			mContentRegionMax.y += ImGui::GetWindowPos().y;
 
-			// hacky
-			DisplaySideMenu();
+			// side menu
+			//DisplaySideMenu();
+
+			// draw gizmos on selected entity
+			DrawGizmos();
 		}
 
 		ImGui::End();
@@ -292,29 +298,130 @@ namespace Cosmos
 		}
 	}
 
+	void Viewport::DrawMenubar()
+	{
+		// position window to menubar 
+		ImVec2 winPos = ImGui::GetWindowSize();
+
+		ImGui::PushID("##ViewportMenubar");
+		ImGui::BeginGroup();
+		
+		// grid options
+		{
+			ImGui::Separator();
+
+			if (ImGui::Button(ICON_LC_AXIS_3D))
+			{
+				mGizmoType = GizmoType::UNDEFINED;
+			}
+
+			ImGui::SameLine();
+		
+			if (ImGui::Button(ICON_LC_MOVE_3D))
+			{
+				mGizmoType = GizmoType::TRANSLATE;
+			}
+			
+			ImGui::SameLine();
+
+			if (ImGui::Button(ICON_LC_ROTATE_3D))
+			{
+				mGizmoType = GizmoType::ROTATE;
+			}
+			
+			ImGui::SameLine();
+
+			if (ImGui::Button(ICON_LC_SCALE_3D))
+			{
+				mGizmoType = GizmoType::SCALE;
+			}
+
+			ImGui::Separator();
+		}
+		
+		ImGui::EndGroup();
+		ImGui::PopID();
+	}
+
 	void Viewport::DisplaySideMenu()
 	{
-		ImGui::SetCursorPos(ImVec2(15, 40));
+		ImGui::SetCursorPos(ImVec2(15.0f, 40.0f));
 
 		if (ImGui::BeginChild("##Sidebar"))
 		{
-			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(30, 30)))
+			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(25.0f, 25.0f)))
 			{
 				mTextureBrowser->ToogleOnOff(false);
 				mModelBrowser->ToogleOnOff(false);
 			}
 
-			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(30, 30)))
+			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(25.0f, 25.0f)))
 			{
 				mTextureBrowser->ToogleOnOff(true);
 			}
 
-			if (ImGui::Button(ICON_FA_CUBE "", ImVec2(30, 30)))
+			if (ImGui::Button(ICON_FA_CUBE "", ImVec2(25.0f, 25.0f)))
 			{
 				mModelBrowser->ToogleOnOff(true);
 			}
 		}
 
 		ImGui::EndChild();
+	}
+
+	void Viewport::DrawGizmos()
+	{
+		// gizmos on entity
+		Entity* selectedEntity = mSceneHierarcy->GetSelectedEntity();
+
+		if (!selectedEntity || mGizmoType == GizmoType::UNDEFINED)
+			return;
+
+		if (!selectedEntity->HasComponent<TransformComponent>())
+			return;
+
+		ImGuizmo::SetOrthographic(false); // 3D engine dont have orthographic but perspective
+		ImGuizmo::SetDrawlist();
+
+		//viewport rect
+		float windowWidth = (float)ImGui::GetWindowWidth();
+		float windowHeight = (float)ImGui::GetWindowHeight();
+		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+		
+		// camera
+		glm::mat4 view = mCamera->GetView();
+		glm::mat4 proj = glm::perspectiveRH(glm::radians(mCamera->GetFov()), mCurrentSize.x / mCurrentSize.y, mCamera->GetNear(), mCamera->GetFar());
+
+		// entity
+		auto& tc = selectedEntity->GetComponent<TransformComponent>();
+		glm::mat4 transform = tc.GetTransform();
+
+		// snapping
+		bool snap = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+		float snapValue = mGizmoType == GizmoType::ROTATE ? 45.0f : 0.5f;
+		float snapValues[3] = { snapValue, snapValue,snapValue };
+
+		// gizmos drawing
+		ImGuizmo::Manipulate
+		(
+			glm::value_ptr(view),
+			glm::value_ptr(proj),
+			(ImGuizmo::OPERATION)mGizmoType,
+			ImGuizmo::LOCAL,
+			glm::value_ptr(transform),
+			nullptr,
+			snap ? snapValues : nullptr
+		);
+		
+		if (ImGuizmo::IsUsing())
+		{
+			glm::vec3 translation, rotation, scale;
+			Math::Decompose(transform, translation, rotation, scale);
+		
+			glm::vec3 deltaRotation = rotation - tc.rotation;
+			tc.translation = translation;
+			tc.rotation += deltaRotation;
+			tc.scale = scale;
+		}
 	}
 }

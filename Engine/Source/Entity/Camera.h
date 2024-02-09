@@ -33,11 +33,17 @@ namespace Cosmos
 		// returns the view matrix
 		glm::mat4& GetView();
 
+		// returns the camera field of view
+		float GetFov() const { return mFov; }
+
 		// returns near value
 		float GetNear() const { return mZnear; }
 
 		// returns far value
 		float GetFar() const { return mZfar; }
+
+		// returns the camera eyes
+		glm::vec3& GetFront() { return camFront; }
 
 		// returns the current camera position
 		glm::vec3& GetPosition() { return mPosition; }
@@ -46,7 +52,7 @@ namespace Cosmos
 		glm::vec3& GetRotation() { return mRotation; }
 
 		// sets a new aspect ratio for the camera
-		inline void SetAspectRatio(float aspect) { mAspectRatio = aspect; }
+		void SetAspectRatio(float aspect);
 
 	public:
 
@@ -88,10 +94,13 @@ namespace Cosmos
 		float mMovementSpeed = 1.0f;
 		float mRotationSpeed = 1.0f;
 		float mAspectRatio = 1.0f;
+
 		glm::mat4 mPerspective = glm::mat4(1.0f);
 		glm::mat4 mView = glm::mat4(1.0f);
-		glm::vec3 mRotation = glm::vec3();
+
+		glm::vec3 camFront = glm::vec3(0.0f);
+		glm::vec3 mRotation = glm::vec3(0.0f);
 		glm::vec3 mPosition = glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::mat4 mIdentityMat = glm::mat4(1.0f); // used for debug
+		glm::vec3 mScale = glm::vec3(1.0f);
 	};
 }

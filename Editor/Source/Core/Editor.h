@@ -10,7 +10,6 @@ namespace Cosmos
 	class Dockspace;
 	class Explorer;
 	class Grid;
-	class Gizmo;
 	class Mainmenu;
 	class ModelBrowser;
 	class SceneHierarchy;
@@ -45,6 +44,5 @@ namespace Cosmos
 		// entity
 		Camera* mCamera;
 		Grid* mGrid;
-		Gizmo* mGizmo;
 	};
 }

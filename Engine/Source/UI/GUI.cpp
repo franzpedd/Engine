@@ -16,6 +16,7 @@
 
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_vulkan.cpp>
+#include <imguizmo.h>
 
 #if defined(_MSC_VER)
 # pragma warning(pop)
@@ -58,6 +59,7 @@ namespace Cosmos
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 
 		for (Widget* widget : mWidgetStack)
 		{
@@ -141,7 +143,8 @@ namespace Cosmos
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		}
 
-		static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+		static const ImWchar iconRanges1[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+		static const ImWchar iconRanges2[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
 
 		ImFontConfig iconCFG;
 		iconCFG.MergeMode = true;
@@ -150,7 +153,8 @@ namespace Cosmos
 		io.Fonts->Clear();
 		LoadFont(18.0f);
 
-		mFonts.icons = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 18.0f, &iconCFG, iconRanges);
+		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 18.0f, &iconCFG, iconRanges1);
+		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_LC, 18.0f, &iconCFG, iconRanges2);
 		io.Fonts->Build();
 
 		io.IniFilename = "ui.ini";

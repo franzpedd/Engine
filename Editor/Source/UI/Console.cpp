@@ -5,8 +5,6 @@ namespace Cosmos
 	Console::Console()
 	{
 		Logger() << "Creating Console";
-
-		Logger::Get().UseExternalConsole(true);
 	}
 
 	Console::~Console()

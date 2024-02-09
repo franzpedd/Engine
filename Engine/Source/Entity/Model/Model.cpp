@@ -33,6 +33,8 @@ namespace Cosmos
 		ubo.view = mCamera.GetView();
 		ubo.proj = mCamera.GetProjection();
 
+		uint32_t currentFrame = mRenderer->CurrentFrame();
+
 		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}
 

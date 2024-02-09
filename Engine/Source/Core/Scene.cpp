@@ -37,7 +37,11 @@ namespace Cosmos
 
 		if (entity->HasComponent<ModelComponent>())
 		{
-			entity->GetComponent<ModelComponent>().model->Destroy();
+			if (entity->GetComponent<ModelComponent>().model != nullptr)
+			{
+				entity->GetComponent<ModelComponent>().model->Destroy();
+				entity->GetComponent<ModelComponent>().model->SetLoaded(false);
+			}
 		}
 
 		mEntityMap.erase(entity->GetUUID());

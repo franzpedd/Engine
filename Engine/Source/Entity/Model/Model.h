@@ -36,6 +36,9 @@ namespace Cosmos
 		// returns if the model is loaded
 		inline bool IsLoaded() const { return mLoaded; }
 
+		// sets the loaded flag to false
+		inline void SetLoaded(bool value) { mLoaded = value; }
+
 	public:
 
 		// draws the model
@@ -54,17 +57,6 @@ namespace Cosmos
 
 		// loads the model albedo texture
 		void LoadAlbedoTexture(std::string path);
-
-	public:
-
-		// translates the model given an orientation delta
-		void Translate(glm::vec3 delta);
-
-		// rotates the model given up-to-3 orientation
-		void Rotate(float radians, glm::vec3 orientationVec);
-
-		// scales the model given it's multiplication factor
-		void Scale(glm::vec3 factor);
 
 	private:
 

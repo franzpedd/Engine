@@ -12,7 +12,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		SceneHierarchy(Scene* scene, Gizmo* gizmo, Camera& camera);
+		SceneHierarchy(Scene* scene, Camera& camera);
 
 		// destructor
 		~SceneHierarchy();
@@ -21,6 +21,9 @@ namespace Cosmos
 		virtual void OnUpdate() override;
 
 	public:
+
+		// returns a pointer to the currently selected entity
+		Entity* GetSelectedEntity();
 
 		// adds a menu option with the component name
 		template<typename T>
@@ -47,7 +50,6 @@ namespace Cosmos
 	private:
 
 		Scene* mScene;
-		Gizmo* mGizmo;
 		Camera& mCamera;
 
 		Entity* mSelectedEntity = nullptr;
