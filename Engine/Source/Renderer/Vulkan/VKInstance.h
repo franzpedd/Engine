@@ -23,7 +23,7 @@ namespace Cosmos
 	public:
 
 		// returns a reference to the vulkan instance
-		virtual VkInstance& GetInstance() override;
+		virtual VkInstance GetInstance() override;
 
 		// returns a reference to the vulkan debug utils messenger
 		virtual VkDebugUtilsMessengerEXT GetDebugger() override;

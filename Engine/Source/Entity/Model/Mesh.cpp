@@ -12,7 +12,7 @@ namespace Cosmos
 		CreateResources();
 	}
 
-	void Mesh::Draw(VkCommandBuffer commandBuffer, VkPipelineLayout& layout, VkDescriptorSet& descriptorSet)
+	void Mesh::Draw(VkCommandBuffer commandBuffer, VkPipelineLayout layout, VkDescriptorSet& descriptorSet)
 	{
 		VkDeviceSize offsets[] = { 0 };
 

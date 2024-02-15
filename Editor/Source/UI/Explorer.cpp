@@ -5,94 +5,151 @@ namespace Cosmos
 	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
 		: Widget("UI:Explorer"), mRenderer(renderer)
 	{
-		CreateTextures();
+		//CreateTextures();
+
+		mCurrentDir = "Data";
+
+		// create default resources
+		mUndefinedResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/undefined.png");
+		mUndefinedResource.descriptor = AddTexture(mUndefinedResource.texture->GetSampler(), mUndefinedResource.texture->GetView());
+
+		mFolderResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/folder.png");
+		mFolderResource.descriptor = AddTexture(mFolderResource.texture->GetSampler(), mFolderResource.texture->GetView());
+
+		mTextResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/txt.png");
+		mTextResource.descriptor = AddTexture(mTextResource.texture->GetSampler(), mTextResource.texture->GetView());
+
+		mModelResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/mdl.png");
+		mModelResource.descriptor = AddTexture(mModelResource.texture->GetSampler(), mModelResource.texture->GetView());
+
+		mVertexResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/vert.png");
+		mVertexResource.descriptor = AddTexture(mVertexResource.texture->GetSampler(), mVertexResource.texture->GetView());
+
+		mFragmentResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/frag.png");
+		mFragmentResource.descriptor = AddTexture(mFragmentResource.texture->GetSampler(), mFragmentResource.texture->GetView());
+
+		mSpirvResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/spv.png");
+		mSpirvResource.descriptor = AddTexture(mSpirvResource.texture->GetSampler(), mSpirvResource.texture->GetView());
 	}
 
 	Explorer::~Explorer()
 	{
-		mFolderTexture->Destroy();
+		mUndefinedResource.texture->Destroy();
+		mFolderResource.texture->Destroy();
+		mTextResource.texture->Destroy();
+		mModelResource.texture->Destroy();
+		mVertexResource.texture->Destroy();
+		mFragmentResource.texture->Destroy();
+		mSpirvResource.texture->Destroy();
 
-		for (auto& texture : mExtensionTexture)
+		// clear last path custom assets
+		for (auto& asset : mCurrentDirAssets)
 		{
-			texture->Destroy();
+			if (asset.type == AssetType::Image)
+				asset.resource.texture->Destroy();
 		}
+		mCurrentDirAssets.clear();
 	}
 
 	void Explorer::OnUpdate()
 	{
-		std::vector<Explorer::ItemProperties> currDirItems = RefreshExplorer(mRoot);
-		ImVec2 buttonSize = { 50, 50 };
+		// layout variable
 		ImVec2 currentPos = {};
-		float offSet = 5.0f;
+		const ImVec2 buttonSize = { 50, 50 };
+		const float offSet = 5.0f;
 
-		std::filesystem::path parentPath = mRoot;
-		parentPath = parentPath.parent_path();
-
+		// refresh directory only when needed
+		if (mCurrentDirRefresh)
+		{
+			ReadFolder(mCurrentDir);
+			mCurrentDirRefresh = false;
+		}
+		
+		// begin the window
 		ImGui::Begin("Explorer");
 
-		// draw back folder
+		// draw te parent folder
 		{
 			ImGui::BeginGroup();
-
-			if (ImGui::ImageButton("...", mFolderDescriptorSet, buttonSize))
+			
+			if (ImGui::ImageButton("...", mFolderResource.descriptor, buttonSize))
 			{
-				ItemProperties item;
-				item.descriptor = &mFolderDescriptorSet;
-				item.dirEntry = std::filesystem::directory_entry(parentPath);
-				item.ext = "";
-				item.texture = mFolderTexture;
+				std::filesystem::path parentPath(mCurrentDir);
+				parentPath = parentPath.parent_path();
 
-				if (item.dirEntry.is_directory())
+				auto dir = std::filesystem::directory_entry(parentPath);
+
+				if (dir.is_directory())
 				{
-					mRoot = item.dirEntry.path().string();
+					mCurrentDirRefresh = true;
+					mCurrentDir = dir.path().string();
 				}
 			}
-
+			
 			currentPos = { ImGui::GetCursorPos().x, ImGui::GetCursorPos().y };
 			ImGui::SetCursorPos(currentPos);
-
+			
 			ImGui::Text("...");
-
+			
 			ImGui::EndGroup();
 		}
 
 		ImGui::SameLine();
 
-		for (size_t i = 0; i < currDirItems.size(); i++)
+		// draw asset vector
 		{
-			// checks if must draw in the same line
-			if ((currentPos.x + (buttonSize.x * 2)) <= ImGui::GetContentRegionAvail().x)
-				ImGui::SameLine();
-
-			// draws
-			ImGui::BeginGroup();
-
-			if (ImGui::ImageButton(currDirItems[i].dirEntry.path().string().c_str(), *currDirItems[i].descriptor, buttonSize))
+			for (size_t i = 0; i < mCurrentDirAssets.size(); i++)
 			{
-				if (currDirItems[i].dirEntry.is_directory())
+				// checks if must draw in the same line
+				if ((currentPos.x + (buttonSize.x * 2)) <= ImGui::GetContentRegionAvail().x) ImGui::SameLine();
+		
+				// draws the asset
+				ImGui::BeginGroup();
+
+				// resoruce representation of the asset
+				if (ImGui::ImageButton(mCurrentDirAssets[i].path.c_str(), mCurrentDirAssets[i].resource.descriptor, buttonSize))
 				{
-					mRoot = currDirItems[i].dirEntry.path().string();
+					std::filesystem::path path(mCurrentDirAssets[i].path);
+					auto dir = std::filesystem::directory_entry(path);
+					
+					// folder asset, must flag to refresh folder on next frame
+					if (dir.is_directory())
+					{
+						mCurrentDirRefresh = true;
+						mCurrentDir = dir.path().string();
+					}
 				}
-			}
+				
+				// display name
+				currentPos = ImGui::GetCursorPos();
+				ImGui::SetCursorPosX({ currentPos.x /*+ offSet*/});
 
-			currentPos = ImGui::GetCursorPos();
-			ImGui::SetCursorPosX({ currentPos.x + offSet });
+				// name is too large, displaying a shortter name
+				if (mCurrentDirAssets[i].displayName.size() > EXPLORER_ASSET_NAME_MAX_DISPLAY_SIZE)
+				{
+					std::string shortName = mCurrentDirAssets[i].displayName.substr(0, EXPLORER_ASSET_NAME_MAX_DISPLAY_SIZE);
+					ImGui::Text(shortName.c_str());
+				}
 
-			ImGui::Text(currDirItems[i].dirEntry.path().filename().string().c_str());
-
-			ImGui::EndGroup();
-
-			// drag and drop behaviour
-			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-			{
-				ImGui::SetDragDropPayload
-				(
-					"EXPLORER",
-					currDirItems[i].dirEntry.path().string().c_str(),
-					currDirItems[i].dirEntry.path().string().size() + 1,
-					ImGuiCond_Once
-				);
-				ImGui::EndDragDropSource();
+				else
+				{
+					ImGui::Text(mCurrentDirAssets[i].displayName.c_str());
+				}
+		
+				ImGui::EndGroup();
+		
+				// drag and drop behaviour
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+				{
+					ImGui::SetDragDropPayload
+					(
+						"EXPLORER",
+						mCurrentDirAssets[i].path.c_str(),
+						mCurrentDirAssets[i].path.size() + 1,
+						ImGuiCond_Once
+					);
+					ImGui::EndDragDropSource();
+				}
 			}
 		}
 
@@ -104,72 +161,93 @@ namespace Cosmos
 
 	}
 
-	void Explorer::CreateTextures()
+	void Explorer::ReadFolder(std::string path)
 	{
-		std::filesystem::path texturePath = mRoot;
-
-		// folder
+		// clear current path assets
+		for (auto& asset : mCurrentDirAssets)
 		{
-			texturePath /= "Textures";
-			texturePath /= "Editor";
-			texturePath /= "folder.png";
-			mFolderTexture = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
-			mFolderDescriptorSet = AddTexture(mFolderTexture->GetSampler(), mFolderTexture->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			if(asset.type == AssetType::Image)
+				asset.resource.texture->Destroy();
 		}
-
-		// extensions
+		mCurrentDirAssets.clear();
+			
+		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(path))
 		{
-			for (size_t i = 0; i < mExtensionTexturePaths.size(); i++)
-			{
-				texturePath = mRoot;
-				texturePath /= "Textures";
-				texturePath /= "Editor";
-				texturePath /= mExtensionTexturePaths[i];
-				mExtensionTexture[i] = Texture2D::Create(mRenderer->GetDevice(), texturePath.string().c_str());
-				mExtensionDescriptors[i] = AddTexture(mExtensionTexture[i]->GetSampler(), mExtensionTexture[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			}
-		}
-	}
+			// default asset configs
+			auto& path = dirEntry.path();
 
-	std::vector<Explorer::ItemProperties> Explorer::RefreshExplorer(std::string root)
-	{
-		std::filesystem::path currPath = mRoot;
-		std::vector<std::filesystem::directory_entry> dirItems = {};
-		std::vector<Explorer::ItemProperties> items = {};
+			Asset asset = {};
+			asset.type = AssetType::Undefined;
+			asset.resource = mUndefinedResource;
+			asset.path = path.string();
+			asset.displayName = path.filename().replace_extension().string();
 
-		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(mRoot))
-		{
+			// folder asset
 			if (std::filesystem::is_directory(dirEntry))
 			{
-				ItemProperties item;
-				item.dirEntry = dirEntry;
-				item.ext = "";
-				item.texture = mFolderTexture;
-				item.descriptor = &mFolderDescriptorSet;
-				items.push_back(item);
-
-				dirItems.push_back(dirEntry);
+				asset.type = AssetType::Folder;
+				asset.resource = mFolderResource;
+				
+				mCurrentDirAssets.push_back(asset);
 				continue;
 			}
 
-			// file, check for valid extensions
-			std::string fileExt = dirEntry.path().extension().string();
-			for (size_t i = 0; i < mValidExtensions.size(); i++)
+			// assign asset custom resource
+			for (size_t extId = 0; extId < mValidExtensions.size(); extId++)
 			{
-				if (strcmp(mValidExtensions[i], fileExt.c_str()) == 0)
+				if (strcmp(mValidExtensions[extId], dirEntry.path().extension().string().c_str()) == 0)
 				{
-					ItemProperties item;
-					item.dirEntry = dirEntry;
-					item.ext = mValidExtensions[i];
-					item.texture = mExtensionTexture[i];
-					item.descriptor = &mExtensionDescriptors[i];
-					items.push_back(item);
+					switch (extId)
+					{
+						case 0: // txt
+						{
+							asset.type = AssetType::Text;
+							asset.resource = mTextResource;
+							break;
+						}
 
-					dirItems.push_back(dirEntry);
+						case 1: // gltf
+						case 2: // obj
+						{
+							asset.type = AssetType::Model;
+							asset.resource = mModelResource;
+							break;
+						}
+
+						case 3: // vert
+						{
+							asset.type = AssetType::Shader;
+							asset.resource = mVertexResource;
+							break;
+						}
+
+						case 4: // frag
+						{
+							asset.type = AssetType::Shader;
+							asset.resource = mFragmentResource;
+							break;
+						}
+
+						case 5: // spir-v
+						{
+							asset.type = AssetType::Shader;
+							asset.resource = mSpirvResource;
+							break;
+						}
+
+						case 6: // png
+						case 7: // jpg
+						{
+							asset.type = AssetType::Image;
+							asset.resource.texture = Texture2D::Create(mRenderer->GetDevice(), asset.path.c_str());
+							asset.resource.descriptor = AddTexture(asset.resource.texture->GetSampler(), asset.resource.texture->GetView());
+							break;
+						}
+					}
 				}
 			}
-		}
 
-		return items;
+			mCurrentDirAssets.push_back(asset);
+		}
 	}
 }

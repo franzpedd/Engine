@@ -84,7 +84,17 @@ namespace Cosmos
 	Cosmos::Logger::Get().ToTerminal(severity, __FILE__, __LINE__, __VA_ARGS__);	\
 	if (severity == Cosmos::Logger::Severity::Assert) std::abort();			\
 }
-	
+
+#else
+
+#define LOG_TO_FILE(severity, filepath, ...);
+#define LOG_TO_TERMINAL(severity, ...);
+
+#endif
+
+// always enable vulkan asserts and asserts
+#if defined (ENGINE_RELEASE) || defined(EDITOR_RELEASE)	
+
 #define LOG_ASSERT(x, ...)																						\
 {																												\
 	if(!(x))																									\
@@ -97,6 +107,7 @@ namespace Cosmos
 #define VK_ASSERT(fn, ...)																						\
 {																												\
 	VkResult res = (fn);																						\
+																												\
 	if (res != VK_SUCCESS)																						\
 	{																											\
 		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
@@ -106,9 +117,24 @@ namespace Cosmos
 
 #else
 
-#define LOG_TO_FILE(severity, filepath, ...);
-#define LOG_TO_TERMINAL(severity, ...);
-#define LOG_ASSERT(x, ...);
-#define VK_ASSERT(fn, ...);	
+#define LOG_ASSERT(x, ...)																						\
+{																												\
+	if(!(x))																									\
+	{																											\
+		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																							\
+	}																											\
+}
+
+#define VK_ASSERT(fn, ...)																						\
+{																												\
+	VkResult res = (fn);																						\
+																												\
+	if (res != VK_SUCCESS)																						\
+	{																											\
+		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																							\
+	}																											\
+}
 
 #endif

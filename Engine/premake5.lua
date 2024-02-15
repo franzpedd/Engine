@@ -15,30 +15,31 @@ project "Engine"
         "Source/**.c",
         "Source/**.h",
         "Source/**.hpp",
-        "Source/**.cpp"
+        "Source/**.cpp",
+
+        "Thirdparty/**.c",
+        "Thirdparty/**.h",
+        "Thirdparty/**.hpp",
+        "Thirdparty/**.cpp"
     }
 
     includedirs
     {
-        "%{includelist.Engine}",
+        "%{includelist.Engine}/Source",
+        "%{includelist.Engine}/Thirdparty",
 
         "%{includelist.Vulkan}",
-        "%{includelist.ImGUI}",
-        "%{includelist.ImGUIzmo}",
         "%{includelist.GLFW}",
-        "%{includelist.GLI}",
         "%{includelist.GLM}",
-        "%{includelist.EnTT}",
-        "%{includelist.JSON}",
-        "%{includelist.STB}",
         "%{includelist.Assimp}",
+        "%{includelist.ImGui}"
     }
 
     links
     {
         "%{librarylist.Vulkan}",
         "%{librarylist.Shaderc}",
-        "ImGUI",
+        "ImGui",
         "GLFW"
     }
 
@@ -55,7 +56,7 @@ project "Engine"
     filter "configurations:Release"
         defines { "ENGINE_RELEASE" }
         runtime "Release"
-        optimize "Full"
+        optimize "On"
 
     filter "system:windows"
         defines 
@@ -69,8 +70,8 @@ project "Engine"
     filter {"configurations:Release", "system:windows"}
         links
         {
-            "%{librarylist.Assimp}/Release/assimp-vc143-mtd.lib",
-            "%{librarylist.AssimpZLIB}/Release/zlibstaticd.lib"
+            "%{librarylist.Assimp}/Release/assimp-vc143-mt.lib",
+            "%{librarylist.AssimpZLIB}/Release/zlibstatic.lib"
         }
 
     filter {"configurations:Debug", "system:windows"}

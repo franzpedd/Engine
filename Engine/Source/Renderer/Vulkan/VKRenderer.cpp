@@ -63,31 +63,31 @@ namespace Cosmos
 		return mPipelineCache;
 	}
 
-	VkPipeline& VKRenderer::GetPipeline(std::string nameid)
+	VkPipeline VKRenderer::GetPipeline(std::string nameid)
 	{
 		if (mPipelines[nameid])
 			return mPipelines[nameid];
 
 		LOG_TO_TERMINAL(Logger::Error, "No pipeline with nameid %s exists", nameid.c_str());
-		return mPipelines[0];
+		return nullptr;
 	}
 
-	VkDescriptorSetLayout& VKRenderer::GetDescriptorSetLayout(std::string nameid)
+	VkDescriptorSetLayout VKRenderer::GetDescriptorSetLayout(std::string nameid)
 	{
 		if (mDescriptorSetLayouts[nameid])
 			return mDescriptorSetLayouts[nameid];
 
 		LOG_TO_TERMINAL(Logger::Error, "No descriptor set layout with nameid %s exists", nameid.c_str());
-		return mDescriptorSetLayouts[0];
+		return nullptr;
 	}
 
-	VkPipelineLayout& VKRenderer::GetPipelineLayout(std::string nameid)
+	VkPipelineLayout VKRenderer::GetPipelineLayout(std::string nameid)
 	{
 		if (mPipelineLayouts[nameid])
 			return mPipelineLayouts[nameid];
 
 		LOG_TO_TERMINAL(Logger::Error, "No pipeline layout with nameid %s exists", nameid.c_str());
-		return mPipelineLayouts[0];
+		return nullptr;
 	}
 
 	uint32_t VKRenderer::CurrentFrame()
@@ -402,7 +402,7 @@ namespace Cosmos
 			albedoLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 			albedoLayoutBinding.pImmutableSamplers = nullptr;
 
-			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, albedoLayoutBinding };
+			const std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, albedoLayoutBinding };
 
 			VkDescriptorSetLayoutCreateInfo descSetLayoutCI = {};
 			descSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -420,14 +420,17 @@ namespace Cosmos
 			pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayouts[id];
 			VK_ASSERT(vkCreatePipelineLayout(mDevice->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayouts[id]), "Failed to create descriptor set layout");
 
+			const std::array<VkVertexInputAttributeDescription, 3> attributeDesc = Vertex::GetAttributeDescriptions();
+			const std::array<VkVertexInputBindingDescription, 1> bindingDesc = Vertex::GetBindingDescription();
+
 			VkPipelineVertexInputStateCreateInfo VISCI = {};
 			VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			VISCI.pNext = nullptr;
 			VISCI.flags = 0;
-			VISCI.vertexAttributeDescriptionCount = (uint32_t)Vertex::GetAttributeDescriptions().size();
-			VISCI.pVertexAttributeDescriptions = Vertex::GetAttributeDescriptions().data();
-			VISCI.vertexBindingDescriptionCount = (uint32_t)Vertex::GetBindingDescription().size();
-			VISCI.pVertexBindingDescriptions = Vertex::GetBindingDescription().data();
+			VISCI.vertexAttributeDescriptionCount = (uint32_t)attributeDesc.size();
+			VISCI.pVertexAttributeDescriptions = attributeDesc.data();
+			VISCI.vertexBindingDescriptionCount = (uint32_t)bindingDesc.size();
+			VISCI.pVertexBindingDescriptions = bindingDesc.data();
 
 			VkPipelineInputAssemblyStateCreateInfo IASCI = {};
 			IASCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -515,9 +518,8 @@ namespace Cosmos
 			pipelineCI.layout = mPipelineLayouts[id];
 			pipelineCI.renderPass = mCommander.AccessMainCommandEntry()->renderPass;
 			pipelineCI.subpass = 0;
-			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
 			VK_ASSERT(vkCreateGraphicsPipelines(mDevice->GetDevice(), mPipelineCache, 1, &pipelineCI, nullptr, &mPipelines[id]), "Failed to create graphics pipeline");
-		
+
 			// destroy the shader module after usage
 			vkDestroyShaderModule(mDevice->GetDevice(), vShader->Module(), nullptr);
 			vkDestroyShaderModule(mDevice->GetDevice(), fShader->Module(), nullptr);

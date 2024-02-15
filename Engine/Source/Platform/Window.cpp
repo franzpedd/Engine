@@ -22,9 +22,16 @@ namespace Cosmos
 		mWidth = width;
 		mHeight = height;
 
-		LOG_ASSERT(glfwInit() == 1, "Failed to initialize GLFW");
-		LOG_ASSERT(glfwVulkanSupported() == 1, "Your computer doesnt minimally support Vulkan");
-
+		if (glfwInit() != GLFW_TRUE)
+		{
+			LOG_ASSERT(false, "Failed to initialize GLFW");
+		}
+		
+		if (glfwVulkanSupported() != GLFW_TRUE)
+		{
+			LOG_ASSERT(false, "Your computer doesnt minimally support Vulkan");
+		}
+		
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -51,7 +58,7 @@ namespace Cosmos
 		glfwGetCursorPos(mWindow, x, y);
 	}
 
-	const char* Window::GetTitle()
+	const char* Window::GetTitle() const
 	{
 		return mTitle;
 	}
@@ -62,7 +69,7 @@ namespace Cosmos
 		mTitle = title;
 	}
 
-	int Window::GetWidth()
+	int Window::GetWidth() const
 	{
 		return mWidth;
 	}
@@ -73,7 +80,7 @@ namespace Cosmos
 		mWidth = width;
 	}
 
-	int Window::GetHeight()
+	int Window::GetHeight() const
 	{
 		return mHeight;
 	}
@@ -111,7 +118,7 @@ namespace Cosmos
 		return glfwWindowShouldClose(mWindow);
 	}
 
-	bool Window::ShouldResizeWindow()
+	bool Window::ShouldResizeWindow() const
 	{
 		return mShouldResizeWindow;
 	}
@@ -134,9 +141,9 @@ namespace Cosmos
 		}
 	}
 
-	int Window::CreateWindowSurface(void* instance, void* surface, const void* allocator)
+	int Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface, const VkAllocationCallbacks* allocator)
 	{
-		return glfwCreateWindowSurface(reinterpret_cast<VkInstance>(instance), mWindow, reinterpret_cast<const VkAllocationCallbacks*>(allocator), reinterpret_cast<VkSurfaceKHR*>(surface));
+		return (int)glfwCreateWindowSurface(instance, mWindow, allocator, surface);
 	}
 
 	void Window::GetFramebufferSize(int* width, int* height)

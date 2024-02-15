@@ -7,6 +7,11 @@
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/cimport.h>
+
 namespace Cosmos
 {
 	Model::Model(std::shared_ptr<Renderer>& renderer, Camera& camera)
@@ -102,8 +107,10 @@ namespace Cosmos
 	void Model::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		if (node->mNumMeshes > 1)
+		{
 			LOG_TO_TERMINAL(Logger::Error, "Model with more than one mesh is not yet fully implemented");
-
+		}
+			
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 			mMeshes.push_back(ProcessMesh(scene->mMeshes[node->mMeshes[i]], scene));
 

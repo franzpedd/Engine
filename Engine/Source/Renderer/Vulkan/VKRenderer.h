@@ -47,13 +47,13 @@ namespace Cosmos
 		virtual VkPipelineCache& PipelineCache() override;
 
 		// returns the pipeline with a given id(name) or nullptr if invalid
-		virtual VkPipeline& GetPipeline(std::string nameid) override;
+		virtual VkPipeline GetPipeline(std::string nameid) override;
 
 		// returns the descriptor set layout with a given id(name) or nullptr if invalid
-		virtual VkDescriptorSetLayout& GetDescriptorSetLayout(std::string nameid) override;
+		virtual VkDescriptorSetLayout GetDescriptorSetLayout(std::string nameid) override;
 
 		// returns the pipeline layout with a given id(name) or nullptr if invalid
-		virtual VkPipelineLayout& GetPipelineLayout(std::string nameid) override;
+		virtual VkPipelineLayout GetPipelineLayout(std::string nameid) override;
 
 		// returns the current in-process frame
 		virtual uint32_t CurrentFrame() override;

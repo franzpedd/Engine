@@ -16,7 +16,7 @@
 
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_vulkan.cpp>
-#include <imguizmo.h>
+#include <ImGuizmo/imguizmo.h>
 
 #if defined(_MSC_VER)
 # pragma warning(pop)
@@ -202,7 +202,8 @@ namespace Cosmos
 		initInfo.ImageCount = mRenderer->GetSwapchain()->GetImageCount();
 		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		initInfo.Allocator = nullptr;
-		ImGui_ImplVulkan_Init(&initInfo, mCommandEntry->renderPass);
+		initInfo.RenderPass = mCommandEntry->renderPass;
+		ImGui_ImplVulkan_Init(&initInfo);
 
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
 

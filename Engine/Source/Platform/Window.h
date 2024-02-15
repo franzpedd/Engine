@@ -2,6 +2,7 @@
 
 #include "Platform/Keycodes.h"
 #include <memory>
+#include <vulkan/vulkan.h>
 
 // forward declaration
 struct GLFWwindow;
@@ -46,19 +47,19 @@ namespace Cosmos
 		void GetCursorPosition(double* x, double* y);
 
 		// return window's title
-		const char* GetTitle();
+		const char* GetTitle() const;
 
 		// sets a new window title
 		void SetTitle(const char* title);
 
 		// return window's width
-		int GetWidth();
+		int GetWidth() const;
 
 		// sets a new window width
 		void SetWidth(int width);
 
 		// returns window's height
-		int GetHeight();
+		int GetHeight() const;
 
 		// sets a new window height
 		void SetHeight(int height);
@@ -81,7 +82,7 @@ namespace Cosmos
 		bool ShouldQuit();
 
 		// checks if window resize was requested
-		bool ShouldResizeWindow();
+		bool ShouldResizeWindow() const;
 
 		// sets the window should resize flag
 		void HintResizeWindow(bool value);
@@ -90,7 +91,7 @@ namespace Cosmos
 		void ToogleCursorMode(bool hide);
 
 		// creates a window surface for vulkan
-		int CreateWindowSurface(void* instance, void* surface, const void* allocator);
+		int CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface, const VkAllocationCallbacks* allocator);
 
 		// gets the framebuffer size
 		void GetFramebufferSize(int* width, int* height);

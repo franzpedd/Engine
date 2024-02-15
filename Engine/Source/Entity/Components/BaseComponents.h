@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Entity/Model/Model.h"
+#include "Util/DataFile.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"
-#include "Util/Serializer.h"
 
 namespace Cosmos
 {

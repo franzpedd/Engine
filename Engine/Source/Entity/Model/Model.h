@@ -3,10 +3,10 @@
 #include "Entity/Model/Mesh.h"
 #include <vector>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/cimport.h>
+// forward declarations
+struct aiNode;
+struct aiMesh;
+struct aiScene;
 
 namespace Cosmos
 {

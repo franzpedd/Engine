@@ -2,7 +2,7 @@
 
 #include "Entity/Entt.h"
 #include "Util/UUID.h"
-#include "Util/Serializer.h"
+#include "Util/DataFile.h"
 #include <memory>
 
 namespace Cosmos
@@ -12,6 +12,7 @@ namespace Cosmos
 	class EntityStack;
 	class Window;
 	class Renderer;
+	class Camera;
 
 	class Scene
 	{
@@ -34,6 +35,9 @@ namespace Cosmos
 
 		// connects the scene to the renderer
 		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
+
+		// connects the scene with the main camera
+		void ConnectCamera(Camera* camera);
 
 		// returns a rendere's reference
 		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
@@ -60,11 +64,14 @@ namespace Cosmos
 		// cleans the entities resources
 		void Destroy();
 
+		// erases all entities(that contain components) of the scene
+		void CleanCurrentScene();
+
 		// loads a new scene
-		void Load(Serializer& sceneEntities);
+		void Load(DataFile& sceneEntities);
 
 		// serializes the scene and returns a structure with it serialized
-		Serializer Serialize();
+		DataFile Serialize();
 
 	private:
 
@@ -74,6 +81,9 @@ namespace Cosmos
 
 		// must be connected, at the moment the scene is initialized before renderer
 		std::shared_ptr<Renderer> mRenderer;
+
+		// must be connected, to pass view and projection for entities
+		Camera* mCamera = nullptr;
 
 		std::unordered_map<std::string, Entity> mEntityMap;
 	};

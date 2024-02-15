@@ -10,35 +10,27 @@ vkpath = os.getenv("VULKAN_SDK")
 
 -- includes directory
 includelist = {}
-includelist["Engine"] = "%{wks.location}/Engine/Source"
-includelist["Editor"] = "%{wks.location}/Editor/Source"
+includelist["Engine"] = "%{wks.location}/Engine"
+includelist["Editor"] = "%{wks.location}/Editor"
 includelist["Vulkan"] = "%{vkpath}/Include"
-includelist["ImGUI"] = "%{wks.location}/Thirdparty/imgui"
-includelist["ImGUIzmo"] = "%{wks.location}/Thirdparty/imguizmo"
 includelist["GLFW"] = "%{wks.location}/Thirdparty/glfw/include"
-includelist["GLI"] = "%{wks.location}/Thirdparty/gli"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
-includelist["EnTT"] = "%{wks.location}/Thirdparty/entt/single_include"
-includelist["JSON"] = "%{wks.location}/Thirdparty/json/single_include"
-includelist["STB"] = "%{wks.location}/Thirdparty/stb"
 includelist["Assimp"] = "%{wks.location}/Thirdparty/assimp/include"
+includelist["ImGui"] = "%{wks.location}/Thirdparty/imgui"
 
 -- libraries used
 librarylist = {}
 librarylist["Vulkan"] = "%{vkpath}/Lib/vulkan-1.lib"
 librarylist["Shaderc"] = "%{vkpath}/Lib/shaderc_shared.lib"
-librarylist["Assimp"] = "%{wks.location}/Thirdparty/assimp/lib"
+
+librarylist["Assimp"] = "%{wks.location}/Thirdparty/assimp/lib/"
 librarylist["AssimpZLIB"] = "%{wks.location}/Thirdparty/assimp/contrib/zlib/"
 
--- include any dependency
+-- include any dependency project
 group "Thirdarty"
-    include "Thirdparty/entt.lua"
-    include "Thirdparty/imgui.lua"
-    include "Thirdparty/imguizmo.lua"
     include "Thirdparty/glfw.lua"
-    include "Thirdparty/gli.lua"
     include "Thirdparty/glm.lua"
-    include "Thirdparty/json.lua"
+    include "Thirdparty/imgui.lua"
 group ""
 
 include "Engine"

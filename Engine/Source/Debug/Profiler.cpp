@@ -1,6 +1,8 @@
 #include "epch.h"
 //#include "Profiler.h"
 
+#include <filesystem>
+
 namespace Cosmos
 {
 	Profiler& Profiler::Get()

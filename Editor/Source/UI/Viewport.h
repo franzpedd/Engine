@@ -43,7 +43,7 @@ namespace Cosmos
 
 		// constructor
 		Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, SceneHierarchy* sceneHierarcy,
-			TextureBrowser* textureBrowser, ModelBrowser* modelBrowser);
+			TextureBrowser* textureBrowser);
 
 		// destructor
 		virtual ~Viewport() = default;
@@ -92,7 +92,6 @@ namespace Cosmos
 		Camera* mCamera;
 		SceneHierarchy* mSceneHierarcy;
 		TextureBrowser* mTextureBrowser;
-		ModelBrowser* mModelBrowser;
 
 		std::shared_ptr<CommandEntry> mCommandEntry;
 

@@ -3,6 +3,9 @@
 #include <Engine.h>
 #include <array>
 #include <filesystem>
+#include <string>
+
+#define EXPLORER_ASSET_NAME_MAX_DISPLAY_SIZE 10
 
 namespace Cosmos
 {
@@ -10,13 +13,29 @@ namespace Cosmos
 	{
 	public:
 
-		struct ItemProperties
+		typedef enum AssetType
 		{
-			std::filesystem::directory_entry dirEntry;
-			std::string ext;
-			std::shared_ptr<Texture2D> texture = nullptr;
-			VkDescriptorSet* descriptor = VK_NULL_HANDLE;
-		};
+			Undefined = 0,
+			Folder,
+			Text,						// text files
+			Shader,						// shaders
+			Image,						// images
+			Model						// geometry
+		} AssetType;
+
+		typedef struct AssetResource
+		{
+			std::shared_ptr<Texture2D> texture = {};
+			VkDescriptorSet descriptor = VK_NULL_HANDLE;
+		} AssetResource;
+
+		typedef struct Asset
+		{
+			AssetType type = AssetType::Undefined;
+			AssetResource resource = {};
+			std::string path = {};
+			std::string displayName = {};
+		} Asset;
 
 	public:
 
@@ -36,40 +55,34 @@ namespace Cosmos
 
 	private:
 
-		// creates all textures used by the explorer tab
-		void CreateTextures();
-
-		// reloads the files the explorer have
-		std::vector<ItemProperties> RefreshExplorer(std::string root);
+		// reads the current directory and returns it's contents
+		void ReadFolder(std::string path);
 
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
-		std::string mRoot = "Data";
 
-		// folder 
-		std::shared_ptr<Texture2D> mFolderTexture;
-		VkDescriptorSet mFolderDescriptorSet;
+		// explorer directory
+		std::string mCurrentDir = {};
+		std::vector<Asset> mCurrentDirAssets = {};
+		bool mCurrentDirRefresh = true;
 
-		// extensions
-		const std::array<const char*, 12> mValidExtensions =
+		// default resources
+		AssetResource mUndefinedResource = {};
+		AssetResource mFolderResource = {};
+		AssetResource mTextResource = {};
+		AssetResource mModelResource = {};
+		AssetResource mVertexResource = {};
+		AssetResource mFragmentResource = {};
+		AssetResource mSpirvResource = {};
+		//AssetResource mTextureResource = {}; // not used since textures are themselves rendered
+
+		const std::array<const char*, 8> mValidExtensions =
 		{
-			".cfg", ".ini", ".txt",		// misc
-			".gltf", ".glb", ".obj",	// models
-			".vert", ".frag", ".spv",	// shaders
-			".png", ".jpg", ".ktx"		// textures
+			".txt",							// text
+			".gltf", ".obj",				// models
+			".vert", ".frag", ".spv",		// shaders
+			".png", ".jpg",					// textures
 		};
-
-		// extension pictures, must match with above vector
-		const std::array<const char*, 12> mExtensionTexturePaths =
-		{
-			"cfg.png", "ini.png", "txt.png",		// misc
-			"gltf.png", "glb.png", "obj.png",		// models
-			"vert.png", "frag.png", "spv.png",		// shaders
-			"png.png", "jpg.png", "ktx.png"			// textures
-		};
-
-		std::array<std::shared_ptr<Texture2D>, 12> mExtensionTexture;
-		std::array<VkDescriptorSet, 12> mExtensionDescriptors;
 	};
 }

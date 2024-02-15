@@ -2,6 +2,7 @@
 .vs/
 .vscode/
 _Build/
+Build/
 Thirdparty/assimp
 Thirdparty/entt
 Thirdparty/glfw
@@ -12,7 +13,9 @@ Thirdparty/json
 Thirdparty/premake
 Thirdparty/tinygltf
 Thirdparty/vulkan-sdk
+Editor/Build
 Editor/Profiler
+Engine/Build
 
 # extensions
 *.sln

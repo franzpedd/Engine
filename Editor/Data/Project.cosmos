@@ -1,1 +1,48 @@
-{"Entities":{"13934867240312977365":[["Name","Entity"]],"905013387157445110":[["Name","Entity 2"]]}}
+
+Entities
+{
+
+	18211168786624019676
+	{
+		Id = 18211168786624019676
+		Name = Entity
+
+		Transform
+		{
+
+			Translation
+			{
+				X = -2.300000
+				Y = 0.000000
+				Z = -1.049848
+			}
+
+
+			Rotation
+			{
+				X = 0.000000
+				Y = 0.000000
+				Z = 0.000000
+			}
+
+
+			Scale
+			{
+				X = 1.000000
+				Y = 1.000000
+				Z = 1.000000
+			}
+
+		}
+
+
+		Model
+		{
+			Path = Data\Models\Room\Room.obj
+			Albedo = Data\Textures\Room\Room.png
+		}
+
+	}
+
+}
+

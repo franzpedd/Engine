@@ -1,4 +1,4 @@
-project "ImGUI"
+project "ImGui"
     location "imgui"
     kind "StaticLib"
     language "C++"
@@ -22,7 +22,10 @@ project "ImGUI"
         "imgui/imstb_truetype.h",
 
         "imgui/backends/imgui_impl_glfw.h",
-        "imgui/backends/imgui_impl_vulkan.h"
+        "imgui/backends/imgui_impl_vulkan.h",
+
+        "imgui/imguizmo/ImGuizmo.h",
+        "imgui/imguizmo/ImGuizmo.cpp"
     }
 
     includedirs

@@ -1,18 +1,17 @@
 #include "Viewport.h"
 
-#include "ModelBrowser.h"
 #include "SceneHierarchy.h"
 #include "TextureBrowser.h"
 
-#include <imguizmo.h>
+#include <imguizmo/ImGuizmo.h>
 #include <array>
 
 namespace Cosmos
 {
 	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, SceneHierarchy* sceneHierarcy,
-		TextureBrowser* textureBrowser, ModelBrowser* modelBrowser)
+		TextureBrowser* textureBrowser)
 		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera), mSceneHierarcy(sceneHierarcy),
-		mTextureBrowser(textureBrowser), mModelBrowser(modelBrowser)
+		mTextureBrowser(textureBrowser)
 	{
 		mCommandEntry = CommandEntry::Create(renderer->GetDevice()->GetDevice(), "Viewport");
 		Commander::Get().Add(mCommandEntry);
@@ -352,17 +351,11 @@ namespace Cosmos
 			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(25.0f, 25.0f)))
 			{
 				mTextureBrowser->ToogleOnOff(false);
-				mModelBrowser->ToogleOnOff(false);
 			}
 
 			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(25.0f, 25.0f)))
 			{
 				mTextureBrowser->ToogleOnOff(true);
-			}
-
-			if (ImGui::Button(ICON_FA_CUBE "", ImVec2(25.0f, 25.0f)))
-			{
-				mModelBrowser->ToogleOnOff(true);
 			}
 		}
 

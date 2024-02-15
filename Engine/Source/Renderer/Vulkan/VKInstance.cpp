@@ -89,7 +89,7 @@ namespace Cosmos
 		vkDestroyInstance(mInstance, nullptr);
 	}
 
-	VkInstance& VKInstance::GetInstance()
+	VkInstance VKInstance::GetInstance()
 	{
 		return mInstance;
 	}

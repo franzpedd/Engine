@@ -208,9 +208,7 @@ namespace Cosmos
 					memset(buffer, 0, sizeof(buffer));
 					strncpy_s(buffer, sizeof(buffer), modelPath.c_str(), sizeof(buffer));
 
-					//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
 					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					//ImGui::PopStyleVar();
 
 					ImGui::EndGroup();
 

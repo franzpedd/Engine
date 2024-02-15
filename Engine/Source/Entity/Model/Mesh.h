@@ -44,7 +44,7 @@ namespace Cosmos
 	public:
 
 		// draws the mesh
-		void Draw(VkCommandBuffer commandBuffer, VkPipelineLayout& layout, VkDescriptorSet& descriptorSet);
+		void Draw(VkCommandBuffer commandBuffer, VkPipelineLayout layout, VkDescriptorSet& descriptorSet);
 
 		// creates the renderer resources for this mesh
 		void CreateResources();
