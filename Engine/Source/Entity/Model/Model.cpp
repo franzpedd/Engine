@@ -17,6 +17,7 @@ namespace Cosmos
 	Model::Model(std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
+
 	}
 
 	void Model::Draw(VkCommandBuffer commandBuffer)
@@ -94,9 +95,17 @@ namespace Cosmos
 
 	void Model::LoadAlbedoTexture(std::string path)
 	{
+		if (path.empty())
+		{
+			LOG_TO_TERMINAL(Logger::Error, "Filepath for loading albedo texture is empty");
+			return;
+		}
+
 		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
 
-		mAlbedoTexture->Destroy();
+		if(mAlbedoTexture)
+			mAlbedoTexture->Destroy();
+
 		mAlbedoTexture = Texture2D::Create(mRenderer->GetDevice(), path.c_str());
 
 		UpdateDescriptorSets();

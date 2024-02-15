@@ -48,11 +48,27 @@ namespace Cosmos
 			return mObjectVec[mObjectMap[name]].second;
 		}
 
+		// trying to access a children node
+		inline DataFile& operator[](const size_t& index)
+		{
+			if (index > mObjectVec.size())
+			{
+				std::cerr << "Out of bounds, children doesnt exists" << std::endl;
+			}
+
+			return mObjectVec[index].second;
+		}
+
 	public: // utils
 
 		// returns the number of values a property has
 		size_t GetValueCount() const;
 
+		// returns the number of children this node has
+		size_t GetChildrenCount() const;
+
+		// returns if either a property of this node exists or not
+		bool Exists(std::string property) const;
 
 	public: // getters and setters
 

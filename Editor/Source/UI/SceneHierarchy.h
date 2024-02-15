@@ -25,6 +25,9 @@ namespace Cosmos
 		// returns a pointer to the currently selected entity
 		Entity* GetSelectedEntity();
 
+		// unslects the selected entity (happens when a new scene loads)
+		void UnselectEntity();
+
 		// adds a menu option with the component name
 		template<typename T>
 		void DisplayAddComponentEntry(const char* name);
@@ -50,7 +53,6 @@ namespace Cosmos
 	private:
 
 		Scene* mScene;
-
 		Entity* mSelectedEntity = nullptr;
 	};
 }

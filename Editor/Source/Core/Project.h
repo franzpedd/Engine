@@ -25,7 +25,7 @@ namespace Cosmos
 	public:
 
 		// creates a new project
-		void New(std::filesystem::path path);
+		void New();
 
 		// opens a project
 		void Open();

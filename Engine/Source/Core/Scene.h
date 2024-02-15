@@ -10,7 +10,6 @@ namespace Cosmos
 {
 	// forward declarations
 	class Entity;
-	class EntityStack;
 	class Window;
 	class Renderer;
 	class Camera;
@@ -25,9 +24,6 @@ namespace Cosmos
 
 		// destructor
 		~Scene() = default;
-
-		// returns a reference to the entities
-		inline std::unique_ptr<EntityStack>& Entities() { return mEntities; }
 
 		// returns a reference to the registry
 		inline entt::registry& Registry() { return mRegistry; }
@@ -73,7 +69,7 @@ namespace Cosmos
 		void CleanCurrentScene();
 
 		// loads a new scene
-		void Load(DataFile& sceneEntities);
+		void Deserialize(DataFile& data);
 
 		// serializes the scene and returns a structure with it serialized
 		DataFile Serialize();
@@ -92,7 +88,6 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
-		std::unique_ptr<EntityStack> mEntities;
 		entt::registry mRegistry;
 
 		// must be connected, at the moment the scene is initialized before renderer
@@ -104,6 +99,7 @@ namespace Cosmos
 		// must be connected, to draw custom widgets that contain draw calls
 		std::shared_ptr<GUI> mGUI;
 
-		std::unordered_map<std::string, Entity> mEntityMap;
+		// holds the scene entities
+		std::unordered_map<std::string, Entity> mEntityMap = {};
 	};
 }

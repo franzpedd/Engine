@@ -8,6 +8,7 @@ namespace Cosmos
 {
 	// forward declarations
 	class Grid;
+	class SceneHierarchy;
 
 	class Mainmenu : public Widget
 	{
@@ -22,7 +23,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mainmenu(std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid);
+		Mainmenu(Scene* scene, std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid, SceneHierarchy* sceneHierarchy);
 
 		// destructor
 		virtual ~Mainmenu() = default;
@@ -42,11 +43,14 @@ namespace Cosmos
 
 	private:
 
+		Scene* mScene = nullptr;
 		std::unique_ptr<Project>& mProject;
 		std::shared_ptr<Camera>& mCamera;
 		Grid* mGrid;
+		SceneHierarchy* mSceneHierarchy;
 		
 		bool mCheckboxGrid = true;
 		Action mMenuAction = Action::None;
+		bool mCancelAction = false;
 	};
 }

@@ -158,6 +158,16 @@ namespace Cosmos
 		return mContent.size();
 	}
 
+	size_t DataFile::GetChildrenCount() const
+	{
+		return mObjectVec.size();
+	}
+
+	bool DataFile::Exists(std::string property) const
+	{
+		return mObjectMap.find(property) != mObjectMap.end() ? true : false;
+	}
+
 	void DataFile::SetString(const std::string& str, const size_t count)
 	{
 		if (count >= mContent.size())

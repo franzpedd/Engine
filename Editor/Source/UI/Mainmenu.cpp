@@ -1,11 +1,12 @@
 #include "Mainmenu.h"
 
+#include "SceneHierarchy.h"
 #include "Renderer/Grid.h"
 
 namespace Cosmos
 {
-	Mainmenu::Mainmenu(std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid)
-		: Widget("UI:Mainmenu"), mProject(project), mCamera(camera), mGrid(grid)
+	Mainmenu::Mainmenu(Scene* scene, std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid, SceneHierarchy* sceneHierarchy)
+		: Widget("UI:Mainmenu"), mScene(scene), mProject(project), mCamera(camera), mGrid(grid), mSceneHierarchy(sceneHierarchy)
 	{
 		Logger() << "Creating Mainmenu";
 	}
@@ -81,13 +82,34 @@ namespace Cosmos
 		{
 			case Cosmos::Mainmenu::New:
 			{
-				ImGui::OpenPopup("Save current Project?");
+				if (!mScene->GetEntityMap().empty())
+				{
+					ImGui::OpenPopup("Save current Project?");
+				}
+
+				if (!mCancelAction)
+				{
+					mProject->New();
+					mCancelAction = false;
+				}
+
 				break;
 			}
-				
+			
 			case Cosmos::Mainmenu::Open:
 			{
-				mProject->Open();
+				if (!mScene->GetEntityMap().empty())
+				{
+					ImGui::OpenPopup("Save current Project?");
+				}
+
+				if (!mCancelAction)
+				{
+					mProject->Open();
+					mSceneHierarchy->UnselectEntity();
+					mCancelAction = false;
+				}
+				
 				break;
 			}
 
@@ -127,6 +149,7 @@ namespace Cosmos
 			if (ImGui::Button("Cancel"))
 			{
 				ImGui::CloseCurrentPopup();
+				mCancelAction = true;
 			}
 		
 			ImGui::EndPopup();

@@ -16,4 +16,9 @@ namespace Cosmos
 		: mUUID(id)
 	{
 	}
+
+	UUID::UUID(std::string id)
+	{
+		mUUID = std::stoull(id);
+	}
 }

@@ -174,14 +174,15 @@ namespace Cosmos
 		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(path))
 		{
 			// default asset configs
-			auto& path = dirEntry.path();
-
+			std::string path = dirEntry.path().string();
+			Cosmos::util::replace(path.begin(), path.end(), char('\\'), char('/'));
+			
 			Asset asset = {};
 			asset.type = AssetType::Undefined;
 			asset.resource = mUndefinedResource;
-			asset.path = path.string();
-			asset.displayName = path.filename().replace_extension().string();
-
+			asset.path = path;
+			asset.displayName = dirEntry.path().filename().replace_extension().string();
+			
 			// folder asset
 			if (std::filesystem::is_directory(dirEntry))
 			{

@@ -22,7 +22,7 @@ namespace Cosmos
 		mSceneHierarchy = new SceneHierarchy(mScene);
 		mViewport = new Viewport(mUI, mRenderer, mScene->GetCamera(), mSceneHierarchy, mTextureBrowser);
 		mGrid = new Grid(mRenderer, mScene);
-		mMainmenu = new Mainmenu(mProject, mScene->GetCamera(), mGrid);
+		mMainmenu = new Mainmenu(mScene, mProject, mScene->GetCamera(), mGrid, mSceneHierarchy);
 		mDockspace = new Dockspace();
 
 		// widgets

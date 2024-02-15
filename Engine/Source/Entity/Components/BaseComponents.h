@@ -42,7 +42,7 @@ namespace Cosmos
 
 	struct ModelComponent
 	{
-		Model* model;
+		std::shared_ptr<Model> model;
 
 		// constructor
 		ModelComponent() = default;

@@ -25,6 +25,11 @@ namespace Cosmos
 		return mSelectedEntity;
 	}
 
+	void SceneHierarchy::UnselectEntity()
+	{
+		mSelectedEntity = nullptr;
+	}
+
 	void SceneHierarchy::DisplaySceneHierarchy()
 	{
 		ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar | ImGuiTreeNodeFlags_OpenOnArrow;
@@ -193,8 +198,8 @@ namespace Cosmos
 		// 3d geometry
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
-				if (!component.model)
-					component.model = new Model(mScene->GetRenderer(), mScene->GetCamera());
+				if(!component.model)
+					component.model = std::make_shared<Model>(mScene->GetRenderer(), mScene->GetCamera());
 
 				// model path
 				{

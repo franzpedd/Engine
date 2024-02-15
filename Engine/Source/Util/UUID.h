@@ -27,6 +27,9 @@ namespace Cosmos
 		// constructor with value
 		UUID(uint64_t id);
 
+		// constructor with str value
+		UUID(std::string id);
+
 		// destructor
 		~UUID() = default;
 

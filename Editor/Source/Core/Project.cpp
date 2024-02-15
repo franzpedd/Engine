@@ -11,59 +11,48 @@ namespace Cosmos
 	{
 	}
 
-	void Project::New(std::filesystem::path path)
+	void Project::New()
 	{
-		//mScene->GetEntityMap().clear();
-		//mScene->Registry().clear();
-		//
-		//SaveFileDialog dialog;
-		//dialog.Show();
-		//
-		//if (dialog.GetFilePath().empty())
-		//	return;
-		//
-		//mName = dialog.GetFileName();
-		//mPath = dialog.GetFilePath();
-		//
-		//LOG_TO_TERMINAL(Logger::Trace, "Creating new project '%s'", mName.c_str());
+		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
+		
+		// clean current project
+		mScene->CleanCurrentScene();
+
+		mName = "Untitled";
+		mPath = std::filesystem::current_path();
+
+		LOG_TO_TERMINAL(Logger::Warn, "New project '%s' created", mName);
 	}
 
 	void Project::Open()
 	{
 		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
-
+		
 		// clean current project
 		mScene->CleanCurrentScene();
 
+		OpenFileDialog dialog;
+		dialog.Show();
 
-		//mScene->GetEntityMap().clear();
-		//mScene->Registry().clear();
-		//
-		//OpenFileDialog dialog;
-		//dialog.Show();
-		//
-		//if (dialog.GetFilePath().empty())
-		//	return;
-		//
-		//mPath = dialog.GetFilePath();
-		//mName = mPath.filename().string();
-		//
-		//LOG_TO_TERMINAL(Logger::Trace, "Loading project '%s'", mName.c_str());
-		//
-		//DataFile project;
-		//std::stringstream strbuff;
-		//std::ifstream inputFile(mPath);
-		//inputFile.open(mPath, std::ios::in);
-		//
-		//if (inputFile.is_open())
-		//{
-		//	strbuff << inputFile.rdbuf();
-		//	//project = OrderedSerializer::parse(strbuff.str());
-		//}
-		//
-		//inputFile.close();
-		//
-		//mScene->Load(project);
+		if (dialog.GetFilePath().empty())
+			return;
+
+		mPath = dialog.GetFilePath();
+		mName = dialog.GetFileName();
+
+		LOG_TO_TERMINAL(Logger::Trace, "Loading project '%s'", mName.c_str());
+
+		DataFile project;
+
+		if (DataFile::Read(project, mPath.string()))
+		{
+			mScene->Deserialize(project);
+		}
+		
+		else
+		{
+			LOG_TO_TERMINAL(Logger::Error, "Could not deserialize %s", mPath.string().c_str());
+		}
 	}
 
 	void Project::Save()
@@ -77,27 +66,35 @@ namespace Cosmos
 		std::string savePathStr = savePath.string();
 		savePathStr.append(".cosmos");
 
-		DataFile::Write(mScene->Serialize(), savePathStr);
+		if (DataFile::Write(mScene->Serialize(), savePathStr))
+		{
+			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved", mName.c_str());
+		}
+
+		else
+		{
+			LOG_TO_TERMINAL(Logger::Trace, "Error while saving '%s'", mName.c_str());
+		}
 	}
 
 	void Project::SaveAs()
 	{
-		//SaveFileDialog dialog;
-		//dialog.Show();
-		//
-		//mName = dialog.GetFileName();
-		//mPath = dialog.GetFilePath();
-		//
-		//DataFile save = mScene->Serialize();
-		//
-		//std::fstream outputFile;
-		//outputFile.open(mPath, std::ios::out);
-		//
-		//if (outputFile.is_open())
-		//{
-		//	//outputFile << save.dump() << std::endl;
-		//}
-		//
-		//outputFile.close();
+		SaveFileDialog dialog;
+		dialog.Show();
+		
+		mName = dialog.GetFileName();
+		mPath = dialog.GetFilePath();
+
+		LOG_TO_TERMINAL(Logger::Trace, "Saving Project '%s'", mName.c_str());
+
+		if (DataFile::Write(mScene->Serialize(), mPath.string()))
+		{
+			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved", mName.c_str());
+		}
+
+		else
+		{
+			LOG_TO_TERMINAL(Logger::Trace, "Error while saving '%s'", mName.c_str());
+		}
 	}
 }

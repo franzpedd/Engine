@@ -16,8 +16,6 @@ namespace Cosmos
 	{
 		Logger() << "Creating Scene";
 
-		mEntities = EntityStack::Create();
-
 		mCamera = std::make_shared<Camera>(mWindow);
 	}
 
@@ -31,7 +29,7 @@ namespace Cosmos
 		UUID id = UUID();
 		entt::entity entt = mRegistry.create();
 
-		Entity entity = { this, entt };
+		Entity entity{ this, entt };
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<NameComponent>(name);
 		
@@ -61,7 +59,7 @@ namespace Cosmos
 		auto it = mEntityMap.find(id);
 		
 		if (it != mEntityMap.end())
-			found = &(it->second);
+			found = &it->second;
 		
 		return found;
 	}
@@ -73,12 +71,7 @@ namespace Cosmos
 		// update camera
 		mCamera->OnUpdate(timestep);
 
-		// special entities (editor entities like grid and viewport)
-		for (auto& ent : mEntities->GetEntitiesVector())
-		{
-			ent->OnUpdate(timestep);
-		}
-
+		// update models
 		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
 		for (auto ent : modelsGroup)
 		{
@@ -93,190 +86,98 @@ namespace Cosmos
 
 	void Scene::OnRenderDraw()
 	{
-		for (auto& ent : mEntities->GetEntitiesVector())
-		{
-			ent->OnRenderDraw();
-		}
-
 		mGUI->OnRenderDraw();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer commandBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
 
-		//auto modelsGroup = mRegistry.group<ModelComponent>();
-		//for (auto ent : modelsGroup)
-		//{
-		//	auto& [model] = modelsGroup.get<ModelComponent>(ent);
-		//
-		//	if (model == nullptr|| !model->IsLoaded())
-		//		continue;
-		//
-		//	model->Draw(commandBuffer);
-		//}
+		// draw models
+		auto modelsGroup = mRegistry.group<ModelComponent>();
+		for (auto ent : modelsGroup)
+		{
+			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+		
+			if (model == nullptr|| !model->IsLoaded())
+				continue;
+		
+			model->Draw(commandBuffer);
+		}
 	}
 
 	void Scene::Destroy()
 	{
-		for (auto& ent : mEntities->GetEntitiesVector())
-		{
-			ent->OnDestroy();
-		}
-
 		CleanCurrentScene();
 	}
 
 	void Scene::CleanCurrentScene()
 	{
-		//for (auto& ent : mEntityMap)
-		//{
-		//	auto entity = &ent.second;
-		//
-		//	// the model is a special pointer, call it's destruction methods before deleting it
-		//	if (entity->HasComponent<ModelComponent>() && entity->GetComponent<ModelComponent>().model != nullptr)
-		//	{
-		//		if (entity->GetComponent<ModelComponent>().model->IsLoaded())
-		//		{
-		//			entity->GetComponent<ModelComponent>().model->Destroy();
-		//		}
-		//
-		//		delete entity->GetComponent<ModelComponent>().model;
-		//	}
-		//}
-
-		//for (const auto entity : mRegistry.view<IDComponent>())
-		//{
-		//	mRegistry.destroy(entity);
-		//}
-
-		//for (auto& ent : mEntityMap)
-		//{
-		//	auto entity = &ent.second;
-		//
-		//	// remove the transform component
-		//	if (entity->HasComponent<TransformComponent>())
-		//		entity->RemoveComponent<TransformComponent>();
-		//
-		//	// remove the model component
-		//	if (entity->HasComponent<ModelComponent>())
-		//	{
-		//		if (entity->GetComponent<ModelComponent>().model != nullptr)
-		//		{
-		//			entity->GetComponent<ModelComponent>().model->Destroy();
-		//		}
-		//		entity->RemoveComponent<ModelComponent>();
-		//	}
-		//		
-		//}
-
-		for (auto& entRef : mEntityMap)
+		// erase all entities
+		for (auto& ent : mEntityMap)
 		{
-			auto& entity = entRef.second;
+			if (mEntityMap.empty())
+				break;
 
-			if (entity.HasComponent<ModelComponent>())
-			{
-				if (entity.GetComponent<ModelComponent>().model != nullptr)
-				{
-					entity.GetComponent<ModelComponent>().model->Destroy();
-					entity.GetComponent<ModelComponent>().model->SetLoaded(false);
-				}
-			}
-
-			mEntityMap.erase(entity.GetUUID());
+			DestroyEntity(&ent.second);
 		}
-		
-		int x = 0;
-
-		//mRegistry.clear();
-		//mEntityMap.clear();
 	}
 
-	void Scene::Load(DataFile& sceneEntities)
+	void Scene::Deserialize(DataFile& data)
 	{
-		LOG_TO_TERMINAL(Logger::Warn, "Loading many scenes may result in UUID conflicts, must reset UUID on loading scenes");
+		LOG_TO_TERMINAL(Logger::Warn, "Keey an eye on EnTT id and UUID id, the might conflict if I'm not able to properly erase EnTT handles");
+		
+		size_t entityCount = data["Entities"].GetChildrenCount();
 
-		//for (const auto entity : mRegistry.view<IDComponent>())
-		//{
-		//	mRegistry.destroy(entity);
-		//}
-		//
-		//mEntityMap.clear();
-		//
-		//std::unordered_map<std::string, OrderedSerializer> unorderedMap;
-		//sceneEntities["Entities"].get_to(unorderedMap);
-		//
-		//for (auto& entity : unorderedMap)
-		//{
-		//	entt::entity entt = mRegistry.create();
-		//	UUID id = UUID();
-		//	Entity newEntity = { this, entt };
-		//
-		//	try
-		//	{
-		//		for (auto& component : entity.second.items())
-		//		{
-		//			std::string componentName = component.value().at(0);
-		//			
-		//			if (componentName.compare("Name") == 0)
-		//			{
-		//				newEntity.AddComponent<NameComponent>(component.value().at(1));
-		//			}
-		//
-		//			if (componentName.compare("Transform") == 0)
-		//			{
-		//				newEntity.AddComponent<TransformComponent>();
-		//				auto& entComponent = newEntity.GetComponent<TransformComponent>();
-		//				
-		//				uint32_t index = 0;
-		//				for (auto& item : component.value().at(1))
-		//				{
-		//					glm::vec3 values = glm::vec3(0.0f);
-		//					item[0].get_to(values.x);
-		//					item[1].get_to(values.y);
-		//					item[2].get_to(values.z);
-		//					
-		//					switch (index)
-		//					{
-		//						case 0: entComponent.translation = values; break;
-		//						case 1: entComponent.rotation = values; break;
-		//						case 2: entComponent.scale = values; break;	
-		//						default: break;
-		//					}
-		//					
-		//					index++;
-		//				}
-		//			}
-		//
-		//			if (componentName.compare("Model") == 0)
-		//			{
-		//				newEntity.AddComponent<ModelComponent>();
-		//				auto& entComponent = newEntity.GetComponent<ModelComponent>();
-		//				entComponent.model = new Model(mRenderer, *mCamera);
-		//				
-		//				for (auto& item : component.value().at(1))
-		//				{
-		//					std::cout << item << std::endl;
-		//				}
-		//				
-		//				//std::string modelPath;
-		//				//serial["Model"].get_to<std::string>(modelPath);
-		//				//
-		//				//std::string albedoPath;
-		//				//serial["Albedo"].get_to<std::string>(albedoPath);
-		//				
-		//				
-		//			}
-		//		}
-		//
-		//	}
-		//
-		//	catch (const std::exception& e)
-		//	{
-		//		std::cout << e.what() << std::endl;
-		//	}
-		//
-		//	mEntityMap[id] = newEntity;
-		//}
+		for (size_t i = 0; i < entityCount; i++)
+		{
+			// create blank entity
+			entt::entity entt = mRegistry.create();
+			Entity entity = { this, entt };
+
+			DataFile entityData = data["Entities"][i];
+			
+			// add entity id
+			std::string id = entityData["Id"].GetString();
+			entity.AddComponent<IDComponent>(id);
+			
+			// add entity name
+			std::string name = entityData["Name"].GetString();
+			entity.AddComponent<NameComponent>(name);
+
+			// check if transform exists
+			if (entityData.Exists("Transform"))
+			{
+				entity.AddComponent<TransformComponent>();
+				auto& component = entity.GetComponent<TransformComponent>();
+
+				// read translation
+				auto& dataT = entityData["Transform"]["Translation"];
+				component.translation = { dataT["X"].GetDouble(), dataT["Y"].GetDouble(), dataT["Z"].GetDouble() };
+
+				// read rotation
+				auto& dataR = entityData["Transform"]["Rotation"];
+				component.rotation = { dataR["X"].GetDouble(), dataR["Y"].GetDouble(), dataR["Z"].GetDouble() };
+				
+				// read scale
+				auto& dataS = entityData["Transform"]["Scale"];
+				component.scale = { dataS["X"].GetDouble(), dataS["Y"].GetDouble(), dataS["Z"].GetDouble() };
+			}
+
+			// check if model exists
+			if (entityData.Exists("Model"))
+			{
+				entity.AddComponent<ModelComponent>();
+				auto& component = entity.GetComponent<ModelComponent>();
+
+				component.model = std::make_shared<Model>(mRenderer, mCamera);
+
+				component.model->LoadFromFile(entityData["Model"]["Path"].GetString());
+				component.model->LoadAlbedoTexture(entityData["Model"]["Albedo"].GetString());
+			}
+
+			// assign the entity to the map
+			mEntityMap[id] = entity;
+		}
 	}
 
 	DataFile Scene::Serialize()
@@ -285,23 +186,27 @@ namespace Cosmos
 
 		for (auto& entid : mEntityMap)
 		{
-			Entity& entity = entid.second;
+			Entity* entity = &entid.second;
 
-			// discard entities that doesnt have id's (they may be exclusively entities like the Editor Grid)
-			if (!entity.HasComponent<IDComponent>() || !entity.HasComponent<NameComponent>())
+			// don't considerate nullptr
+			if (entity == nullptr)
+				continue;
+
+			// discard entities that doesnt have id nor name
+			if (!entity->HasComponent<IDComponent>() || !entity->HasComponent<NameComponent>())
 				continue;
 
 			// write name and id components, they should exists by default
-			std::string uuidComponent = entity.GetComponent<IDComponent>().id;
-			std::string nameComponent = entity.GetComponent<NameComponent>().name;
+			std::string uuidComponent = entity->GetComponent<IDComponent>().id;
+			std::string nameComponent = entity->GetComponent<NameComponent>().name;
 
 			save["Entities"][uuidComponent]["Id"].SetString(uuidComponent);
 			save["Entities"][uuidComponent]["Name"].SetString(nameComponent);
 
 			// write the transform component if it exists
-			if (entity.HasComponent<TransformComponent>())
+			if (entity->HasComponent<TransformComponent>())
 			{
-				auto& component = entity.GetComponent<TransformComponent>();
+				auto& component = entity->GetComponent<TransformComponent>();
 				auto& place = save["Entities"][uuidComponent]["Transform"];
 
 				place["Translation"]["X"].SetDouble(component.translation.x);
@@ -318,9 +223,9 @@ namespace Cosmos
 			}
 
 			// write the model component if it exists
-			if (entity.HasComponent<ModelComponent>())
+			if (entity->HasComponent<ModelComponent>())
 			{
-				auto& component = entity.GetComponent<ModelComponent>();
+				auto& component = entity->GetComponent<ModelComponent>();
 				auto& place = save["Entities"][uuidComponent]["Model"];
 
 				place["Path"].SetString(component.model->GetPath());

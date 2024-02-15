@@ -83,11 +83,6 @@ namespace Cosmos
 
 	void Application::OnMouseMove(float x, float y)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnMouseMove(x, y);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnMouseMove(x, y);
@@ -98,11 +93,6 @@ namespace Cosmos
 
 	void Application::OnMouseScroll(float y)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnMouseScroll(y);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnMouseScroll(y);
@@ -113,11 +103,6 @@ namespace Cosmos
 
 	void Application::OnMousePress(Buttoncode button)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnMousePress(button);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnMousePress(button);
@@ -126,11 +111,6 @@ namespace Cosmos
 
 	void Application::OnMouseRelease(Buttoncode button)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnMouseRelease(button);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnMouseRelease(button);
@@ -139,11 +119,6 @@ namespace Cosmos
 
 	void Application::OnKeyboardPress(Keycode key)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnKeyboardPress(key);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnKeyboardPress(key);
@@ -154,11 +129,6 @@ namespace Cosmos
 
 	void Application::OnKeyboardRelease(Keycode key)
 	{
-		for (auto& ent : mScene->Entities()->GetEntitiesVector())
-		{
-			ent->OnKeyboardRelease(key);
-		}
-
 		for (auto& widget : mUI->Widgets())
 		{
 			widget->OnKeyboardRelease(key);
