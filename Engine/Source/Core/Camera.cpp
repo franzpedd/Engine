@@ -5,8 +5,8 @@
 
 namespace Cosmos
 {
-	Camera::Camera(std::shared_ptr<Window>& window, Scene* scene)
-		: Entity(scene), mWindow(window)
+	Camera::Camera(std::shared_ptr<Window>& window)
+		: mWindow(window)
 	{
 		// initial camera aspect ratio
 		mAspectRatio = mWindow->GetAspectRatio();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity/Entt.h"
+#include "Platform/Keycodes.h"
 #include "Util/UUID.h"
 #include "Util/DataFile.h"
 #include <memory>
@@ -13,6 +14,7 @@ namespace Cosmos
 	class Window;
 	class Renderer;
 	class Camera;
+	class GUI;
 
 	class Scene
 	{
@@ -33,13 +35,16 @@ namespace Cosmos
 		// returns a reference to the entity unordered map
 		inline std::unordered_map<std::string, Entity>& GetEntityMap() { return mEntityMap; }
 
+		// returns a renderer reference
+		inline std::shared_ptr<Camera>& GetCamera() { return mCamera; }
+
 		// connects the scene to the renderer
 		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
 
-		// connects the scene with the main camera
-		void ConnectCamera(Camera* camera);
+		// connects the ui with the scene
+		void ConnectUI(std::shared_ptr<GUI> gui);
 
-		// returns a rendere's reference
+		// returns a renderer reference
 		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
 
 	public:
@@ -73,6 +78,17 @@ namespace Cosmos
 		// serializes the scene and returns a structure with it serialized
 		DataFile Serialize();
 
+	public:
+
+		// mouse was recently moved
+		void OnMouseMove(float x, float y);
+
+		// mouse was recently scrolled
+		void OnMouseScroll(float y);
+
+		// keyboard key was recrently pressed
+		void OnKeyboardPress(Keycode key);
+
 	private:
 
 		std::shared_ptr<Window>& mWindow;
@@ -83,7 +99,10 @@ namespace Cosmos
 		std::shared_ptr<Renderer> mRenderer;
 
 		// must be connected, to pass view and projection for entities
-		Camera* mCamera = nullptr;
+		std::shared_ptr<Camera> mCamera;
+
+		// must be connected, to draw custom widgets that contain draw calls
+		std::shared_ptr<GUI> mGUI;
 
 		std::unordered_map<std::string, Entity> mEntityMap;
 	};

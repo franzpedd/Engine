@@ -8,7 +8,7 @@
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, Camera* camera, SceneHierarchy* sceneHierarcy,
+	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera, SceneHierarchy* sceneHierarcy,
 		TextureBrowser* textureBrowser)
 		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera), mSceneHierarcy(sceneHierarcy),
 		mTextureBrowser(textureBrowser)

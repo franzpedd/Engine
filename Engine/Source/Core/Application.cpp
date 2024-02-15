@@ -26,6 +26,7 @@ namespace Cosmos
 		// connect the UI to the renderer to handle resize events
 		mRenderer->ConnectUI(mUI);
 		mScene->ConnectRenderer(mRenderer);
+		mScene->ConnectUI(mUI);
 	}
 
 	void Application::Run()
@@ -91,6 +92,8 @@ namespace Cosmos
 		{
 			widget->OnMouseMove(x, y);
 		}
+
+		mScene->OnMouseMove(x, y);
 	}
 
 	void Application::OnMouseScroll(float y)
@@ -104,6 +107,8 @@ namespace Cosmos
 		{
 			widget->OnMouseScroll(y);
 		}
+
+		mScene->OnMouseScroll(y);
 	}
 
 	void Application::OnMousePress(Buttoncode button)
@@ -143,6 +148,8 @@ namespace Cosmos
 		{
 			widget->OnKeyboardPress(key);
 		}
+
+		mScene->OnKeyboardPress(key);
 	}
 
 	void Application::OnKeyboardRelease(Keycode key)

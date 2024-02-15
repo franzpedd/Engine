@@ -20,7 +20,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Model(std::shared_ptr<Renderer>& renderer, Camera& camera);
+		Model(std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera);
 
 		// destructor
 		~Model() = default;
@@ -75,7 +75,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
-		Camera& mCamera;
+		std::shared_ptr<Camera>& mCamera;
 		std::string mPath = {};
 		bool mLoaded = false;
 		

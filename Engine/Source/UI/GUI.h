@@ -65,6 +65,9 @@ namespace Cosmos
 		// updates the ui
 		void OnUpdate();
 
+		// updates the draw calls with extra draw calls (outside imgui)
+		void OnRenderDraw();
+
 		// draws the ui
 		void Draw(VkCommandBuffer cmd);
 

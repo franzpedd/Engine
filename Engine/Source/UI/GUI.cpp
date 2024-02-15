@@ -77,6 +77,14 @@ namespace Cosmos
 		}
 	}
 
+	void GUI::OnRenderDraw()
+	{
+		for (Widget* widget : mWidgetStack)
+		{
+			widget->OnRenderDraw();
+		}
+	}
+
 	void GUI::Draw(VkCommandBuffer cmd)
 	{
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);

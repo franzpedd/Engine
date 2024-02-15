@@ -6,8 +6,8 @@
 
 namespace Cosmos
 {
-	Grid::Grid(std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera)
-		: Entity(scene), mScene(scene), mRenderer(renderer), mCamera(camera)
+	Grid::Grid(std::shared_ptr<Renderer>& renderer, Scene* scene)
+		: Widget("Grid"), mScene(scene), mRenderer(renderer)
 	{
 		Logger() << "Creating Grid";
 
@@ -27,12 +27,12 @@ namespace Cosmos
 		vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
 	}
 
-	void Grid::OnUpdate(float timestep)
+	void Grid::OnUpdate()
 	{
 		UniformBufferObject ubo = {};
 		ubo.model = glm::mat4(1.0f);
-		ubo.view = mCamera->GetView();
-		ubo.proj = mCamera->GetProjection();
+		ubo.view = mScene->GetCamera()->GetView();
+		ubo.proj = mScene->GetCamera()->GetProjection();
 		
 		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}

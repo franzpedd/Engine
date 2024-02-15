@@ -8,12 +8,12 @@ namespace Cosmos
 	// forward declarations
 	class Viewport;
 
-	class Grid : public Entity
+	class Grid : public Widget
 	{
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene, Camera* camera);
+		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene);
 
 		// destructor
 		virtual ~Grid() = default;
@@ -24,7 +24,7 @@ namespace Cosmos
 		virtual void OnRenderDraw() override;
 
 		// updates the entity (leave empty if doesnt required)
-		virtual void OnUpdate(float timestep) override;
+		virtual void OnUpdate() override;
 
 		// called before destructor, for freeing resources
 		virtual void OnDestroy() override;
@@ -43,7 +43,6 @@ namespace Cosmos
 
 		std::shared_ptr<Renderer>& mRenderer;
 		Scene* mScene;
-		Camera* mCamera;
 		bool mVisible = true;
 		
 		std::shared_ptr<VKShader> mVertexShader;

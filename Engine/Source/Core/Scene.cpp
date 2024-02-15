@@ -1,10 +1,11 @@
 #include "epch.h"
 #include "Scene.h"
 
+#include "Camera.h"
 #include "Entity/Entity.h"
-#include "Entity/Camera.h"
 #include "Renderer/Renderer.h"
 #include "Platform/Window.h"
+#include "UI/GUI.h"
 
 #include <iostream>
 
@@ -16,11 +17,13 @@ namespace Cosmos
 		Logger() << "Creating Scene";
 
 		mEntities = EntityStack::Create();
+
+		mCamera = std::make_shared<Camera>(mWindow);
 	}
 
-	void Scene::ConnectCamera(Camera* camera)
+	void Scene::ConnectUI(std::shared_ptr<GUI> gui)
 	{
-		mCamera = camera;
+		mGUI = gui;
 	}
 
 	void Scene::CreateEntity(const char* name)
@@ -67,6 +70,9 @@ namespace Cosmos
 	{
 		PROFILER_FUNCTION();
 
+		// update camera
+		mCamera->OnUpdate(timestep);
+
 		// special entities (editor entities like grid and viewport)
 		for (auto& ent : mEntities->GetEntitiesVector())
 		{
@@ -91,6 +97,8 @@ namespace Cosmos
 		{
 			ent->OnRenderDraw();
 		}
+
+		mGUI->OnRenderDraw();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
@@ -321,5 +329,20 @@ namespace Cosmos
 		}
 
 		return save;
+	}
+
+	void Scene::OnMouseMove(float x, float y)
+	{
+		mCamera->OnMouseMove(x, y);
+	}
+
+	void Scene::OnMouseScroll(float y)
+	{
+		mCamera->OnMouseScroll(y);
+	}
+
+	void Scene::OnKeyboardPress(Keycode key)
+	{
+		mCamera->OnKeyboardPress(key);
 	}
 }

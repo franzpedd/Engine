@@ -1,7 +1,7 @@
 #include "epch.h"
 #include "Model.h"
 
-#include "Entity/Camera.h"
+#include "Core/Camera.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture.h"
 #include "Renderer/Vulkan/VKBuffer.h"
@@ -14,7 +14,7 @@
 
 namespace Cosmos
 {
-	Model::Model(std::shared_ptr<Renderer>& renderer, Camera& camera)
+	Model::Model(std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
 	}
@@ -35,8 +35,8 @@ namespace Cosmos
 
 		UniformBufferObject ubo = {};
 		ubo.model = transform;
-		ubo.view = mCamera.GetView();
-		ubo.proj = mCamera.GetProjection();
+		ubo.view = mCamera->GetView();
+		ubo.proj = mCamera->GetProjection();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 

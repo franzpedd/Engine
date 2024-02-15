@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Entity.h"
 #include "Platform/Keycodes.h"
 #include "Platform/Window.h"
 #include "Util/Math.h"
@@ -9,7 +8,7 @@
 
 namespace Cosmos
 {
-	class Camera : public Entity
+	class Camera
 	{
 	public:
 
@@ -22,7 +21,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Camera(std::shared_ptr<Window>& window, Scene* scene);
+		Camera(std::shared_ptr<Window>& window);
 
 		// destructor
 		~Camera() = default;
@@ -57,13 +56,13 @@ namespace Cosmos
 	public:
 
 		// mouse was recently moved
-		virtual void OnMouseMove(float x, float y) override;
+		void OnMouseMove(float x, float y);
 
 		// mouse was recently scrolled
-		virtual void OnMouseScroll(float y) override;
+		void OnMouseScroll(float y);
 
 		// keyboard key was recrently pressed
-		virtual void OnKeyboardPress(Keycode key) override;
+		void OnKeyboardPress(Keycode key);
 
 	public:
 
@@ -82,7 +81,6 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Window>& mWindow;
-		Scene* mScene;
 
 		Type mType = Type::EDITOR_FLY;
 		bool mFlipY = true;

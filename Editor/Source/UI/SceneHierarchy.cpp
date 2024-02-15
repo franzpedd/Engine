@@ -2,8 +2,8 @@
 
 namespace Cosmos
 {
-	SceneHierarchy::SceneHierarchy(Scene* scene, Camera& camera)
-		: Widget("UI:Scene Hierarchy"), mScene(scene), mCamera(camera)
+	SceneHierarchy::SceneHierarchy(Scene* scene)
+		: Widget("UI:Scene Hierarchy"), mScene(scene)
 	{
 		Logger() << "Creating Scene Hierarchy";
 	}
@@ -194,7 +194,7 @@ namespace Cosmos
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
 				if (!component.model)
-					component.model = new Model(mScene->GetRenderer(), mCamera);
+					component.model = new Model(mScene->GetRenderer(), mScene->GetCamera());
 
 				// model path
 				{

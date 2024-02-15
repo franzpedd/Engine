@@ -38,9 +38,6 @@ namespace Cosmos
 		Mainmenu* mMainmenu;
 		SceneHierarchy* mSceneHierarchy;
 		TextureBrowser* mTextureBrowser;
-
-		// entity
-		Camera* mCamera;
 		Grid* mGrid;
 	};
 }

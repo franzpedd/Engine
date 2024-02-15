@@ -3,11 +3,11 @@
 #include "Defines.h"
 
 #include "Core/Application.h"
+#include "Core/Camera.h"
 #include "Core/Scene.h"
 
 #include "Entity/Components/BaseComponents.h"
 #include "Entity/Model/Model.h"
-#include "Entity/Camera.h"
 #include "Entity/Entity.h"
 
 #include "Debug/Logger.h"

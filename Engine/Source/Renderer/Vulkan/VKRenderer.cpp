@@ -298,7 +298,7 @@ namespace Cosmos
 			scissor.extent = mSwapchain->GetExtent();
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-			// render scene
+			// render scene and special widgets
 			mScene->OnRenderDraw();
 
 			vkCmdEndRenderPass(cmdBuffer);

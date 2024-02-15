@@ -23,6 +23,9 @@ namespace Cosmos
 		// for user interface drawing
 		virtual void OnUpdate() {}
 
+		// for renderer drawing
+		virtual void OnRenderDraw() {}
+
 		// freeing resources
 		virtual void OnDestroy() {};
 

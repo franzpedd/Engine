@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	Mainmenu::Mainmenu(std::unique_ptr<Project>& project, Camera* camera, Grid* grid)
+	Mainmenu::Mainmenu(std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid)
 		: Widget("UI:Mainmenu"), mProject(project), mCamera(camera), mGrid(grid)
 	{
 		Logger() << "Creating Mainmenu";

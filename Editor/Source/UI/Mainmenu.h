@@ -22,7 +22,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mainmenu(std::unique_ptr<Project>& project, Camera* camera, Grid* grid);
+		Mainmenu(std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid);
 
 		// destructor
 		virtual ~Mainmenu() = default;
@@ -43,7 +43,7 @@ namespace Cosmos
 	private:
 
 		std::unique_ptr<Project>& mProject;
-		Camera* mCamera;
+		std::shared_ptr<Camera>& mCamera;
 		Grid* mGrid;
 		
 		bool mCheckboxGrid = true;

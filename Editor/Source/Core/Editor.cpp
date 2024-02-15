@@ -16,16 +16,13 @@ namespace Cosmos
 	{
 		mProject = std::make_unique<Project>(mScene, "Project");
 
-		mCamera = new Camera(mWindow, mScene);
-		mScene->ConnectCamera(mCamera);
-
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
 		mTextureBrowser = new TextureBrowser(mRenderer);
-		mSceneHierarchy = new SceneHierarchy(mScene, *mCamera);
-		mViewport = new Viewport(mUI, mRenderer, mCamera, mSceneHierarchy, mTextureBrowser);
-		mGrid = new Grid(mRenderer, mScene, mCamera);
-		mMainmenu = new Mainmenu(mProject, mCamera, mGrid);
+		mSceneHierarchy = new SceneHierarchy(mScene);
+		mViewport = new Viewport(mUI, mRenderer, mScene->GetCamera(), mSceneHierarchy, mTextureBrowser);
+		mGrid = new Grid(mRenderer, mScene);
+		mMainmenu = new Mainmenu(mProject, mScene->GetCamera(), mGrid);
 		mDockspace = new Dockspace();
 
 		// widgets
@@ -35,11 +32,8 @@ namespace Cosmos
 		mUI->Widgets().Push(mMainmenu);
 		mUI->Widgets().Push(mSceneHierarchy);
 		mUI->Widgets().Push(mTextureBrowser);
+		mUI->Widgets().Push(mGrid); // very special indeed
 		mUI->Widgets().Push(mViewport); // viewport over everything
-		
-		// objects
-		mScene->Entities()->Push(mCamera);
-		mScene->Entities()->Push(mGrid);
 
 		// todos
 		LOG_TO_TERMINAL(Logger::Todo, "Fix Mainloop timestep and fps system");
