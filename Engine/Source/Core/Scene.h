@@ -54,6 +54,9 @@ namespace Cosmos
 		// finds an entity given it's id (wich is unique)
 		Entity* FindEntityById(UUID id);
 
+		// finds an entity given it's handle id
+		Entity* FindEntityByHandle(entt::entity handle);
+
 	public:
 
 		// updates the scene objects

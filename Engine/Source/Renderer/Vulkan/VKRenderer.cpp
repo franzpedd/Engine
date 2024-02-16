@@ -2,7 +2,7 @@
 #include "VKRenderer.h"
 
 #include "VKShader.h"
-#include "Entity/Model/Vertex.h"
+#include "Entity/Renderable/Vertex.h"
 
 #include "Core/Scene.h"
 #include "Platform/Window.h"

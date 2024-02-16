@@ -301,20 +301,20 @@ namespace Cosmos
 	{
 		// position window to menubar 
 		ImVec2 winPos = ImGui::GetWindowSize();
+		constexpr float gizmoInnerSpace = 7.5f;
 
 		ImGui::PushID("##ViewportMenubar");
 		ImGui::BeginGroup();
 		
 		// grid options
 		{
-			ImGui::Separator();
-
 			if (ImGui::Button(ICON_LC_AXIS_3D))
 			{
 				mGizmoType = GizmoType::UNDEFINED;
 			}
 
 			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - gizmoInnerSpace);
 		
 			if (ImGui::Button(ICON_LC_MOVE_3D))
 			{
@@ -322,6 +322,7 @@ namespace Cosmos
 			}
 			
 			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - gizmoInnerSpace);
 
 			if (ImGui::Button(ICON_LC_ROTATE_3D))
 			{
@@ -329,13 +330,12 @@ namespace Cosmos
 			}
 			
 			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - gizmoInnerSpace);
 
 			if (ImGui::Button(ICON_LC_SCALE_3D))
 			{
 				mGizmoType = GizmoType::SCALE;
 			}
-
-			ImGui::Separator();
 		}
 		
 		ImGui::EndGroup();

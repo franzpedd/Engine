@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Components/BaseComponents.h"
+#include "Components/Base.h"
+#include "Components/Renderable.h"
+#include "Components/Scriptable.h"
 
 #include "Core/Application.h"
 #include "Core/Scene.h"

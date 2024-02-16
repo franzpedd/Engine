@@ -195,7 +195,7 @@ namespace Cosmos
 				Vector3Control("Scale", component.scale);
 			});
 
-		// 3d geometry
+		// model component
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
 				if(!component.model)

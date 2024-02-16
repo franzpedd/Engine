@@ -64,12 +64,47 @@ namespace Cosmos
 		return found;
 	}
 
+	Entity* Scene::FindEntityByHandle(entt::entity handle)
+	{
+		Entity* found = nullptr;
+
+		for (auto& entity : mEntityMap)
+		{
+			if (entity.second.GetHandle() == handle)
+				found = &entity.second;
+		}
+
+		return found;
+	}
+
 	void Scene::OnUpdate(float timestep)
 	{
 		PROFILER_FUNCTION();
 
 		// update camera
 		mCamera->OnUpdate(timestep);
+
+		// update native scripts
+		{
+			mRegistry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& component)
+				{
+					// simulating constructor, should move to OnScenePlay and implement OnDestroy
+					if (!component.script)
+					{
+						Entity* ent = FindEntityByHandle(entity);
+
+						component.script = component.CreateScriptFunc();
+						component.script->mEntity = ent;
+						component.script->OnCreate();
+					}
+
+					// only update if entity was properly assigned
+					if (!component.script->mEntity)
+					{
+						component.script->OnUpdate(timestep);
+					}
+				});
+		}
 
 		// update models
 		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);

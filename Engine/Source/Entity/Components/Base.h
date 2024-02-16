@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity/Model/Model.h"
+#include "Entity/Renderable/Model.h"
 #include "Util/DataFile.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"
@@ -38,21 +38,5 @@ namespace Cosmos
 			glm::mat4 rot = glm::toMat4(glm::quat(rotation));
 			return glm::translate(glm::mat4(1.0f), translation) * rot * glm::scale(glm::mat4(1.0f), scale);
 		}
-	};
-
-	struct ModelComponent
-	{
-		std::shared_ptr<Model> model;
-
-		// constructor
-		ModelComponent() = default;
-	};
-
-	struct SkyboxComponent
-	{
-		std::shared_ptr<void*> skybox;
-
-		// constructor
-		SkyboxComponent() = default;
 	};
 }

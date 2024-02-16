@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity/Model/Mesh.h"
+#include "Entity/Renderable/Mesh.h"
 #include <vector>
 
 // forward declarations
