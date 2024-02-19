@@ -21,7 +21,7 @@ namespace Cosmos
 		std::optional<uint32_t> compute;
 
 		// returns if found all queues
-		inline bool IsComplete() { return graphics.has_value() && present.has_value() && compute.has_value(); }
+		inline bool IsComplete() const { return graphics.has_value() && present.has_value() && compute.has_value(); }
 	};
 
 	class Device
@@ -62,9 +62,6 @@ namespace Cosmos
 
 		// returns the sampling in use
 		virtual VkSampleCountFlagBits GetMSAA() = 0;
-
-		// returns a reference to the renderer command entry
-		virtual std::shared_ptr<CommandEntry>& GetMainCommandEntry() = 0;
 
 	public:
 

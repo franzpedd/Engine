@@ -20,7 +20,7 @@ namespace Cosmos
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer cmdBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
+		VkCommandBuffer cmdBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
 		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
@@ -62,8 +62,8 @@ namespace Cosmos
 	{
 		// create graphics pipeline related (shaders, descriptor set layout, pipeline layout, graphics pipeline)
 		{
-			mVertexShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Vertex, "Grid.vert", "Data/Shaders/grid.vert");
-			mFragmentShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Fragment, "Grid.frag", "Data/Shaders/grid.frag");
+			mVertexShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Vertex, "Grid.vert", util::GetAssetSubDir("Shaders/grid.vert"));
+			mFragmentShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Fragment, "Grid.frag", util::GetAssetSubDir("Shaders/grid.frag"));
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { mVertexShader->Stage(), mFragmentShader->Stage() };
@@ -184,7 +184,7 @@ namespace Cosmos
 			pipelineCI.pColorBlendState = &CBSCI;
 			pipelineCI.pDynamicState = &DSCI;
 			pipelineCI.layout = mPipelineLayout;
-			pipelineCI.renderPass = mRenderer->GetCommander().AccessMainCommandEntry()->renderPass;
+			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
 			pipelineCI.subpass = 0;
 			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
 			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->GetDevice()->GetDevice(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");

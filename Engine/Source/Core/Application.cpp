@@ -5,6 +5,7 @@
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
 #include "UI/GUI.h"
+#include "Util/FileSystem.h"
 
 namespace Cosmos
 {
@@ -77,6 +78,7 @@ namespace Cosmos
 
 		mScene->Destroy();
 		mUI->Destroy();
+		mRenderer->OnTerminate();
 
 		delete mScene;
 	}

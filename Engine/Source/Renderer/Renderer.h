@@ -62,13 +62,13 @@ namespace Cosmos
 		// returns the current image index
 		virtual uint32_t ImageIndex() = 0;
 
-		// returns a reference to the commander
-		virtual Commander& GetCommander() = 0;
-
 	public:
 
 		// setup initial resources (called after main renderpass has been created)
 		virtual void Intialize() = 0;
+
+		// called after the main loop is finished
+		virtual void OnTerminate() = 0;
 
 		// updates the renderer
 		virtual void OnUpdate() = 0;

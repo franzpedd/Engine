@@ -125,7 +125,7 @@ namespace Cosmos
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer commandBuffer = mRenderer->GetCommander().AccessMainCommandEntry()->commandBuffers[currentFrame];
+		VkCommandBuffer commandBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
 
 		// draw models
 		auto modelsGroup = mRegistry.group<ModelComponent>();

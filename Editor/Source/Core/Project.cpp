@@ -5,6 +5,7 @@ namespace Cosmos
 	Project::Project(Scene* scene, std::string name)
 		: mScene(scene), mName(name)
 	{
+		mPath = util::GetAssetDir();
 	}
 
 	Project::~Project()
@@ -19,7 +20,7 @@ namespace Cosmos
 		mScene->CleanCurrentScene();
 
 		mName = "Untitled";
-		mPath = std::filesystem::current_path();
+		mPath = util::GetAssetDir();
 
 		LOG_TO_TERMINAL(Logger::Warn, "New project '%s' created", mName);
 	}
@@ -44,14 +45,14 @@ namespace Cosmos
 
 		DataFile project;
 
-		if (DataFile::Read(project, mPath.string()))
+		if (DataFile::Read(project, mPath))
 		{
 			mScene->Deserialize(project);
 		}
 		
 		else
 		{
-			LOG_TO_TERMINAL(Logger::Error, "Could not deserialize %s", mPath.string().c_str());
+			LOG_TO_TERMINAL(Logger::Error, "Could not deserialize %s", mPath.c_str());
 		}
 	}
 
@@ -59,16 +60,13 @@ namespace Cosmos
 	{
 		LOG_TO_TERMINAL(Logger::Trace, "Saving project '%s'", mName.c_str());
 
-		std::filesystem::path savePath = mPath;
-		savePath /= "Data";
-		savePath /= mName;
+		std::string savePath = mPath;
+		savePath.append(mName);
+		savePath.append(".cosmos");
 
-		std::string savePathStr = savePath.string();
-		savePathStr.append(".cosmos");
-
-		if (DataFile::Write(mScene->Serialize(), savePathStr))
+		if (DataFile::Write(mScene->Serialize(), savePath))
 		{
-			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved", mName.c_str());
+			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved at '%s'", mName.c_str(), savePath.c_str());
 		}
 
 		else
@@ -87,9 +85,9 @@ namespace Cosmos
 
 		LOG_TO_TERMINAL(Logger::Trace, "Saving Project '%s'", mName.c_str());
 
-		if (DataFile::Write(mScene->Serialize(), mPath.string()))
+		if (DataFile::Write(mScene->Serialize(), mPath))
 		{
-			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved", mName.c_str());
+			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved at '%s' ", mName.c_str(), mPath.c_str());
 		}
 
 		else

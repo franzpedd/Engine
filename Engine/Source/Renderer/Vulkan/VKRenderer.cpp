@@ -7,6 +7,7 @@
 #include "Core/Scene.h"
 #include "Platform/Window.h"
 #include "UI/GUI.h"
+#include "Util/FileSystem.h"
 
 namespace Cosmos
 {
@@ -15,6 +16,16 @@ namespace Cosmos
 	{
 		mInstance = VKInstance::Create("Cosmos Application", "Cosmos", true);
 		mDevice = VKDevice::Create(mWindow, mInstance);
+		mCommander = new Commander();
+
+		LOG_TO_TERMINAL(Logger::Todo, "Move this to Swapchain");
+		Commander::Get().Insert("Swapchain");
+		Commander::Get().MakePrimary("Swapchain");
+		Commander::Get().GetEntries()["Swapchain"]->msaa = mDevice->GetMSAA();
+
+		mDevice->CreateCommandPool();
+		mDevice->CreateCommandBuffers();
+
 		mSwapchain = VKSwapchain::Create(mWindow, mInstance, mDevice);
 
 		CreateGlobalStates();
@@ -39,7 +50,7 @@ namespace Cosmos
 		for (auto& layout : mPipelineLayouts)
 			vkDestroyPipelineLayout(mDevice->GetDevice(), layout.second, nullptr);
 
-		for(auto& descriptorSetLayout : mDescriptorSetLayouts)
+		for (auto& descriptorSetLayout : mDescriptorSetLayouts)
 			vkDestroyDescriptorSetLayout(mDevice->GetDevice(), descriptorSetLayout.second, nullptr);
 	}
 
@@ -100,14 +111,14 @@ namespace Cosmos
 		return mImageIndex;
 	}
 
-	Commander& VKRenderer::GetCommander()
-	{
-		return mCommander;
-	}
-
 	void VKRenderer::Intialize()
 	{
 		CreatePipelines();
+	}
+
+	void VKRenderer::OnTerminate()
+	{
+		mCommander->Erase("Swapchain", mDevice->GetDevice());
 	}
 
 	void VKRenderer::OnUpdate()
@@ -146,13 +157,18 @@ namespace Cosmos
 
 		// submits to graphics queue
 		{
-			// grab all commandbuffers used into a single queue submit
-			std::array<VkCommandBuffer, 3> submitCommandBuffers =
+			// 
+			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommander->GetEntries()["Swapchain"]->commandBuffers[mCurrentFrame] };
+
+			if (mCommander->Exists("Viewport"))
 			{
-				mCommander.Access()[0]->commandBuffers[mCurrentFrame], // swapchain
-				mCommander.Access()[2]->commandBuffers[mCurrentFrame], // viewport
-				mCommander.Access()[1]->commandBuffers[mCurrentFrame]  // imgui
-			};
+				submitCommandBuffers.push_back(mCommander->GetEntries()["Viewport"]->commandBuffers[mCurrentFrame]);
+			}
+
+			if (mCommander->Exists("ImGui"))
+			{
+				submitCommandBuffers.push_back(mCommander->GetEntries()["ImGui"]->commandBuffers[mCurrentFrame]);
+			}
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -211,10 +227,11 @@ namespace Cosmos
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		// color and depth render pass
+		if(mCommander->Exists("Swapchain"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander.Access()[0]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander.Access()[0]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander.Access()[0]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["Swapchain"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntries()["Swapchain"]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntries()["Swapchain"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -259,10 +276,11 @@ namespace Cosmos
 		}
 
 		// viewport
+		if(mCommander->Exists("Viewport"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander.Access()[2]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander.Access()[2]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander.Access()[2]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["Viewport"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntries()["Viewport"]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntries()["Viewport"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -308,10 +326,11 @@ namespace Cosmos
 		}
 
 		// user interface
+		if(mCommander->Exists("ImGui"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander.Access()[1]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander.Access()[1]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander.Access()[1]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["ImGui"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntries()["ImGui"]->framebuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntries()["ImGui"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -382,8 +401,8 @@ namespace Cosmos
 		// model pipeline
 		{
 			const std::string id = "Model";
-			std::shared_ptr<VKShader> vShader = VKShader::Create(mDevice, VKShader::Vertex, "Model.vert", "Data/Shaders/model.vert");
-			std::shared_ptr<VKShader> fShader = VKShader::Create(mDevice, VKShader::Fragment, "Model.frag", "Data/Shaders/model.frag");
+			std::shared_ptr<VKShader> vShader = VKShader::Create(mDevice, VKShader::Vertex, "Model.vert", util::GetAssetSubDir("Shaders/model.vert"));
+			std::shared_ptr<VKShader> fShader = VKShader::Create(mDevice, VKShader::Fragment, "Model.frag", util::GetAssetSubDir("Shaders/model.frag"));
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->Stage(), fShader->Stage() };
@@ -463,7 +482,7 @@ namespace Cosmos
 			MSCI.pNext = nullptr;
 			MSCI.flags = 0;
 			MSCI.sampleShadingEnable = VK_FALSE;
-			MSCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+			MSCI.rasterizationSamples = mCommander->GetPrimary()->msaa;
 
 			VkPipelineDepthStencilStateCreateInfo DSSCI = {};
 			DSSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -516,7 +535,7 @@ namespace Cosmos
 			pipelineCI.pColorBlendState = &CBSCI;
 			pipelineCI.pDynamicState = &DSCI;
 			pipelineCI.layout = mPipelineLayouts[id];
-			pipelineCI.renderPass = mCommander.AccessMainCommandEntry()->renderPass;
+			pipelineCI.renderPass = mCommander->GetPrimary()->renderPass;
 			pipelineCI.subpass = 0;
 			VK_ASSERT(vkCreateGraphicsPipelines(mDevice->GetDevice(), mPipelineCache, 1, &pipelineCI, nullptr, &mPipelines[id]), "Failed to create graphics pipeline");
 

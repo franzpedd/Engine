@@ -5,30 +5,28 @@ namespace Cosmos
 	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
 		: Widget("UI:Explorer"), mRenderer(renderer)
 	{
-		//CreateTextures();
-
-		mCurrentDir = "Data";
+		mCurrentDir = util::GetAssetDir();
 
 		// create default resources
-		mUndefinedResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/undefined.png");
+		mUndefinedResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/undefined.png").c_str());
 		mUndefinedResource.descriptor = AddTexture(mUndefinedResource.texture->GetSampler(), mUndefinedResource.texture->GetView());
 
-		mFolderResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/folder.png");
+		mFolderResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/folder.png").c_str());
 		mFolderResource.descriptor = AddTexture(mFolderResource.texture->GetSampler(), mFolderResource.texture->GetView());
 
-		mTextResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/txt.png");
+		mTextResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/txt.png").c_str());
 		mTextResource.descriptor = AddTexture(mTextResource.texture->GetSampler(), mTextResource.texture->GetView());
 
-		mModelResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/mdl.png");
+		mModelResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/mdl.png").c_str());
 		mModelResource.descriptor = AddTexture(mModelResource.texture->GetSampler(), mModelResource.texture->GetView());
 
-		mVertexResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/vert.png");
+		mVertexResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/vert.png").c_str());
 		mVertexResource.descriptor = AddTexture(mVertexResource.texture->GetSampler(), mVertexResource.texture->GetView());
 
-		mFragmentResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/frag.png");
+		mFragmentResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/frag.png").c_str());
 		mFragmentResource.descriptor = AddTexture(mFragmentResource.texture->GetSampler(), mFragmentResource.texture->GetView());
 
-		mSpirvResource.texture = Texture2D::Create(mRenderer->GetDevice(), "Data/Textures/editor/spv.png");
+		mSpirvResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/spv.png").c_str());
 		mSpirvResource.descriptor = AddTexture(mSpirvResource.texture->GetSampler(), mSpirvResource.texture->GetView());
 	}
 

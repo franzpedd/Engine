@@ -124,7 +124,7 @@ namespace Cosmos
 		TransitionImageLayout
 		(
 			mDevice,
-			mDevice->GetMainCommandEntry()->commandPool,
+			Commander::Get().GetPrimary()->commandPool,
 			mImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -133,7 +133,7 @@ namespace Cosmos
 
 		// copy buffer to image
 		{
-			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool);
+			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, Commander::Get().GetPrimary()->commandPool);
 
 			VkBufferImageCopy region = {};
 			region.bufferOffset = 0;
@@ -151,7 +151,7 @@ namespace Cosmos
 			region.imageExtent.depth = 1;
 			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-			EndSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool, cmdBuffer);
+			EndSingleTimeCommand(mDevice, Commander::Get().GetPrimary()->commandPool, cmdBuffer);
 		}
 
 		// free staging buffer
@@ -163,7 +163,7 @@ namespace Cosmos
 
 	void VKTexture2D::CreateMipmaps()
 	{
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool);
+		VkCommandBuffer commandBuffer = BeginSingleTimeCommand(mDevice, Commander::Get().GetPrimary()->commandPool);
 
 		VkImageMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -239,7 +239,7 @@ namespace Cosmos
 			0, nullptr,
 			1, &barrier);
 
-		EndSingleTimeCommand(mDevice, mDevice->GetMainCommandEntry()->commandPool, commandBuffer);
+		EndSingleTimeCommand(mDevice, Commander::Get().GetPrimary()->commandPool, commandBuffer);
 		int x = 0;
 	}
 }

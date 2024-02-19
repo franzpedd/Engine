@@ -54,7 +54,7 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
-		std::string mRoot = "Data";
+		std::string mRoot = {};
 		bool mShowWindow = false;
 		std::string mSearchStr;
 		bool mUpdatedStr = false;

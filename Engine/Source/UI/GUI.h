@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Widget.h"
+#include "Renderer/Commander.h"
 #include "Util/Math.h"
 #include <vulkan/vulkan.h>
 
@@ -26,8 +27,6 @@ namespace Cosmos
 	class Renderer;
 	class Window;
 
-	struct CommandEntry;
-
 	class GUI
 	{
 	public:
@@ -50,9 +49,6 @@ namespace Cosmos
 
 		// destructor
 		~GUI();
-
-		// returns a reference to the renderer command entries
-		inline std::shared_ptr<CommandEntry>& CommandEntries() { return mCommandEntry; }
 
 		// returns the fonts
 		inline Fonts& GetFonts() { return mFonts; }
@@ -95,7 +91,6 @@ namespace Cosmos
 
 		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<Renderer>& mRenderer;
-		std::shared_ptr<CommandEntry> mCommandEntry;
 		WidgetStack mWidgetStack;
 
 		Fonts mFonts;

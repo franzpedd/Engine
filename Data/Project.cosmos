@@ -2,9 +2,9 @@
 Entities
 {
 
-	18211168786624019676
+	6931357504735576774
 	{
-		Id = 18211168786624019676
+		Id = 6931357504735576774
 		Name = Entity
 
 		Transform
@@ -12,9 +12,9 @@ Entities
 
 			Translation
 			{
-				X = -2.300000
+				X = 0.000000
 				Y = 0.000000
-				Z = -1.049848
+				Z = 0.000000
 			}
 
 
@@ -38,8 +38,8 @@ Entities
 
 		Model
 		{
-			Path = Data\Models\Room\Room.obj
-			Albedo = Data\Textures\Room\Room.png
+			Path = ../Data/Models/Room/Room.obj
+			Albedo = ../Data/Textures/Room/Room.png
 		}
 
 	}

@@ -48,9 +48,6 @@ namespace Cosmos
 		// destructor
 		virtual ~Viewport() = default;
 
-		// returns a reference to the command entry
-		inline std::shared_ptr<CommandEntry>& GetCommandEntry() { return mCommandEntry; }
-
 		// returns the current viewport size
 		inline ImVec2 GetSize() const { return mCurrentSize; }
 
@@ -92,8 +89,6 @@ namespace Cosmos
 		std::shared_ptr<Camera>& mCamera;
 		SceneHierarchy* mSceneHierarcy;
 		TextureBrowser* mTextureBrowser;
-
-		std::shared_ptr<CommandEntry> mCommandEntry;
 
 		ImVec2 mCurrentSize;
 		ImVec2 mContentRegionMin;

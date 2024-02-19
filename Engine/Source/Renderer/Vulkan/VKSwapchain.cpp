@@ -159,7 +159,7 @@ namespace Cosmos
 		renderPassCI.pSubpasses = &subpass;
 		renderPassCI.dependencyCount = 1;
 		renderPassCI.pDependencies = &dependency;
-		VK_ASSERT(vkCreateRenderPass(mDevice->GetDevice(), &renderPassCI, nullptr, &mDevice->GetMainCommandEntry()->renderPass), "Failed to create render pass");
+		VK_ASSERT(vkCreateRenderPass(mDevice->GetDevice(), &renderPassCI, nullptr, &Commander::Get().GetEntries()["Swapchain"]->renderPass), "Failed to create render pass");
 	}
 
 	void VKSwapchain::CreateSwapchain()
@@ -281,7 +281,7 @@ namespace Cosmos
 
 		// create frame buffers
 		{
-			mDevice->GetMainCommandEntry()->framebuffers.resize(mImageViews.size());
+			Commander::Get().GetEntries()["Swapchain"]->framebuffers.resize(mImageViews.size());
 
 			for (size_t i = 0; i < mImageViews.size(); i++)
 			{
@@ -289,13 +289,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = mDevice->GetMainCommandEntry()->renderPass;
+				framebufferCI.renderPass = Commander::Get().GetEntries()["Swapchain"]->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
 				framebufferCI.width = mExtent.width;
 				framebufferCI.height = mExtent.height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mDevice->GetDevice(), &framebufferCI, nullptr, &mDevice->GetMainCommandEntry()->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mDevice->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["Swapchain"]->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
@@ -310,9 +310,9 @@ namespace Cosmos
 		vkDestroyImage(mDevice->GetDevice(), mColorImage, nullptr);
 		vkFreeMemory(mDevice->GetDevice(), mColorMemory, nullptr);
 
-		for (uint32_t i = 0; i < mDevice->GetMainCommandEntry()->framebuffers.size(); i++)
+		for (uint32_t i = 0; i < Commander::Get().GetEntries()["Swapchain"]->framebuffers.size(); i++)
 		{
-			vkDestroyFramebuffer(mDevice->GetDevice(), mDevice->GetMainCommandEntry()->framebuffers[i], nullptr);
+			vkDestroyFramebuffer(mDevice->GetDevice(), Commander::Get().GetEntries()["Swapchain"]->framebuffers[i], nullptr);
 		}
 
 		for (auto imageView : mImageViews)

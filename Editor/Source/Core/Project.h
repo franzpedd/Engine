@@ -20,7 +20,7 @@ namespace Cosmos
 		inline std::string& GetName() { return mName; }
 
 		// returns a reference to the project's path
-		inline std::string& GetPath() { return mPath.string(); }
+		inline std::string& GetPath() { return mPath; }
 
 	public:
 
@@ -40,6 +40,6 @@ namespace Cosmos
 
 		Scene* mScene;
 		std::string mName = "Untitled";
-		std::filesystem::path mPath;
+		std::string mPath;
 	};
 }

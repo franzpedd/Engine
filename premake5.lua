@@ -12,6 +12,7 @@ vkpath = os.getenv("VULKAN_SDK")
 includelist = {}
 includelist["Engine"] = "%{wks.location}/Engine"
 includelist["Editor"] = "%{wks.location}/Editor"
+includelist["Game"] = "%{wks.location}/Game"
 includelist["Vulkan"] = "%{vkpath}/Include"
 includelist["GLFW"] = "%{wks.location}/Thirdparty/glfw/include"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
@@ -35,3 +36,4 @@ group ""
 
 include "Engine"
 include "Editor"
+include "Game"

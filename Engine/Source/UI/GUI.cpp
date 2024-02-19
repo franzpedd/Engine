@@ -4,9 +4,9 @@
 #include "Icons.h"
 #include "Spectrum.h"
 #include "Platform/Window.h"
-#include "Renderer/Commander.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
+#include "Util/FileSystem.h"
 
 // not using own implementation of GLFW + VULKAN for ImGUI
 #if defined(_MSC_VER)
@@ -35,8 +35,8 @@ namespace Cosmos
 	GUI::GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
 		: mWindow(window), mRenderer(renderer)
 	{
-		mCommandEntry = CommandEntry::Create(mRenderer->GetDevice()->GetDevice(), "UI");
-		Commander::Get().Add(mCommandEntry);
+		Commander::Get().Insert("ImGui");
+		Commander::Get().GetEntries()["ImGui"]->msaa = VK_SAMPLE_COUNT_1_BIT;
 
 		CreateResources();
 		SetupConfiguration();
@@ -48,7 +48,7 @@ namespace Cosmos
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 
-		mCommandEntry->Destroy();
+		Commander::Get().Erase("ImGui", mRenderer->GetDevice()->GetDevice());
 	}
 
 	void GUI::OnUpdate()
@@ -99,12 +99,12 @@ namespace Cosmos
 	{
 		// recreate framebuffer based on image views
 		{
-			for (auto framebuffer : mCommandEntry->framebuffers)
+			for (auto framebuffer : Commander::Get().GetEntries()["ImGui"]->framebuffers)
 			{
 				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
 
-			mCommandEntry->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
+			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
 
 			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
 			{
@@ -112,13 +112,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = mCommandEntry->renderPass;
+				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
 				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
 				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				LOG_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+				LOG_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
 			}
 		}
 
@@ -161,8 +161,8 @@ namespace Cosmos
 		io.Fonts->Clear();
 		LoadFont(18.0f);
 
-		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FA, 18.0f, &iconCFG, iconRanges1);
-		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_LC, 18.0f, &iconCFG, iconRanges2);
+		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/fontawesome-webfont.ttf").c_str(), 18.0f, &iconCFG, iconRanges1);
+		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/lucide.ttf").c_str(), 18.0f, &iconCFG, iconRanges2);
 		io.Fonts->Build();
 
 		io.IniFilename = "ui.ini";
@@ -194,7 +194,7 @@ namespace Cosmos
 		poolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
 		poolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolCI.pPoolSizes = poolSizes;
-		VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &poolCI, nullptr, &mCommandEntry->descriptorPool), "Failed to create descriptor pool for the User Interface");
+		VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &poolCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->descriptorPool), "Failed to create descriptor pool for the User Interface");
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
@@ -205,12 +205,12 @@ namespace Cosmos
 		initInfo.PhysicalDevice = mRenderer->GetDevice()->GetPhysicalDevice();
 		initInfo.Device = mRenderer->GetDevice()->GetDevice();
 		initInfo.Queue = mRenderer->GetDevice()->GetGraphicsQueue();
-		initInfo.DescriptorPool = mCommandEntry->descriptorPool;
+		initInfo.DescriptorPool = Commander::Get().GetEntries()["ImGui"]->descriptorPool;
 		initInfo.MinImageCount = mRenderer->GetSwapchain()->GetImageCount();
 		initInfo.ImageCount = mRenderer->GetSwapchain()->GetImageCount();
-		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		initInfo.MSAASamples = Commander::Get().GetEntries()["ImGui"]->msaa;
 		initInfo.Allocator = nullptr;
-		initInfo.RenderPass = mCommandEntry->renderPass;
+		initInfo.RenderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
 		ImGui_ImplVulkan_Init(&initInfo);
 
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
@@ -258,7 +258,7 @@ namespace Cosmos
 			info.pSubpasses = &subpass;
 			info.dependencyCount = 1;
 			info.pDependencies = &dependency;
-			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &info, nullptr, &mCommandEntry->renderPass), "Failed to create render pass");
+			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &info, nullptr, &Commander::Get().GetEntries()["ImGui"]->renderPass), "Failed to create render pass");
 		}
 
 		// command pool
@@ -269,24 +269,24 @@ namespace Cosmos
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &mCommandEntry->commandPool), "Failed to create command pool");
+			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["ImGui"]->commandPool), "Failed to create command pool");
 		}
 
 		// command buffers
 		{
-			mCommandEntry->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			Commander::Get().GetEntries()["ImGui"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 			VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 			cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			cmdBufferAllocInfo.commandPool = mCommandEntry->commandPool;
-			cmdBufferAllocInfo.commandBufferCount = (uint32_t)mCommandEntry->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, mCommandEntry->commandBuffers.data()), "Failed to allocate command buffers");
+			cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["ImGui"]->commandPool;
+			cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["ImGui"]->commandBuffers.size();
+			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["ImGui"]->commandBuffers.data()), "Failed to allocate command buffers");
 		}
 
 		// frame buffers
 		{
-			mCommandEntry->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
+			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
 
 			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
 			{
@@ -294,13 +294,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = mCommandEntry->renderPass;
+				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
 				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
 				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &mCommandEntry->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}

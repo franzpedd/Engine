@@ -6,6 +6,7 @@
 #include "Renderer/Texture.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
+#include "Util/FileSystem.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -17,7 +18,7 @@ namespace Cosmos
 	Model::Model(std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
-
+		mAlbedoPath = util::GetAssetSubDir("Textures/dev/colors/orange.png");
 	}
 
 	void Model::Draw(VkCommandBuffer commandBuffer)

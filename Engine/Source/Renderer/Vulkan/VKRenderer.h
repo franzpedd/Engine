@@ -61,13 +61,13 @@ namespace Cosmos
 		// returns the current image index
 		virtual uint32_t ImageIndex() override;
 
-		// returns a reference to the commander
-		virtual Commander& GetCommander() override;
-
 	public:
 
 		// setup initial resources (called after main renderpass has been created)
 		virtual void Intialize() override;
+
+		// called after the main loop is finished
+		virtual void OnTerminate() override;
 
 		// updates the renderer
 		virtual void OnUpdate() override;
@@ -94,7 +94,7 @@ namespace Cosmos
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;
 
-		Commander mCommander;
+		Commander* mCommander;
 		VkPipelineCache mPipelineCache;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;

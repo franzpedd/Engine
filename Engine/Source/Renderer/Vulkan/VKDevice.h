@@ -25,7 +25,7 @@ namespace Cosmos
 		VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance);
 
 		// destructor
-		~VKDevice();
+		virtual ~VKDevice();
 
 		// returns a reference to the vulkan surface
 		virtual VkSurfaceKHR& GetSurface() override;
@@ -54,9 +54,6 @@ namespace Cosmos
 		// returns the sampling in use
 		virtual VkSampleCountFlagBits GetMSAA() override;
 
-		// returns a reference to the renderer command entry
-		virtual std::shared_ptr<CommandEntry>& GetMainCommandEntry() override;
-
 	public:
 
 		// returns the queue indices for all available queues
@@ -68,13 +65,7 @@ namespace Cosmos
 		// returns the maximum MSAA sample the physical device handles
 		virtual VkSampleCountFlagBits GetMaxUsableSamples() override;
 
-	private:
-
-		// selects the most suitable physical device available
-		void SelectPhysicalDevice();
-
-		// creates a logical device out of the choosen physical device
-		void CreateLogicalDevice();
+	public:
 
 		// creates the command pool
 		void CreateCommandPool();
@@ -84,10 +75,16 @@ namespace Cosmos
 
 	private:
 
+		// selects the most suitable physical device available
+		void SelectPhysicalDevice();
+
+		// creates a logical device out of the choosen physical device
+		void CreateLogicalDevice();
+
+	private:
+
 		std::shared_ptr<VKInstance> mInstance;
 		std::shared_ptr<Window>& mWindow;
-
-		std::shared_ptr<CommandEntry> mCommandEntry;
 
 		VkSurfaceKHR mSurface;
 		VkDevice mDevice;

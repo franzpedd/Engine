@@ -88,7 +88,7 @@ namespace Cosmos
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 		std::vector<void*> mUniformBuffersMapped;
 
-		std::string mAlbedoPath = "Data/Textures/dev/colors/orange.png";
+		std::string mAlbedoPath;
 		std::shared_ptr<Texture2D> mAlbedoTexture;
 		bool mLoadedAlbedo = false;
 	};

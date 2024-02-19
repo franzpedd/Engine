@@ -36,12 +36,12 @@ namespace Cosmos
 		mUI->Widgets().Push(mViewport); // viewport over everything
 
 		// todos
+		LOG_TO_TERMINAL(Logger::Todo, "Fix Project loading");
+		LOG_TO_TERMINAL(Logger::Todo, "Project path is saved absolutely, witch will create an error when loading on another pc. Make them relative.");
 		LOG_TO_TERMINAL(Logger::Todo, "Fix Mainloop timestep and fps system");
 		LOG_TO_TERMINAL(Logger::Todo, "Rework Window hovering to consider inside docking window width and height (EDITOR)");
 		LOG_TO_TERMINAL(Logger::Todo, "Create Event Listener System for only calling those who are listening the events and not all Entities/widgets (ENGINE)");
 		LOG_TO_TERMINAL(Logger::Todo, "Fix new layout for existing windows");
-		LOG_TO_TERMINAL(Logger::Todo, "Move side menu to viewport overlay");
-		LOG_TO_TERMINAL(Logger::Todo, "TextureBrowser: Add default texture on disk for initialization");
 		LOG_TO_TERMINAL(Logger::Todo, "Move all devices requirements to device creation (VKTexture.cpp)");
 	}
 }

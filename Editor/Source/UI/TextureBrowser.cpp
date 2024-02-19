@@ -5,10 +5,7 @@ namespace Cosmos
 	TextureBrowser::TextureBrowser(std::shared_ptr<Renderer>& renderer)
 		: mRenderer(renderer)
 	{
-		std::filesystem::path texturePath = mRoot;
-		texturePath /= "Textures";
-
-		RefreshFilesExplorer(texturePath.string());
+		RefreshFilesExplorer(util::GetAssetSubDir("Textures"));
 	}
 
 	TextureBrowser::~TextureBrowser()
