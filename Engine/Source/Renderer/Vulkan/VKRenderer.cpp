@@ -204,6 +204,10 @@ namespace Cosmos
 				mWindow->HintResizeWindow(false);
 				mSwapchain->Recreate();
 
+				float aspect = mWindow->GetAspectRatio();
+
+				mScene->GetCamera()->SetAspectRatio(mWindow->GetAspectRatio());
+
 				mUI->SetImageCount(mSwapchain->GetImageCount());
 				mUI->OnWindowResize();
 			}

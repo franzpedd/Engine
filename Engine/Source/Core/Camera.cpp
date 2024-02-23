@@ -13,8 +13,6 @@ namespace Cosmos
 
 		// update initial position
 		UpdateViewMatrix();
-
-		LOG_TO_TERMINAL(Logger::Severity::Warn, "TODO: Make camera an entity");
 	}
 
 	glm::mat4& Camera::GetProjection()
@@ -58,9 +56,7 @@ namespace Cosmos
 
 	void Camera::OnMouseScroll(float y)
 	{
-		if (!mShouldMove) return;
-
-		Translate(glm::vec3(0.0f, 0.0f, y * 0.005f));
+		// doing nothing right now
 	}
 
 	void Camera::OnKeyboardPress(Keycode key)

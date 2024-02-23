@@ -153,8 +153,8 @@ namespace Cosmos
 
 	float Window::GetAspectRatio()
 	{
-		int width;
-		int height;
+		int width = 0;
+		int height = 0;
 		GetFramebufferSize(&width, &height);
 
 		if (height == 0) // avoid division by 0
@@ -162,7 +162,7 @@ namespace Cosmos
 			return 1.0f;
 		}
 
-		return (float)(width / height);
+		return (float)width / (float)height;
 	}
 
 	void Window::WaitEvents()

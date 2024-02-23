@@ -1,7 +1,6 @@
 #include "epch.h"
 #include "Scene.h"
 
-#include "Camera.h"
 #include "Entity/Entity.h"
 #include "Renderer/Renderer.h"
 #include "Platform/Window.h"

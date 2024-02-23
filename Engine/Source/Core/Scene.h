@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity/Entt.h"
+#include "Camera.h"
 #include "Platform/Keycodes.h"
 #include "Util/UUID.h"
 #include "Util/DataFile.h"
@@ -12,7 +13,6 @@ namespace Cosmos
 	class Entity;
 	class Window;
 	class Renderer;
-	class Camera;
 	class GUI;
 
 	class Scene
