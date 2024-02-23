@@ -1,6 +1,7 @@
 #include "epch.h"
 #include "VKRenderer.h"
 
+#include "VKInitializers.h"
 #include "VKShader.h"
 #include "Entity/Renderable/Vertex.h"
 
@@ -113,7 +114,10 @@ namespace Cosmos
 
 	void VKRenderer::Intialize()
 	{
-		CreatePipelines();
+		mModelGlobalResource.Initialize(mDevice, mPipelineCache);
+		mPipelines["Model"] = mModelGlobalResource.pipeline;
+		mDescriptorSetLayouts["Model"] = mModelGlobalResource.descriptorSetLayout;
+		mPipelineLayouts["Model"] = mModelGlobalResource.pipelineLayout;
 	}
 
 	void VKRenderer::OnTerminate()
@@ -267,7 +271,11 @@ namespace Cosmos
 			scissor.extent = mSwapchain->GetExtent();
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-			// render scene
+			// render scene, only if not on viewport
+			if (!mCommander->Exists("Viewport"))
+			{
+				mScene->OnRenderDraw();
+			}
 
 			vkCmdEndRenderPass(cmdBuffer);
 
@@ -396,17 +404,85 @@ namespace Cosmos
 		}
 	}
 
+	/*
 	void VKRenderer::CreatePipelines()
 	{
-		// model pipeline
+		// terrain pipeline
+		/*
 		{
-			const std::string id = "Model";
-			std::shared_ptr<VKShader> vShader = VKShader::Create(mDevice, VKShader::Vertex, "Model.vert", util::GetAssetSubDir("Shaders/model.vert"));
-			std::shared_ptr<VKShader> fShader = VKShader::Create(mDevice, VKShader::Fragment, "Model.frag", util::GetAssetSubDir("Shaders/model.frag"));
+			const std::string id = "Terrain";
+
+			// descriptor sets
+			// descriptor layout
+			std::array<VkDescriptorSetLayoutBinding, 2> bindings = {};
+			// tesselation
+			bindings[0].binding = 0;
+			bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			bindings[0].stageFlags = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+			bindings[0].descriptorCount = 1;
+			bindings[0].pImmutableSamplers = nullptr;
+			// height map
+			bindings[1].binding = 1;
+			bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			bindings[1].stageFlags = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			bindings[1].descriptorCount = 1;
+			bindings[1].pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayoutCreateInfo descSetLayoutCI = {};
+			descSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descSetLayoutCI.pNext = nullptr;
+			descSetLayoutCI.flags = 0;
+			descSetLayoutCI.pBindings = bindings.data();
+			descSetLayoutCI.bindingCount = (uint32_t)bindings.size();
+			VK_ASSERT(vkCreateDescriptorSetLayout(mDevice->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayouts[id]), "Failed to create descriptor set layout");
+
+
+
+			// shaders
+			std::shared_ptr<VKShader> vShader = VKShader::Create(mDevice, VKShader::Vertex, "Terrain.vert", util::GetAssetSubDir("Shaders/terrain.vert"));
+			std::shared_ptr<VKShader> fShader = VKShader::Create(mDevice, VKShader::Fragment, "Terrain.frag", util::GetAssetSubDir("Shaders/terrain.frag"));
+			std::shared_ptr<VKShader> tcShader = VKShader::Create(mDevice, VKShader::TessControl, "Terrain.tesc", util::GetAssetSubDir("Shaders/terrain.tesc"));
+			std::shared_ptr<VKShader> teShader = VKShader::Create(mDevice, VKShader::TessEvaluation, "Terrain.tese", util::GetAssetSubDir("Shaders/terrain.tese"));
 
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->Stage(), fShader->Stage() };
+			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->Stage(), fShader->Stage(), tcShader->Stage(), teShader->Stage() };
+			const std::vector<VkVertexInputAttributeDescription> attributeDesc = Vertex::GetAttributeDescriptions();
+			const std::vector<VkVertexInputBindingDescription> bindingDesc = Vertex::GetBindingDescription();
+			
+			VkPipelineVertexInputStateCreateInfo VISCI = vulkan::PipelineVertexInputStateCreateInfo(bindingDesc, attributeDesc);
+			VkPipelineInputAssemblyStateCreateInfo IASCI = vulkan::PipelineInputStateCrateInfo(VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, 0, VK_FALSE);
+			VkPipelineTessellationStateCreateInfo TSCI = vulkan::PipelineTesselationStateCreateInfo(4);
+			VkPipelineViewportStateCreateInfo VSCI = vulkan::PipelineViewportStateCreateInfo(1, 1);
+			VkPipelineRasterizationStateCreateInfo RSCI = vulkan::PipelineRasterizationCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(Commander::Get().GetPrimary()->msaa);
+			VkPipelineDepthStencilStateCreateInfo DSSCI = vulkan::PipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+			VkPipelineColorBlendAttachmentState CBAS = vulkan::PipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
+			VkPipelineColorBlendStateCreateInfo CBSCI = vulkan::PipelineColorBlendStateCreateInfo(1, &CBAS);
+			VkPipelineDynamicStateCreateInfo DSCI = vulkan::PipelineDynamicStateCreateInfo(dynamicStates);
 
+			VkGraphicsPipelineCreateInfo pipelineCI = {};
+			pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineCI.pNext = nullptr;
+			pipelineCI.flags = 0;
+			pipelineCI.stageCount = (uint32_t)shaderStages.size();
+			pipelineCI.pStages = shaderStages.data();
+			pipelineCI.pVertexInputState = &VISCI;
+			pipelineCI.pInputAssemblyState = &IASCI;
+			pipelineCI.pTessellationState = &TSCI;
+			pipelineCI.pViewportState = &VSCI;
+			pipelineCI.pRasterizationState = &RSCI;
+			pipelineCI.pMultisampleState = &MSCI;
+			pipelineCI.pDepthStencilState = &DSSCI;
+			pipelineCI.pColorBlendState = &CBSCI;
+			pipelineCI.pDynamicState = &DSCI;
+			pipelineCI.layout = mPipelineLayouts[id];
+			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
+			pipelineCI.subpass = 0;
+			pipelineCI.basePipelineIndex = -1;
+			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
+
+
+			/*
 			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 			uboLayoutBinding.binding = 0;
 			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -542,6 +618,8 @@ namespace Cosmos
 			// destroy the shader module after usage
 			vkDestroyShaderModule(mDevice->GetDevice(), vShader->Module(), nullptr);
 			vkDestroyShaderModule(mDevice->GetDevice(), fShader->Module(), nullptr);
+			
 		}
 	}
+	*/
 }

@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	// model view projection matrix for any objects
+	// camera buffer
 	struct UniformBufferObject
 	{
 		alignas(16) glm::mat4 model;

@@ -11,6 +11,7 @@ struct aiScene;
 namespace Cosmos
 {
 	// forward declarations
+	class Device;
 	class Camera;
 	class Renderer;
 	class Texture2D;
@@ -82,7 +83,7 @@ namespace Cosmos
 		std::vector<Mesh> mMeshes;
 		
 		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
-		std::vector<VkDescriptorSet> mDescriptorSets;
+		std::vector<VkDescriptorSet> mDescriptorSets = {};
 		
 		std::vector<VkBuffer> mUniformBuffers;
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;

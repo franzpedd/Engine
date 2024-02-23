@@ -9,12 +9,16 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Game();
+		Game(std::string path);
 
 		// destructor
 		virtual ~Game() = default;
 
+		// testing
+		void PostInitialize();
+
 	private:
     
+		std::string mPath;
 	};
 }

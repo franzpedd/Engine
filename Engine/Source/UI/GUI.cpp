@@ -153,16 +153,19 @@ namespace Cosmos
 
 		static const ImWchar iconRanges1[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 		static const ImWchar iconRanges2[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
+		constexpr float iconSize = 13.0f;
+		constexpr float fontSize = 18.0f;
 
 		ImFontConfig iconCFG;
 		iconCFG.MergeMode = true;
-		iconCFG.GlyphMinAdvanceX = 18.0f;
+		iconCFG.GlyphMinAdvanceX = iconSize;
+		iconCFG.PixelSnapH = true;
 
 		io.Fonts->Clear();
-		LoadFont(18.0f);
+		LoadFont(fontSize);
 
-		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/fontawesome-webfont.ttf").c_str(), 18.0f, &iconCFG, iconRanges1);
-		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/lucide.ttf").c_str(), 18.0f, &iconCFG, iconRanges2);
+		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/fontawesome-webfont.ttf").c_str(), iconSize, &iconCFG, iconRanges1);
+		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/lucide.ttf").c_str(), iconSize, &iconCFG, iconRanges2);
 		io.Fonts->Build();
 
 		io.IniFilename = "ui.ini";

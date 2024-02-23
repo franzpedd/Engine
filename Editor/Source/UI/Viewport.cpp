@@ -159,9 +159,6 @@ namespace Cosmos
 			mContentRegionMax.x += ImGui::GetWindowPos().x;
 			mContentRegionMax.y += ImGui::GetWindowPos().y;
 
-			// side menu
-			//DisplaySideMenu();
-
 			// draw gizmos on selected entity
 			DrawGizmos();
 		}
@@ -337,26 +334,6 @@ namespace Cosmos
 		
 		ImGui::EndGroup();
 		ImGui::PopID();
-	}
-
-	void Viewport::DisplaySideMenu()
-	{
-		ImGui::SetCursorPos(ImVec2(15.0f, 40.0f));
-
-		if (ImGui::BeginChild("##Sidebar"))
-		{
-			if (ImGui::Button(ICON_FA_MOUSE_POINTER "", ImVec2(25.0f, 25.0f)))
-			{
-				mTextureBrowser->ToogleOnOff(false);
-			}
-
-			if (ImGui::Button(ICON_FA_PAINT_BRUSH "", ImVec2(25.0f, 25.0f)))
-			{
-				mTextureBrowser->ToogleOnOff(true);
-			}
-		}
-
-		ImGui::EndChild();
 	}
 
 	void Viewport::DrawGizmos()

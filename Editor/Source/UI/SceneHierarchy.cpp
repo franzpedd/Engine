@@ -48,7 +48,7 @@ namespace Cosmos
 				
 				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
 				{
-					mScene->CreateEntity();
+					Entity* ent = mScene->CreateEntity();
 				}
 			}
 			ImGui::EndGroup();

@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Core/Scene.h"
+#include "Entity/Entity.h"
+
 #include <memory>
 #include <string>
 
 namespace Cosmos
 {
-	// forward declarations
-	class Entity;
-
 	class NativeScript
 	{
 	public:

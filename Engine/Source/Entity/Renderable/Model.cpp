@@ -3,7 +3,9 @@
 
 #include "Core/Camera.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Device.h"
 #include "Renderer/Texture.h"
+#include "Renderer/Vulkan/VKInitializers.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 #include "Util/FileSystem.h"
@@ -203,15 +205,15 @@ namespace Cosmos
 		{
 			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSizes[0].descriptorCount = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
+			poolSizes[0].descriptorCount = 2;
 			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[1].descriptorCount = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
+			poolSizes[1].descriptorCount = 2;
 
 			VkDescriptorPoolCreateInfo descPoolCI = {};
 			descPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			descPoolCI.poolSizeCount = (uint32_t)poolSizes.size();
 			descPoolCI.pPoolSizes = poolSizes.data();
-			descPoolCI.maxSets = (uint32_t)RENDERER_MAX_FRAMES_IN_FLIGHT;
+			descPoolCI.maxSets = 2;
 			VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
 			std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mRenderer->GetDescriptorSetLayout("Model"));

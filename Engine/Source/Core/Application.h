@@ -34,6 +34,9 @@ namespace Cosmos
 
 	public:
 
+		// called after the constructor
+		void Initialize();
+
 		// initializes main loop
 		void Run();
 

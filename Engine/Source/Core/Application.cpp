@@ -7,6 +7,8 @@
 #include "UI/GUI.h"
 #include "Util/FileSystem.h"
 
+#include "Entity/Entity.h"
+
 namespace Cosmos
 {
 	Application* Application::sApplication = nullptr;
@@ -30,49 +32,45 @@ namespace Cosmos
 		mScene->ConnectUI(mUI);
 	}
 
+	void Application::Initialize()
+	{
+		mRenderer->Intialize();
+	}
+
 	void Application::Run()
 	{
 		PROFILER_FUNCTION();
-
-		mRenderer->Intialize();
 
 		while (!mWindow->ShouldQuit())
 		{
 			PROFILER_SCOPE("Run-Loop");
 
 			// starts fps system
-			{
-				mStart = std::chrono::high_resolution_clock::now(); // starts timer
-			}
+			mStart = std::chrono::high_resolution_clock::now(); // starts timer
 			
 			// updates current tick
-			{
-				PROFILER_SCOPE("Run-Loop Update");
-				mScene->OnUpdate(mTimeStep);		// updates scene
-				mUI->OnUpdate();					// updates ui
-				mRenderer->OnUpdate();				// updates renderer
-				mWindow->OnUpdate();				// updates window
-			}
+			mScene->OnUpdate(mTimeStep);		// updates scene
+			mUI->OnUpdate();					// updates ui
+			mRenderer->OnUpdate();				// updates renderer
+			mWindow->OnUpdate();				// updates window
 			
 			// end fps system
+			mEnd = std::chrono::high_resolution_clock::now();	// ends timer
+			mFrames++;											// add frame to the count
+			
+			// calculates time taken by the renderer updating
+			mTimeDifference = std::chrono::duration<double, std::milli>(mEnd - mStart).count(); 
+			
+			mTimeStep = (float)mTimeDifference / 1000.0f; // timestep
+			
+			// calculates time taken by last timestamp and renderer finished
+			mFpsTimer += (float)mTimeDifference;
+			
+			if (mFpsTimer > 1000.0f) // greater than next frame, reset frame counting
 			{
-				mEnd = std::chrono::high_resolution_clock::now();	// ends timer
-				mFrames++;											// add frame to the count
-			
-				// calculates time taken by the renderer updating
-				mTimeDifference = std::chrono::duration<double, std::milli>(mEnd - mStart).count(); 
-			
-				mTimeStep = (float)mTimeDifference / 1000.0f; // timestep
-			
-				// calculates time taken by last timestamp and renderer finished
-				mFpsTimer += (float)mTimeDifference;
-			
-				if (mFpsTimer > 1000.0f) // greater than next frame, reset frame counting
-				{
-					mLastFPS = (uint32_t)((float)mFrames * (1000.0f / mFpsTimer));
-					mFrames = 0;
-					mFpsTimer = 0.0f;
-				}
+				mLastFPS = (uint32_t)((float)mFrames * (1000.0f / mFpsTimer));
+				mFrames = 0;
+				mFpsTimer = 0.0f;
 			}
 		}
 

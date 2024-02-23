@@ -60,120 +60,46 @@ namespace Cosmos
 
 	void Grid::CreateResources()
 	{
-		// create graphics pipeline related (shaders, descriptor set layout, pipeline layout, graphics pipeline)
+		// descriptor set and layout bindings
 		{
-			mVertexShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Vertex, "Grid.vert", util::GetAssetSubDir("Shaders/grid.vert"));
-			mFragmentShader = VKShader::Create(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), VKShader::Fragment, "Grid.frag", util::GetAssetSubDir("Shaders/grid.frag"));
+			std::vector<VkDescriptorSetLayoutBinding> bindings =
+			{
+				vulkan::DescriptorSetLayoutBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			};
 
-			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { mVertexShader->Stage(), mFragmentShader->Stage() };
-
-			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-			uboLayoutBinding.binding = 0;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-			uboLayoutBinding.pImmutableSamplers = nullptr;
-
-			VkDescriptorSetLayoutCreateInfo descSetLayoutCI = {};
-			descSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descSetLayoutCI.pNext = nullptr;
-			descSetLayoutCI.flags = 0;
-			descSetLayoutCI.bindingCount = 1;
-			descSetLayoutCI.pBindings = &uboLayoutBinding;
-			VK_ASSERT(vkCreateDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
-
-			VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
-			pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			pipelineLayoutCI.pNext = nullptr;
-			pipelineLayoutCI.flags = 0;
-			pipelineLayoutCI.setLayoutCount = 1;
-			pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayout;
+			VkDescriptorSetLayoutCreateInfo descriptorSetCI = vulkan::DescriptorSetLayoutCreateInfo(bindings);
+			VK_ASSERT(vkCreateDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), &descriptorSetCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
+			
+			VkPipelineLayoutCreateInfo pipelineLayoutCI = vulkan::PipelineLayouCreateInfo(&mDescriptorSetLayout);
 			VK_ASSERT(vkCreatePipelineLayout(mRenderer->GetDevice()->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create descriptor set layout");
+		}
 
-			VkPipelineVertexInputStateCreateInfo VISCI = {};
-			VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			VISCI.pNext = nullptr;
-			VISCI.flags = 0;
-			VISCI.vertexAttributeDescriptionCount = 0;
-			VISCI.pVertexAttributeDescriptions = nullptr;
-			VISCI.vertexBindingDescriptionCount = 0;
-			VISCI.pVertexBindingDescriptions = nullptr;
+		// create pipeline
+		{
+			// shaders
+			std::shared_ptr<Shader> vShader = Shader::Create(mRenderer->GetDevice(), Shader::Vertex, "Grid.vert", util::GetAssetSubDir("Shaders/grid.vert"));
+			std::shared_ptr<Shader> fShader = Shader::Create(mRenderer->GetDevice(), Shader::Fragment, "Grid.frag", util::GetAssetSubDir("Shaders/grid.frag"));
 
-			VkPipelineInputAssemblyStateCreateInfo IASCI = {};
-			IASCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-			IASCI.pNext = nullptr;
-			IASCI.flags = 0;
-			IASCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-			IASCI.primitiveRestartEnable = VK_FALSE;
-
-			VkPipelineViewportStateCreateInfo VSCI = {};
-			VSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-			VSCI.pNext = nullptr;
-			VSCI.flags = 0;
-			VSCI.viewportCount = 1;
-			VSCI.scissorCount = 1;
-
-			VkPipelineRasterizationStateCreateInfo RSCI = {};
-			RSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-			RSCI.pNext = nullptr;
-			RSCI.flags = 0;
-			RSCI.depthClampEnable = VK_FALSE;
-			RSCI.rasterizerDiscardEnable = VK_FALSE;
-			RSCI.polygonMode = VK_POLYGON_MODE_FILL;
-			RSCI.lineWidth = 1.0f;
-			RSCI.cullMode = VK_CULL_MODE_NONE;
-			RSCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-			RSCI.depthBiasEnable = VK_FALSE;
-
-			VkPipelineMultisampleStateCreateInfo MSCI = {};
-			MSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-			MSCI.pNext = nullptr;
-			MSCI.flags = 0;
-			MSCI.sampleShadingEnable = VK_FALSE;
-			MSCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-			VkPipelineDepthStencilStateCreateInfo DSSCI = {};
-			DSSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			DSSCI.depthTestEnable = VK_TRUE;
-			DSSCI.depthWriteEnable = VK_TRUE;
-			DSSCI.depthCompareOp = VK_COMPARE_OP_LESS;
-			DSSCI.depthBoundsTestEnable = VK_FALSE;
-			DSSCI.stencilTestEnable = VK_FALSE;
-
-			VkPipelineColorBlendAttachmentState CBAS = {};
-			CBAS.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			CBAS.blendEnable = VK_FALSE;
-			CBAS.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			CBAS.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			CBAS.colorBlendOp = VK_BLEND_OP_ADD;
-			CBAS.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			CBAS.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;	
-			CBAS.alphaBlendOp = VK_BLEND_OP_ADD;
-
-			VkPipelineColorBlendStateCreateInfo CBSCI = {};
-			CBSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			CBSCI.pNext = nullptr;
-			CBSCI.flags = 0;
-			CBSCI.logicOpEnable = VK_FALSE;
-			CBSCI.logicOp = VK_LOGIC_OP_COPY;
-			CBSCI.attachmentCount = 1;
-			CBSCI.pAttachments = &CBAS;
-			CBSCI.blendConstants[0] = 0.0f;
-			CBSCI.blendConstants[1] = 0.0f;
-			CBSCI.blendConstants[2] = 0.0f;
-			CBSCI.blendConstants[3] = 0.0f;
-
-			VkPipelineDynamicStateCreateInfo DSCI = {};
-			DSCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-			DSCI.pNext = nullptr;
-			DSCI.flags = 0;
-			DSCI.dynamicStateCount = (uint32_t)dynamicStates.size();
-			DSCI.pDynamicStates = dynamicStates.data();
+			// constants
+			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->GetStage(), fShader->GetStage() };
+			const std::vector<VkVertexInputBindingDescription> bindings = {}; // emtpy
+			const std::vector<VkVertexInputAttributeDescription> attributes = {}; // emtpy
+			
+			// pipeline objects
+			VkPipelineVertexInputStateCreateInfo VISCI = vulkan::PipelineVertexInputStateCreateInfo(bindings, attributes);
+			VkPipelineInputAssemblyStateCreateInfo IASCI = vulkan::PipelineInputAssemblyStateCrateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
+			VkPipelineViewportStateCreateInfo VSCI = vulkan::PipelineViewportStateCreateInfo(1, 1);
+			VkPipelineRasterizationStateCreateInfo RSCI = vulkan::PipelineRasterizationCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(Commander::Get().GetPrimary()->msaa);
+			VkPipelineDepthStencilStateCreateInfo DSSCI = vulkan::PipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
+			VkPipelineColorBlendAttachmentState CBAS = vulkan::PipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
+			VkPipelineColorBlendStateCreateInfo CBSCI = vulkan::PipelineColorBlendStateCreateInfo(1, &CBAS);
+			VkPipelineDynamicStateCreateInfo DSCI = vulkan::PipelineDynamicStateCreateInfo(dynamicStates);
 
 			VkGraphicsPipelineCreateInfo pipelineCI = {};
 			pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			pipelineCI.stageCount = 2;
+			pipelineCI.stageCount = (uint32_t)shaderStages.size();
 			pipelineCI.pStages = shaderStages.data();
 			pipelineCI.pVertexInputState = &VISCI;
 			pipelineCI.pInputAssemblyState = &IASCI;
@@ -186,8 +112,11 @@ namespace Cosmos
 			pipelineCI.layout = mPipelineLayout;
 			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
 			pipelineCI.subpass = 0;
-			pipelineCI.basePipelineHandle = VK_NULL_HANDLE;
 			VK_ASSERT(vkCreateGraphicsPipelines(mRenderer->GetDevice()->GetDevice(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
+
+			// free resources
+			vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), vShader->GetModule(), nullptr);
+			vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), fShader->GetModule(), nullptr);
 		}
 
 		// matrix ubo
@@ -255,9 +184,5 @@ namespace Cosmos
 				vkUpdateDescriptorSets(mRenderer->GetDevice()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 			}
 		}
-
-		// destroy the shader module after usage
-		vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), mVertexShader->Module(), nullptr);
-		vkDestroyShaderModule(mRenderer->GetDevice()->GetDevice(), mFragmentShader->Module(), nullptr);
 	}
 }

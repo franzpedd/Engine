@@ -5,6 +5,7 @@
 #include "Renderer/Renderer.h"
 #include "Entity/Entity.h"
 
+#include "GlobalResources.h"
 #include "VKBuffer.h"
 #include "VKInstance.h"
 #include "VKDevice.h"
@@ -83,9 +84,6 @@ namespace Cosmos
 		// creates global structures shared across the renderer
 		virtual void CreateGlobalStates() override;
 
-		// creates custom pipelines
-		void CreatePipelines();
-
 	private:
 
 		std::shared_ptr<Window>& mWindow;
@@ -109,5 +107,8 @@ namespace Cosmos
 		std::unordered_map<std::string, VkPipeline> mPipelines = {};
 		std::unordered_map<std::string, VkDescriptorSetLayout> mDescriptorSetLayouts = {};
 		std::unordered_map<std::string, VkPipelineLayout> mPipelineLayouts = {};
+
+		// model global resource
+		ModelGlobalResource mModelGlobalResource;
 	};
 }

@@ -46,7 +46,7 @@ namespace Cosmos
 	public:
 
 		// creates a new entt entity
-		void CreateEntity(const char* name = "Entity");
+		Entity* CreateEntity(const char* name = "Entity");
 
 		// deleste an entity and free it's resources
 		void DestroyEntity(Entity* entity);

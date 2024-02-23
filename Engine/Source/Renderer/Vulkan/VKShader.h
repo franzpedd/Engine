@@ -1,64 +1,48 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <memory>
-#include <string>
+#include "Renderer/Shader.h"
 #include <vector>
 
 namespace Cosmos
 {
-	// forward declarations
+	// forward declaration
 	class VKDevice;
 
-	class VKShader
+	class VKShader : public Shader
 	{
 	public:
 
-		enum ShaderType // using shaderc values but only including it on cpp file
-		{
-			Vertex = 0,
-			Fragment = 1,
-			Compute = 2,
-			Geometry = 3,
-			TessControl = 4,
-			TessEvaluation = 5,
-		};
-
-	public:
-
 		// returns a smart pointer to a new vulkan shader
-		static std::shared_ptr<VKShader> Create(std::shared_ptr<VKDevice>& device, ShaderType type, std::string name, std::string path);
+		static std::shared_ptr<VKShader> Create(std::shared_ptr<VKDevice> device, Shader::Type type, std::string name, std::string path);
 
 		// constructor
-		VKShader(std::shared_ptr<VKDevice>& device, ShaderType type, std::string name, std::string path);
+		VKShader(std::shared_ptr<VKDevice> device, Shader::Type type, std::string name, std::string path);
 
 		// destructor
-		~VKShader() = default;
+		virtual ~VKShader() = default;
 
 		// returns the shader type
-		inline ShaderType& Type() { return mType; }
+		virtual Shader::Type& GetType() override;
 
 		// returns the shader name
-		inline std::string& Name() { return mName; }
+		virtual std::string& GetName() override;
 
 		// returns the shader path
-		inline std::string& Path() { return mPath; }
+		virtual std::string& GetPath() override;
 
 		// returns the shader module
-		inline VkShaderModule& Module() { return mShaderModule; }
+		virtual VkShaderModule& GetModule() override;
 
 		// returns the shader stage info
-		inline VkPipelineShaderStageCreateInfo& Stage() { return mShaderStageCI; }
+		virtual VkPipelineShaderStageCreateInfo& GetStage() override;
 
-	public:
+	private:
 
 		// reads and returns shader's binary
 		std::vector<char> ReadSPIRV();
 
-	private:
-
 		// compiles and returns a source shader
-		std::vector<uint32_t> Compile(const char* source, ShaderType type, bool optimize = false);
+		std::vector<uint32_t> Compile(const char* source, Shader::Type type, bool optimize = false);
 
 		// creates the shader's module of the spir-v binary
 		void CreateShaderModule(const std::vector<char>& binary);
@@ -68,8 +52,8 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<VKDevice>& mDevice;
-		ShaderType mType;
+		std::shared_ptr<VKDevice> mDevice;
+		Shader::Type mType;
 		std::string mName;
 		std::string mPath;
 		VkShaderModule mShaderModule = VK_NULL_HANDLE;

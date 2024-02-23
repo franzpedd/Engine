@@ -76,9 +76,6 @@ namespace Cosmos
 		// draws the viewport menubar
 		void DrawMenubar();
 
-		// displays a side menu only on viewport view
-		void DisplaySideMenu();
-
 		// draws the gizmos on selected entity
 		void DrawGizmos();
 

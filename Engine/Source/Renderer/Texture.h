@@ -13,7 +13,7 @@ namespace Cosmos
 	{
 	public:
 
-		typedef enum class MSAA
+		typedef enum MSAA
 		{
 			SAMPLE_1_BIT = 0x00000001,
 			SAMPLE_2_BIT = 0x00000002,

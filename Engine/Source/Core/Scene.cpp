@@ -24,7 +24,7 @@ namespace Cosmos
 		mGUI = gui;
 	}
 
-	void Scene::CreateEntity(const char* name)
+	Entity* Scene::CreateEntity(const char* name)
 	{
 		UUID id = UUID();
 		entt::entity entt = mRegistry.create();
@@ -34,6 +34,7 @@ namespace Cosmos
 		entity.AddComponent<NameComponent>(name);
 		
 		mEntityMap[id] = entity;
+		return &mEntityMap[id];
 	}
 
 	void Scene::DestroyEntity(Entity* entity)

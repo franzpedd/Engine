@@ -15,12 +15,12 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKShader> VKShader::Create(std::shared_ptr<VKDevice>& device, ShaderType type, std::string name, std::string path)
+	std::shared_ptr<VKShader> VKShader::Create(std::shared_ptr<VKDevice> device, Type type, std::string name, std::string path)
 	{
 		return std::make_shared<VKShader>(device, type, name, path);
 	}
 
-	VKShader::VKShader(std::shared_ptr<VKDevice>& device, ShaderType type, std::string name, std::string path)
+	VKShader::VKShader(std::shared_ptr<VKDevice> device, Type type, std::string name, std::string path)
 		: mDevice(device), mType(type), mName(name), mPath(path)
 	{
 		Logger() << "Creating VKShader";
@@ -46,6 +46,32 @@ namespace Cosmos
 		CreateShaderStage();
 	}
 
+
+	Shader::Type& VKShader::GetType()
+	{
+		return mType;
+	}
+
+	std::string& VKShader::GetName()
+	{
+		return mName;
+	}
+
+	std::string& VKShader::GetPath()
+	{
+		return mPath;
+	}
+
+	VkShaderModule& VKShader::GetModule()
+	{
+		return mShaderModule;
+	}
+
+	VkPipelineShaderStageCreateInfo& VKShader::GetStage()
+	{
+		return mShaderStageCI;
+	}
+
 	std::vector<char> VKShader::ReadSPIRV()
 	{
 		std::string name = mPath;
@@ -63,7 +89,7 @@ namespace Cosmos
 		return buffer;
 	}
 
-	std::vector<uint32_t> VKShader::Compile(const char* source, ShaderType type, bool optimize)
+	std::vector<uint32_t> VKShader::Compile(const char* source, Shader::Type type, bool optimize)
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
@@ -107,37 +133,37 @@ namespace Cosmos
 
 		switch (mType)
 		{
-			case ShaderType::Vertex:
+			case Shader::Type::Vertex:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_VERTEX_BIT;
 				break;
 			}
 
-			case ShaderType::Fragment:
+			case Shader::Type::Fragment:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 				break;
 			}
 
-			case ShaderType::Compute:
+			case Shader::Type::Compute:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 				break;
 			}
 
-			case ShaderType::Geometry:
+			case Shader::Type::Geometry:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
 				break;
 			}
 
-			case ShaderType::TessControl:
+			case Shader::Type::TessControl:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 				break;
 			}
 
-			case ShaderType::TessEvaluation:
+			case Shader::Type::TessEvaluation:
 			{
 				mShaderStageCI.stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 				break;

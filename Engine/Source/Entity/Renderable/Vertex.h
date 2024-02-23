@@ -12,9 +12,9 @@ namespace Cosmos
         glm::vec3 color;
         glm::vec2 uv0;
 
-        static std::array<VkVertexInputBindingDescription, 1> GetBindingDescription()
+        static std::vector<VkVertexInputBindingDescription> GetBindingDescription()
         {
-            std::array<VkVertexInputBindingDescription, 1> bindingDescription = {};
+            std::vector<VkVertexInputBindingDescription> bindingDescription(1);
             bindingDescription[0].binding = 0;
             bindingDescription[0].stride = sizeof(Vertex);
             bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -22,9 +22,9 @@ namespace Cosmos
             return bindingDescription;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions()
+        static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
         {
-            std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
+            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
 
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
