@@ -16,7 +16,7 @@ namespace Cosmos
 		Commander::Get().Insert("Viewport");
 		Commander::Get().MakePrimary("Viewport"); // set viewport renderpass to main renderpass
 		Commander::Get().GetEntries()["Viewport"]->msaa = VK_SAMPLE_COUNT_1_BIT;
-
+		
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Rework Commander class and main RenderPass usage");
 
 		mSurfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -137,6 +137,29 @@ namespace Cosmos
 		}
 
 		CreateResources();
+
+		// must recreate global states to new primary commander specification
+		mRenderer->CreateGlobalStates(); 
+	}
+
+	Viewport::~Viewport()
+	{
+		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+		
+		vkDestroySampler(mRenderer->GetDevice()->GetDevice(), mSampler, nullptr);
+		
+		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
+		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
+		
+		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
+		{
+			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
+		}
+		
+		Commander::Get().Erase("Viewport", mRenderer->GetDevice()->GetDevice());
 	}
 
 	void Viewport::OnUpdate()
@@ -185,26 +208,6 @@ namespace Cosmos
 		}
 
 		CreateResources();
-	}
-
-	void Viewport::OnDestroy()
-	{
-		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
-		
-		vkDestroySampler(mRenderer->GetDevice()->GetDevice(), mSampler, nullptr);
-		
-		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
-		
-		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
-		{
-			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
-		}
-		
-		Commander::Get().Erase("Viewport", mRenderer->GetDevice()->GetDevice());
 	}
 
 	void Viewport::CreateResources()

@@ -50,9 +50,6 @@ namespace Cosmos
 		// updates the ui element
 		virtual void OnUpdate() override;
 
-		// called for freeing resources
-		virtual void OnDestroy() override;
-
 	private:
 
 		// reads the current directory and returns it's contents

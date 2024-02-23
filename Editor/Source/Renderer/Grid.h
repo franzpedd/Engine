@@ -16,7 +16,7 @@ namespace Cosmos
 		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene);
 
 		// destructor
-		virtual ~Grid() = default;
+		virtual ~Grid();
 
 	public:
 
@@ -25,9 +25,6 @@ namespace Cosmos
 
 		// updates the entity (leave empty if doesnt required)
 		virtual void OnUpdate() override;
-
-		// called before destructor, for freeing resources
-		virtual void OnDestroy() override;
 
 	public:
 

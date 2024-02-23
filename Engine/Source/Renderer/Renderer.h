@@ -60,9 +60,6 @@ namespace Cosmos
 
 	public:
 
-		// setup initial resources (called after main renderpass has been created)
-		virtual void Intialize() = 0;
-
 		// called after the main loop is finished
 		virtual void OnTerminate() = 0;
 
@@ -72,12 +69,7 @@ namespace Cosmos
 		// links the user interface to the renderer
 		virtual void ConnectUI(std::shared_ptr<GUI>& ui) = 0;
 
-	private:
-
-		// submit all render passes
-		virtual void ManageRenderPasses(uint32_t& imageIndex) = 0;
-
-		// creates global structures shared across the renderer
+		// creates/recreates global structures shared across the renderer
 		virtual void CreateGlobalStates() = 0;
 	};
 }

@@ -26,9 +26,6 @@ namespace Cosmos
 		// for renderer drawing
 		virtual void OnRenderDraw() {}
 
-		// freeing resources
-		virtual void OnDestroy() {};
-
 	public:
 
 		// // called when the window is resized
@@ -65,7 +62,7 @@ namespace Cosmos
 		WidgetStack() = default;
 
 		// destructor
-		~WidgetStack();
+		~WidgetStack() = default;
 
 		// returns a reference to the elements vector
 		inline std::vector<Widget*>& GetWidgets() { return mWidgets; }

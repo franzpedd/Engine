@@ -33,7 +33,7 @@ namespace Cosmos
 		TextureBrowser(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
-		~TextureBrowser();
+		virtual ~TextureBrowser();
 
 		// for user interface drawing
 		virtual void OnUpdate() override;

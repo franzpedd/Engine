@@ -20,8 +20,8 @@ namespace Cosmos
 		// constructor
 		Application();
 
-		// destructor (beware: destructor is called whenever the copy constructor is invoked, so avoid using it)
-		virtual ~Application() = default;
+		// destructor
+		virtual ~Application();
 
 		// returns the singleton
 		static inline Application* Get() { return sApplication; }
@@ -33,9 +33,6 @@ namespace Cosmos
 		inline double GetTimeStep() const { return mTimeStep; }
 
 	public:
-
-		// called after the constructor
-		void Initialize();
 
 		// initializes main loop
 		void Run();

@@ -23,7 +23,13 @@ namespace Cosmos
 		Editor();
 
 		// destructor
-		virtual ~Editor() = default;
+		virtual ~Editor();
+
+
+	private:
+
+		// place where I leave all todos
+		void DisplayToDoList();
 
 	private:
 
@@ -31,13 +37,13 @@ namespace Cosmos
 		std::unique_ptr<Project> mProject;
 
 		// ui
-		Console* mConsole;
-		Dockspace* mDockspace;
-		Explorer* mExplorer;
-		Viewport* mViewport;
-		Mainmenu* mMainmenu;
-		SceneHierarchy* mSceneHierarchy;
-		TextureBrowser* mTextureBrowser;
-		Grid* mGrid;
+		Console* mConsole = nullptr;
+		Dockspace* mDockspace = nullptr;
+		Explorer* mExplorer= nullptr;
+		Viewport* mViewport= nullptr;
+		Mainmenu* mMainmenu= nullptr;
+		SceneHierarchy* mSceneHierarchy= nullptr;
+		TextureBrowser* mTextureBrowser= nullptr;
+		Grid* mGrid = nullptr;
 	};
 }

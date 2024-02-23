@@ -15,7 +15,9 @@ namespace Cosmos
 		SceneHierarchy(Scene* scene);
 
 		// destructor
-		~SceneHierarchy();
+		virtual ~SceneHierarchy() = default;
+
+	public:
 
 		// for user interface drawing
 		virtual void OnUpdate() override;

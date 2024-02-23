@@ -13,6 +13,18 @@ namespace Cosmos
 {
 	void ModelGlobalResource::Initialize(std::shared_ptr<Device> device, VkPipelineCache cache)
 	{
+		// free used resources if the exists
+		{
+			if (pipeline != VK_NULL_HANDLE) 
+				vkDestroyPipeline(device->GetDevice(), pipeline, nullptr);
+
+			if (pipelineLayout != VK_NULL_HANDLE) 
+				vkDestroyPipelineLayout(device->GetDevice(), pipelineLayout, nullptr);
+
+			if (descriptorSetLayout != VK_NULL_HANDLE) 
+				vkDestroyDescriptorSetLayout(device->GetDevice(), descriptorSetLayout, nullptr);
+		}
+
 		// descriptor set and pipeline layout
 		{
 			VkDescriptorSetLayoutBinding uboBinding = vulkan::DescriptorSetLayoutBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);

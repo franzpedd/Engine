@@ -65,14 +65,6 @@ namespace Cosmos
 		// returns the maximum MSAA sample the physical device handles
 		virtual VkSampleCountFlagBits GetMaxUsableSamples() override;
 
-	public:
-
-		// creates the command pool
-		void CreateCommandPool();
-
-		// creates the swapchain commandbuffers
-		void CreateCommandBuffers();
-
 	private:
 
 		// selects the most suitable physical device available

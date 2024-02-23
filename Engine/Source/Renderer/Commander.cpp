@@ -1,7 +1,7 @@
 #include "epch.h"
 #include "Commander.h"
 
-#include "Device.h"
+#include "Renderer.h"
 
 namespace Cosmos
 {

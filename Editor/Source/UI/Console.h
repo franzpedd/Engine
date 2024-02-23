@@ -12,15 +12,12 @@ namespace Cosmos
 		Console();
 
 		// destructor
-		~Console();
+		virtual ~Console() = default;
 
 	public:
 
 		// for user interface drawing
 		virtual void OnUpdate() override;
-
-		// freeing resources
-		virtual void OnDestroy() override;
 
 	private:
 

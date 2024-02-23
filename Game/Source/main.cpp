@@ -8,10 +8,6 @@ int main(int argc, char* argv[])
 	Cosmos::Game* game = new Cosmos::Game(gameFolder);
 	PROFILER_END();
 
-	// testing
-	game->Initialize();
-	game->PostInitialize();
-
 	PROFILER_BEGIN("Runtime", "Runtime.json");
 	game->Run();
 	PROFILER_END();

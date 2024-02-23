@@ -264,27 +264,4 @@ namespace Cosmos
 		vkGetDeviceQueue(mDevice, indices.present.value(), 0, &mPresentQueue);
 		vkGetDeviceQueue(mDevice, indices.compute.value(), 0, &mComputeQueue);
 	}
-
-	void VKDevice::CreateCommandPool()
-	{
-		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice, mSurface);
-
-		VkCommandPoolCreateInfo cmdPoolInfo = {};
-		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
-		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_ASSERT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Swapchain"]->commandPool), "Failed to create command pool");
-	}
-
-	void VKDevice::CreateCommandBuffers()
-	{
-		Commander::Get().GetEntries()["Swapchain"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
-
-		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["Swapchain"]->commandPool;
-		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["Swapchain"]->commandBuffers.size();
-		VK_ASSERT(vkAllocateCommandBuffers(mDevice, &cmdBufferAllocInfo, Commander::Get().GetEntries()["Swapchain"]->commandBuffers.data()), "Failed to create command buffers");
-	}
 }

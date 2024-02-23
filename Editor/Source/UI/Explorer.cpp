@@ -154,11 +154,6 @@ namespace Cosmos
 		ImGui::End();
 	}
 
-	void Explorer::OnDestroy()
-	{
-
-	}
-
 	void Explorer::ReadFolder(std::string path)
 	{
 		// clear current path assets

@@ -19,11 +19,18 @@ namespace Cosmos
 	{
 		Logger() << "Creating VKSwapchain";
 
+		Commander::Get().Insert("Swapchain");
+		Commander::Get().MakePrimary("Swapchain");
+		Commander::Get().GetEntries()["Swapchain"]->msaa = mDevice->GetMSAA();
+
 		CreateSwapchain();
 		CreateImageViews();
 
 		CreateRenderPass();
 		CreateFramebuffers();
+
+		CreateCommandPool();
+		CreateCommandBuffers();
 	}
 
 	VKSwapchain::~VKSwapchain()
@@ -368,6 +375,29 @@ namespace Cosmos
 		}
 
 		return details;
+	}
+
+	void VKSwapchain::CreateCommandPool()
+	{
+		QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
+
+		VkCommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VK_ASSERT(vkCreateCommandPool(mDevice->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Swapchain"]->commandPool), "Failed to create command pool");
+	}
+
+	void VKSwapchain::CreateCommandBuffers()
+	{
+		Commander::Get().GetEntries()["Swapchain"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+
+		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["Swapchain"]->commandPool;
+		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["Swapchain"]->commandBuffers.size();
+		VK_ASSERT(vkAllocateCommandBuffers(mDevice->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["Swapchain"]->commandBuffers.data()), "Failed to create command buffers");
 	}
 
 	VkSurfaceFormatKHR VKSwapchain::ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

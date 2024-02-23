@@ -8,14 +8,6 @@ namespace Cosmos
 	{
 	}
 
-	WidgetStack::~WidgetStack()
-	{
-		for (Widget* element : mWidgets)
-		{
-			delete element;
-		}
-	}
-
 	void WidgetStack::PushOver(Widget* ent)
 	{
 		mWidgets.emplace_back(ent);

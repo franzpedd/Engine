@@ -46,7 +46,7 @@ namespace Cosmos
 			TextureBrowser* textureBrowser);
 
 		// destructor
-		virtual ~Viewport() = default;
+		virtual ~Viewport();
 
 		// returns the current viewport size
 		inline ImVec2 GetSize() const { return mCurrentSize; }
@@ -64,9 +64,6 @@ namespace Cosmos
 
 		// window was recently resized
 		virtual void OnWindowResize() override;
-
-		// freeing resources
-		virtual void OnDestroy() override;
 
 	private:
 

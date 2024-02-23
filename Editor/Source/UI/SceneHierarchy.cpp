@@ -8,16 +8,10 @@ namespace Cosmos
 		Logger() << "Creating Scene Hierarchy";
 	}
 
-	SceneHierarchy::~SceneHierarchy()
-	{
-	}
-
 	void SceneHierarchy::OnUpdate()
 	{
 		DisplaySceneHierarchy();
 		DisplaySelectedEntityComponents();
-
-		//ImGui::ShowDemoWindow();
 	}
 
 	Entity* SceneHierarchy::GetSelectedEntity()

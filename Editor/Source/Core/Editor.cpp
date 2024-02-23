@@ -35,12 +35,28 @@ namespace Cosmos
 		mUI->Widgets().Push(mGrid);
 		mUI->Widgets().Push(mViewport); // viewport over everything
 
-		// todos
+		DisplayToDoList();
+	}
+
+	Editor::~Editor()
+	{
+		delete mDockspace;
+		delete mMainmenu;
+		delete mGrid;
+		delete mViewport;
+		delete mSceneHierarchy;
+		delete mTextureBrowser;
+		delete mExplorer;
+		delete mConsole;
+	}
+
+	void Editor::DisplayToDoList()
+	{
 		LOG_TO_TERMINAL(Logger::Todo, "Application: Implement an Event System instead of manually forwarding input events to widgets");
 		LOG_TO_TERMINAL(Logger::Todo, "Application: Fix order of construction all the way to renderer and resources");
 		LOG_TO_TERMINAL(Logger::Todo, "Renderer: Re-arrange stuff");
 		LOG_TO_TERMINAL(Logger::Todo, "Renderer: Make singleton");
-
+		
 		LOG_TO_TERMINAL(Logger::Todo, "Fix Project loading");
 		LOG_TO_TERMINAL(Logger::Todo, "Project path is saved absolutely, witch will create an error when loading on another pc. Make them relative.");
 		LOG_TO_TERMINAL(Logger::Todo, "Fix Mainloop timestep and fps system");

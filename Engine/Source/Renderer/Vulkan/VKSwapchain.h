@@ -80,6 +80,17 @@ namespace Cosmos
 		// fills all information about the swapchain details
 		virtual Details QueryDetails() override;
 
+	public:
+
+		// creates the swapchain command pool
+		void CreateCommandPool();
+
+		// creates teh swapchain command buffers
+		void CreateCommandBuffers();
+
+	public:
+
+
 		// returns the optimal surface format
 		VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 

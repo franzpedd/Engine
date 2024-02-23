@@ -12,10 +12,7 @@ namespace Cosmos
 		Game(std::string path);
 
 		// destructor
-		virtual ~Game() = default;
-
-		// testing
-		void PostInitialize();
+		virtual ~Game();
 
 	private:
     

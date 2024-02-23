@@ -6,9 +6,6 @@ int main(int argc, char* argv[])
 	Cosmos::Editor* editor = new Cosmos::Editor();
 	PROFILER_END();
 
-	// testing
-	editor->Initialize();
-
 	PROFILER_BEGIN("Runtime", "Runtime.json");
 	editor->Run();
 	PROFILER_END();

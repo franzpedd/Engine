@@ -7,11 +7,6 @@ namespace Cosmos
 		Logger() << "Creating Console";
 	}
 
-	Console::~Console()
-	{
-
-	}
-
 	void Console::OnUpdate()
 	{
 		ImGui::Begin("Console", 0, ImGuiWindowFlags_HorizontalScrollbar);
@@ -62,9 +57,5 @@ namespace Cosmos
 		}
 
 		ImGui::End();
-	}
-
-	void Console::OnDestroy()
-	{
 	}
 }

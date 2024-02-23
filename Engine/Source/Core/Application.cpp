@@ -32,9 +32,12 @@ namespace Cosmos
 		mScene->ConnectUI(mUI);
 	}
 
-	void Application::Initialize()
+	Application::~Application()
 	{
-		mRenderer->Intialize();
+		mScene->Destroy();
+		mRenderer->OnTerminate();
+
+		delete mScene;
 	}
 
 	void Application::Run()
@@ -73,12 +76,6 @@ namespace Cosmos
 				mFpsTimer = 0.0f;
 			}
 		}
-
-		mScene->Destroy();
-		mUI->Destroy();
-		mRenderer->OnTerminate();
-
-		delete mScene;
 	}
 
 	void Application::OnMouseMove(float x, float y)

@@ -14,6 +14,22 @@ namespace Cosmos
 		CreateResources();
 	}
 
+	Grid::~Grid()
+	{
+		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+		
+		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
+		}
+		
+		vkDestroyDescriptorPool(mRenderer->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), mDescriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mRenderer->GetDevice()->GetDevice(), mPipelineLayout, nullptr);
+		vkDestroyPipeline(mRenderer->GetDevice()->GetDevice(), mGraphicsPipeline, nullptr);
+	}
+
 	void Grid::OnRenderDraw()
 	{
 		if (!mVisible) return;
@@ -35,22 +51,6 @@ namespace Cosmos
 		ubo.proj = mScene->GetCamera()->GetProjection();
 		
 		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
-	}
-
-	void Grid::OnDestroy()
-	{
-		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
-
-		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
-		}
-
-		vkDestroyDescriptorPool(mRenderer->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(mRenderer->GetDevice()->GetDevice(), mDescriptorSetLayout, nullptr);
-		vkDestroyPipelineLayout(mRenderer->GetDevice()->GetDevice(), mPipelineLayout, nullptr);
-		vkDestroyPipeline(mRenderer->GetDevice()->GetDevice(), mGraphicsPipeline, nullptr);
 	}
 
 	void Grid::ToogleOnOff()

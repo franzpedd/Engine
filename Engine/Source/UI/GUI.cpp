@@ -128,14 +128,6 @@ namespace Cosmos
 		}
 	}
 
-	void GUI::Destroy()
-	{
-		for (auto& widget : mWidgetStack)
-		{
-			widget->OnDestroy();
-		}
-	}
-
 	void GUI::SetupConfiguration()
 	{
 		// initial config

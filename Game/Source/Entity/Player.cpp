@@ -2,11 +2,15 @@
 
 namespace Cosmos
 {
-	Player::Player()
+	void Player::OnCreate()
 	{
 	}
 
-	Player::~Player()
+	void Player::OnUpdate(float timestep)
+	{
+	}
+
+	void Player::OnDestroy()
 	{
 	}
 }
