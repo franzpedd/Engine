@@ -4,28 +4,20 @@
 
 namespace Cosmos
 {
-	class Player
+	class Player : public entity::NativeScript
 	{
 	public:
 
 		// constructor
-		Player() = default;
+		Player(Entity * entity = nullptr);
 
-		~Player() = default;
+		// destructor
+		virtual ~Player();
 
 	public:
 
-		// called after the Application constructor is called
-		void OnCreate();
-
 		// called on every game loop iteration
-		void OnUpdate(float timestep);
-
-		// called once before the Application destructor is called
-		void OnDestroy();
-
-	private:
-
+		virtual void OnUpdate(float timestep) override;
 
 	};
 }

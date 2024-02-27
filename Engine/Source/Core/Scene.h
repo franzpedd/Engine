@@ -20,13 +20,18 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Scene(std::shared_ptr<Window>& window);
+		Scene();
 
 		// destructor
 		~Scene() = default;
 
+		// returns the singleton
+		static inline Scene* Get() { return sScene; }
+
+	public:
+
 		// returns a reference to the registry
-		inline entt::registry& Registry() { return mRegistry; }
+		inline entt::registry& GetRegistry() { return mRegistry; }
 
 		// returns a reference to the entity unordered map
 		inline std::unordered_map<std::string, Entity>& GetEntityMap() { return mEntityMap; }
@@ -36,9 +41,6 @@ namespace Cosmos
 
 		// connects the scene to the renderer
 		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
-
-		// connects the ui with the scene
-		void ConnectUI(std::shared_ptr<GUI> gui);
 
 		// returns a renderer reference
 		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
@@ -90,7 +92,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Window>& mWindow;
+		static Scene* sScene;
 		entt::registry mRegistry;
 
 		// must be connected, at the moment the scene is initialized before renderer
@@ -98,9 +100,6 @@ namespace Cosmos
 
 		// must be connected, to pass view and projection for entities
 		std::shared_ptr<Camera> mCamera;
-
-		// must be connected, to draw custom widgets that contain draw calls
-		std::shared_ptr<GUI> mGUI;
 
 		// holds the scene entities
 		std::unordered_map<std::string, Entity> mEntityMap = {};

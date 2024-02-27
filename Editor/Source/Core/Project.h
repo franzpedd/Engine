@@ -11,7 +11,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Project(Scene* scene, std::string name);
+		Project(std::string name);
 
 		// destructor
 		~Project();
@@ -38,7 +38,6 @@ namespace Cosmos
 
 	private:
 
-		Scene* mScene;
 		std::string mName = "Untitled";
 		std::string mPath;
 	};

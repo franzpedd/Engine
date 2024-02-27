@@ -13,7 +13,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Grid(std::shared_ptr<Renderer>& renderer, Scene* scene);
+		Grid(std::shared_ptr<Renderer>& renderer);
 
 		// destructor
 		virtual ~Grid();
@@ -39,7 +39,6 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<Renderer>& mRenderer;
-		Scene* mScene;
 		bool mVisible = true;
 		
 		std::shared_ptr<VKShader> mVertexShader;

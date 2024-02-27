@@ -20,10 +20,10 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new swapchain class
-		static std::shared_ptr<VKSwapchain> Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
+		static std::shared_ptr<VKSwapchain> Create(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
 
 		// constructor
-		VKSwapchain(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
+		VKSwapchain(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
 
 		// destructor
 		virtual ~VKSwapchain();
@@ -102,7 +102,6 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Window>& mWindow;
 		std::shared_ptr<VKInstance>& mInstance;
 		std::shared_ptr<VKDevice>& mDevice;
 

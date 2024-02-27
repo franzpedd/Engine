@@ -8,11 +8,11 @@
 namespace Cosmos
 {
 	// forward declaration
-	class Window;
+	class GUI;
 	class Renderer;
 	class Scene;
-	class GUI;
-
+	class Window;
+	
 	class Application
 	{
 	public:
@@ -61,10 +61,10 @@ namespace Cosmos
 
 		static Application* sApplication;
 		std::shared_ptr<Window> mWindow;
-		Scene* mScene;
+		std::shared_ptr<Scene> mScene;
 		std::shared_ptr<Renderer> mRenderer;
 		std::shared_ptr<GUI> mUI;
-
+		
 		// fps system
 		std::chrono::steady_clock::time_point mStart = {};
 		std::chrono::steady_clock::time_point mEnd = {};

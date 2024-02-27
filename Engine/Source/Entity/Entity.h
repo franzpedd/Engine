@@ -22,7 +22,7 @@ namespace Cosmos
 		Entity() = default;
 
 		// constructor with an id already assigned
-		Entity(Scene* scene, entt::entity id) : mScene(scene), mEntityHandle(id) {}
+		Entity(entt::entity id) : mEntityHandle(id) {}
 
 		// destructor
 		virtual ~Entity() = default;
@@ -47,53 +47,32 @@ namespace Cosmos
 		template<typename T>
 		bool HasComponent()
 		{
-			if (mScene == nullptr)
-			{
-				LOG_TO_TERMINAL(Logger::Error, "Scene is nullptr");
-			}
-
-			return mScene->Registry().all_of<T>(mEntityHandle);
+			return Scene::Get()->GetRegistry().all_of<T>(mEntityHandle);
 		}
 
 		// adds a component for the entity
 		template<typename T, typename...Args>
 		T& AddComponent(Args&&... args)
 		{
-			if (mScene == nullptr)
-			{
-				LOG_TO_TERMINAL(Logger::Error, "Scene is nullptr");
-			}	
-
-			return mScene->Registry().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
+			return Scene::Get()->GetRegistry().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
 		}
 
 		// returns the component
 		template<typename T>
 		T& GetComponent()
 		{
-			if (mScene == nullptr)
-			{
-				LOG_TO_TERMINAL(Logger::Error, "Scene is nullptr");
-			}
-
-			return mScene->Registry().get<T>(mEntityHandle);
+			return Scene::Get()->GetRegistry().get<T>(mEntityHandle);
 		}
 
 		// removes the component
 		template<typename T>
 		void RemoveComponent()
 		{
-			if (mScene == nullptr)
-			{
-				LOG_TO_TERMINAL(Logger::Error, "Scene is nullptr");
-			}
-
-			mScene->Registry().remove<T>(mEntityHandle);
+			Scene::Get()->GetRegistry().remove<T>(mEntityHandle);
 		}
 
 	protected:
 
-		Scene* mScene = nullptr;
 		bool mSelected = false;
 		entt::entity mEntityHandle = entt::null;
 	};

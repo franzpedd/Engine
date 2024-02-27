@@ -6,17 +6,17 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKDevice> VKDevice::Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance)
+	std::shared_ptr<VKDevice> VKDevice::Create(std::shared_ptr<VKInstance> instance)
 	{
-		return std::make_shared<VKDevice>(window, instance);
+		return std::make_shared<VKDevice>(instance);
 	}
 
-	VKDevice::VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance)
-		: mWindow(window), mInstance(instance)
+	VKDevice::VKDevice(std::shared_ptr<VKInstance> instance)
+		: mInstance(instance)
 	{
 		Logger() << "Creating VKDevice";
 
-		mWindow->CreateWindowSurface(instance->GetInstance(), &mSurface, nullptr);
+		Window::Get()->CreateWindowSurface(instance->GetInstance(), &mSurface, nullptr);
 		SelectPhysicalDevice();
 
 		// get physical device properties

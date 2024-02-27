@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Platform/Keycodes.h"
-#include "Platform/Window.h"
 #include "Util/Math.h"
 
 #include <memory>
@@ -21,7 +20,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Camera(std::shared_ptr<Window>& window);
+		Camera();
 
 		// destructor
 		~Camera() = default;
@@ -79,8 +78,6 @@ namespace Cosmos
 		void Rotate(glm::vec3 delta);
 
 	private:
-
-		std::shared_ptr<Window>& mWindow;
 
 		Type mType = Type::EDITOR_FLY;
 		bool mFlipY = true;

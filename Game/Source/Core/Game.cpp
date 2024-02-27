@@ -8,9 +8,12 @@ namespace Cosmos
 		DataFile scene = {};
 		DataFile::Read(scene, util::GetAssetSubDir("Project.cosmos"));
 		mScene->Deserialize(scene);
+
+		mPlayer = std::make_unique<Player>();
 	}
 
 	Game::~Game()
 	{
+
 	}
 }

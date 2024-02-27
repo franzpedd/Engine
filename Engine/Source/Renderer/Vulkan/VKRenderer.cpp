@@ -12,13 +12,12 @@
 
 namespace Cosmos
 {
-	VKRenderer::VKRenderer(std::shared_ptr<Window>& window, Scene* scene)
-		: mWindow(window), mScene(scene)
+	VKRenderer::VKRenderer()
 	{
 		mInstance = VKInstance::Create("Cosmos Application", "Cosmos", true);
-		mDevice = VKDevice::Create(mWindow, mInstance);
+		mDevice = VKDevice::Create(mInstance);
 		mCommander = new Commander();
-		mSwapchain = VKSwapchain::Create(mWindow, mInstance, mDevice);
+		mSwapchain = VKSwapchain::Create(mInstance, mDevice);
 
 		CreateResources();
 		CreateGlobalStates();
@@ -183,17 +182,17 @@ namespace Cosmos
 
 			res = vkQueuePresentKHR(mDevice->GetPresentQueue(), &presentInfo);
 
-			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || mWindow->ShouldResizeWindow())
+			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || Window::Get()->ShouldResizeWindow())
 			{
-				mWindow->HintResizeWindow(false);
+				Window::Get()->HintResizeWindow(false);
 				mSwapchain->Recreate();
 
-				float aspect = mWindow->GetAspectRatio();
+				float aspect = Window::Get()->GetAspectRatio();
 
-				mScene->GetCamera()->SetAspectRatio(mWindow->GetAspectRatio());
+				Scene::Get()->GetCamera()->SetAspectRatio(Window::Get()->GetAspectRatio());
 
-				mUI->SetImageCount(mSwapchain->GetImageCount());
-				mUI->OnWindowResize();
+				GUI::Get()->SetImageCount(mSwapchain->GetImageCount());
+				GUI::Get()->OnWindowResize();
 			}
 
 			else if (res != VK_SUCCESS)
@@ -203,11 +202,6 @@ namespace Cosmos
 		}
 
 		mCurrentFrame = (mCurrentFrame + 1) % RENDERER_MAX_FRAMES_IN_FLIGHT;
-	}
-
-	void VKRenderer::ConnectUI(std::shared_ptr<GUI>& ui)
-	{
-		mUI = ui;
 	}
 
 	void VKRenderer::ManageRenderPasses(uint32_t& imageIndex)
@@ -262,7 +256,7 @@ namespace Cosmos
 			// render scene, only if not on viewport
 			if (!mCommander->Exists("Viewport"))
 			{
-				mScene->OnRenderDraw();
+				Scene::Get()->OnRenderDraw();
 			}
 
 			vkCmdEndRenderPass(cmdBuffer);
@@ -313,7 +307,7 @@ namespace Cosmos
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			// render scene and special widgets
-			mScene->OnRenderDraw();
+			Scene::Get()->OnRenderDraw();
 
 			vkCmdEndRenderPass(cmdBuffer);
 
@@ -348,7 +342,7 @@ namespace Cosmos
 			renderPassBeginInfo.pClearValues = &clearValue;
 			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			mUI->Draw(cmdBuffer);
+			GUI::Get()->Draw(cmdBuffer);
 
 			vkCmdEndRenderPass(cmdBuffer);
 

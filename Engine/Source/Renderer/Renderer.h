@@ -19,7 +19,7 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new renderer
-		static std::shared_ptr<Renderer> Create(std::shared_ptr<Window>& window, Scene* scene);
+		static std::shared_ptr<Renderer> Create();
 
 		// constructor
 		Renderer() = default;
@@ -65,9 +65,6 @@ namespace Cosmos
 
 		// updates the renderer
 		virtual void OnUpdate() = 0;
-
-		// links the user interface to the renderer
-		virtual void ConnectUI(std::shared_ptr<GUI>& ui) = 0;
 
 		// creates/recreates global structures shared across the renderer
 		virtual void CreateGlobalStates() = 0;

@@ -21,23 +21,18 @@ namespace Cosmos
 		sApplication = this;
 
 		// create objects
-		mWindow = Window::Create("Cosmos Application", 1280, 720);
-		mScene = new Scene(mWindow);
-		mRenderer = Renderer::Create(mWindow, mScene);
-		mUI = GUI::Create(mWindow, mRenderer);
+		mWindow = std::make_shared<Window>("Cosmos Application", 1280, 720);
+		mScene = std::make_shared<Scene>();
+		mRenderer = Renderer::Create();
+		mUI = std::make_shared<GUI>(mRenderer);
 
-		// connect the UI to the renderer to handle resize events
-		mRenderer->ConnectUI(mUI);
-		mScene->ConnectRenderer(mRenderer);
-		mScene->ConnectUI(mUI);
+		Scene::Get()->ConnectRenderer(mRenderer);
 	}
 
 	Application::~Application()
 	{
 		mScene->Destroy();
 		mRenderer->OnTerminate();
-
-		delete mScene;
 	}
 
 	void Application::Run()

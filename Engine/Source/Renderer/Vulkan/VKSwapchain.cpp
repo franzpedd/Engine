@@ -9,13 +9,13 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKSwapchain> VKSwapchain::Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
+	std::shared_ptr<VKSwapchain> VKSwapchain::Create(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
 	{
-		return std::make_shared<VKSwapchain>(window, instance, device);
+		return std::make_shared<VKSwapchain>(instance, device);
 	}
 
-	VKSwapchain::VKSwapchain(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
-		: mWindow(window), mDevice(device), mInstance(instance)
+	VKSwapchain::VKSwapchain(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
+		: mDevice(device), mInstance(instance)
 	{
 		Logger() << "Creating VKSwapchain";
 
@@ -334,12 +334,12 @@ namespace Cosmos
 	{
 		int width = 0;
 		int height = 0;
-		mWindow->GetFramebufferSize(&width, &height);
+		Window::Get()->GetFramebufferSize(&width, &height);
 
 		while (width == 0 || height == 0)
 		{
-			mWindow->GetFramebufferSize(&width, &height);
-			mWindow->WaitEvents();
+			Window::Get()->GetFramebufferSize(&width, &height);
+			Window::Get()->WaitEvents();
 		}
 
 		vkDeviceWaitIdle(mDevice->GetDevice());
@@ -437,7 +437,7 @@ namespace Cosmos
 		else
 		{
 			int width, height;
-			mWindow->GetFramebufferSize(&width, &height);
+			Window::Get()->GetFramebufferSize(&width, &height);
 
 			VkExtent2D actualExtent = { (uint32_t)width, (uint32_t)height };
 			actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);

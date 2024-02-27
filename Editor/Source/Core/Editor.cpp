@@ -14,15 +14,15 @@ namespace Cosmos
 {
 	Editor::Editor()
 	{
-		mProject = std::make_unique<Project>(mScene, "Project");
+		mProject = std::make_unique<Project>("Project");
 
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
 		mTextureBrowser = new TextureBrowser(mRenderer);
-		mSceneHierarchy = new SceneHierarchy(mScene);
-		mViewport = new Viewport(mUI, mRenderer, mScene->GetCamera(), mSceneHierarchy, mTextureBrowser);
-		mGrid = new Grid(mRenderer, mScene);
-		mMainmenu = new Mainmenu(mScene, mProject, mScene->GetCamera(), mGrid, mSceneHierarchy);
+		mSceneHierarchy = new SceneHierarchy();
+		mViewport = new Viewport(mRenderer, mSceneHierarchy, mTextureBrowser);
+		mGrid = new Grid(mRenderer);
+		mMainmenu = new Mainmenu(mProject, mGrid, mSceneHierarchy);
 		mDockspace = new Dockspace();
 
 		// widgets

@@ -27,14 +27,14 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<GUI> GUI::Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
-	{
-		return std::make_shared<GUI>(window, renderer);
-	}
+	GUI* GUI::sGUI = nullptr;
 
-	GUI::GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer)
-		: mWindow(window), mRenderer(renderer)
+	GUI::GUI(std::shared_ptr<Renderer> renderer)
+		: mRenderer(renderer)
 	{
+		LOG_ASSERT(sGUI == nullptr, "GUI already created");
+		sGUI = this;
+
 		Commander::Get().Insert("ImGui");
 		Commander::Get().GetEntries()["ImGui"]->msaa = VK_SAMPLE_COUNT_1_BIT;
 
@@ -193,7 +193,7 @@ namespace Cosmos
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
-		ImGui_ImplGlfw_InitForVulkan(mWindow->NativeWindow(), true);
+		ImGui_ImplGlfw_InitForVulkan(Window::Get()->GetNativeWindow(), true);
 
 		ImGui_ImplVulkan_InitInfo initInfo = {};
 		initInfo.Instance = mRenderer->GetInstance()->GetInstance();

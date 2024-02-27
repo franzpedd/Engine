@@ -2,8 +2,8 @@
 
 namespace Cosmos
 {
-	Project::Project(Scene* scene, std::string name)
-		: mScene(scene), mName(name)
+	Project::Project(std::string name)
+		: mName(name)
 	{
 		mPath = util::GetAssetDir();
 	}
@@ -17,7 +17,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
 		
 		// clean current project
-		mScene->CleanCurrentScene();
+		Scene::Get()->CleanCurrentScene();
 
 		mName = "Untitled";
 		mPath = util::GetAssetDir();
@@ -30,7 +30,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
 		
 		// clean current project
-		mScene->CleanCurrentScene();
+		Scene::Get()->CleanCurrentScene();
 
 		OpenFileDialog dialog;
 		dialog.Show();
@@ -47,7 +47,7 @@ namespace Cosmos
 
 		if (DataFile::Read(project, mPath))
 		{
-			mScene->Deserialize(project);
+			Scene::Get()->Deserialize(project);
 		}
 		
 		else
@@ -64,7 +64,7 @@ namespace Cosmos
 		savePath.append(mName);
 		savePath.append(".cosmos");
 
-		if (DataFile::Write(mScene->Serialize(), savePath))
+		if (DataFile::Write(Scene::Get()->Serialize(), savePath))
 		{
 			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved at '%s'", mName.c_str(), savePath.c_str());
 		}
@@ -85,7 +85,7 @@ namespace Cosmos
 
 		LOG_TO_TERMINAL(Logger::Trace, "Saving Project '%s'", mName.c_str());
 
-		if (DataFile::Write(mScene->Serialize(), mPath))
+		if (DataFile::Write(Scene::Get()->Serialize(), mPath))
 		{
 			LOG_TO_TERMINAL(Logger::Trace, "Project '%s' saved at '%s' ", mName.c_str(), mPath.c_str());
 		}

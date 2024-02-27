@@ -26,7 +26,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		VKRenderer(std::shared_ptr<Window>& window, Scene* scene);
+		VKRenderer();
 
 		// destructor
 		virtual ~VKRenderer();
@@ -70,9 +70,6 @@ namespace Cosmos
 		// updates the renderer
 		virtual void OnUpdate() override;
 
-		// links the user interface to the renderer
-		virtual void ConnectUI(std::shared_ptr<GUI>& ui) override;
-
 		// creates global structures shared across the renderer
 		virtual void CreateGlobalStates() override;
 
@@ -86,8 +83,6 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Window>& mWindow;
-		Scene* mScene;
 		std::shared_ptr<VKInstance> mInstance;
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;
@@ -100,8 +95,6 @@ namespace Cosmos
 		std::vector<VkFence> mInFlightFences;
 		uint32_t mCurrentFrame = 0;
 		uint32_t mImageIndex = 0;
-
-		std::shared_ptr<GUI> mUI;
 
 		// pipeline objects 
 		std::unordered_map<std::string, VkPipeline> mPipelines = {};

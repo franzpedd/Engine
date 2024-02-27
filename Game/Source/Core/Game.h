@@ -2,6 +2,8 @@
 
 #include <Engine.h>
 
+#include "Entity/Player.h"
+
 namespace Cosmos
 {
 	class Game : public Application
@@ -17,5 +19,7 @@ namespace Cosmos
 	private:
     
 		std::string mPath;
+		
+		std::unique_ptr<Player> mPlayer;
 	};
 }

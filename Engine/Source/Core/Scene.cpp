@@ -10,17 +10,16 @@
 
 namespace Cosmos
 {
-	Scene::Scene(std::shared_ptr<Window>& window)
-		: mWindow(window)
+	Scene* Scene::sScene = nullptr;
+
+	Scene::Scene()
 	{
+		LOG_ASSERT(sScene == nullptr, "Scene already created");
+		sScene = this;
+
 		Logger() << "Creating Scene";
 
-		mCamera = std::make_shared<Camera>(mWindow);
-	}
-
-	void Scene::ConnectUI(std::shared_ptr<GUI> gui)
-	{
-		mGUI = gui;
+		mCamera = std::make_shared<Camera>();
 	}
 
 	Entity* Scene::CreateEntity(const char* name)
@@ -28,7 +27,7 @@ namespace Cosmos
 		UUID id = UUID();
 		entt::entity entt = mRegistry.create();
 
-		Entity entity{ this, entt };
+		Entity entity{ entt };
 		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<NameComponent>(name);
 		
@@ -88,18 +87,7 @@ namespace Cosmos
 		{
 			mRegistry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& component)
 				{
-					// simulating constructor, should move to OnScenePlay and implement OnDestroy
-					if (!component.script)
-					{
-						Entity* ent = FindEntityByHandle(entity);
-
-						component.script = component.CreateScriptFunc();
-						component.script->mEntity = ent;
-						component.script->OnCreate();
-					}
-
-					// only update if entity was properly assigned
-					if (!component.script->mEntity)
+					if (component.script != nullptr)
 					{
 						component.script->OnUpdate(timestep);
 					}
@@ -121,7 +109,7 @@ namespace Cosmos
 
 	void Scene::OnRenderDraw()
 	{
-		mGUI->OnRenderDraw();
+		GUI::Get()->OnRenderDraw();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
@@ -147,14 +135,19 @@ namespace Cosmos
 
 	void Scene::CleanCurrentScene()
 	{
+		LOG_TO_TERMINAL(Logger::Warn, "Erasing entity on the entitymap is crashing stuff");
+		
 		// erase all entities
 		for (auto& ent : mEntityMap)
 		{
 			if (mEntityMap.empty())
 				break;
-
+		
 			DestroyEntity(&ent.second);
 		}
+		
+		mEntityMap.clear();
+		mRegistry.clear();
 	}
 
 	void Scene::Deserialize(DataFile& data)
@@ -167,7 +160,7 @@ namespace Cosmos
 		{
 			// create blank entity
 			entt::entity entt = mRegistry.create();
-			Entity entity = { this, entt };
+			Entity entity = { entt };
 
 			DataFile entityData = data["Entities"][i];
 			

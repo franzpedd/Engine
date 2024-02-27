@@ -41,14 +41,14 @@ namespace Cosmos
 
 	public:
 
-		// returns a smart pointer to a new user interface
-		static std::shared_ptr<GUI> Create(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
-
 		// constructor
-		GUI(std::shared_ptr<Window>& window, std::shared_ptr<Renderer>& renderer);
+		GUI(std::shared_ptr<Renderer> renderer);
 
 		// destructor
 		~GUI();
+
+		// returns the singleton
+		static inline GUI* Get() { return sGUI; }
 
 		// returns the fonts
 		inline Fonts& GetFonts() { return mFonts; }
@@ -73,9 +73,6 @@ namespace Cosmos
 		// handles framebuffer resizes
 		void OnWindowResize();
 
-		// free the widgetstack
-		void Destroy();
-
 	public:
 
 		// ui configuration
@@ -89,11 +86,10 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Window>& mWindow;
-		std::shared_ptr<Renderer>& mRenderer;
-		WidgetStack mWidgetStack;
-
+		static GUI* sGUI;
+		std::shared_ptr<Renderer> mRenderer;
 		Fonts mFonts;
+		WidgetStack mWidgetStack;
 	};
 
 	// adds a texture in the user interface for later usage

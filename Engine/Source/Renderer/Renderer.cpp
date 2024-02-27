@@ -4,8 +4,8 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<Renderer> Renderer::Create(std::shared_ptr<Window>& window, Scene* scene)
+	std::shared_ptr<Renderer> Renderer::Create()
 	{
-		return std::make_shared<VKRenderer>(window, scene);
+		return std::make_shared<VKRenderer>();
 	}
 }

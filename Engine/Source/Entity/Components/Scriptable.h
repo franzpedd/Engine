@@ -9,28 +9,9 @@ namespace Cosmos
 	{
 	public:
 
-		NativeScript* script = nullptr;
+		entity::NativeScript* script;
 
 		// constructor
 		NativeScriptComponent() = default;
-
-	public:
-
-		// function pointer to constructor
-		NativeScript* (*CreateScriptFunc)();
-
-		// function pointer to destructor
-		void (*DestroyScriptFunc)();
-
-		// assign pointers to functions
-		template<typename T>
-		void Bind()
-		{
-			// creates the script
-			CreateScriptFunc = []() { return (NativeScript*)(new T()); };
-
-			// deletes the script
-			DestroyScriptFunc = [](NativeScriptComponent* component) { delete component->script; component->script = nullptr; };
-		}
 	};
 }

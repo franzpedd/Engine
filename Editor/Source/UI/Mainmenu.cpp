@@ -5,8 +5,8 @@
 
 namespace Cosmos
 {
-	Mainmenu::Mainmenu(Scene* scene, std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid, SceneHierarchy* sceneHierarchy)
-		: Widget("UI:Mainmenu"), mScene(scene), mProject(project), mCamera(camera), mGrid(grid), mSceneHierarchy(sceneHierarchy)
+	Mainmenu::Mainmenu(std::unique_ptr<Project>& project, Grid* grid, SceneHierarchy* sceneHierarchy)
+		: Widget("UI:Mainmenu"), mProject(project), mGrid(grid), mSceneHierarchy(sceneHierarchy)
 	{
 		Logger() << "Creating Mainmenu";
 	}
@@ -19,15 +19,15 @@ namespace Cosmos
 
 		HandleMenuAction();
 
-		ImGuiWindowFlags flags = {}; //ImGuiWindowFlags_;
-		//flags |= ImGuiWindowFlags_NoDecoration;
-		//flags |= ImGuiWindowFlags_NoBackground;
+		ImGuiWindowFlags flags = {};
+
+		auto& camera = Scene::Get()->GetCamera();
 
 		ImGui::Begin("Info", nullptr, flags);
 		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetAverageFPS());
 		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::Get()->GetTimeStep());
-		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", mCamera->GetPosition().x, mCamera->GetPosition().y, mCamera->GetPosition().z);
-		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", mCamera->GetRotation().x, mCamera->GetRotation().y, mCamera->GetRotation().z);
+		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
+		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", camera->GetRotation().x, camera->GetRotation().y, camera->GetRotation().z);
 
 		ImGui::End();
 
@@ -82,7 +82,7 @@ namespace Cosmos
 		{
 			case Cosmos::Mainmenu::New:
 			{
-				if (!mScene->GetEntityMap().empty())
+				if (!Scene::Get()->GetEntityMap().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}
@@ -98,7 +98,7 @@ namespace Cosmos
 			
 			case Cosmos::Mainmenu::Open:
 			{
-				if (!mScene->GetEntityMap().empty())
+				if (!Scene::Get()->GetEntityMap().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}

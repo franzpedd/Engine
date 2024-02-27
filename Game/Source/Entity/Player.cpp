@@ -2,15 +2,19 @@
 
 namespace Cosmos
 {
-	void Player::OnCreate()
+	Player::Player(Entity* entity)
+		: NativeScript("Player", entity)
 	{
+		LOG_TO_TERMINAL(Logger::Trace, "Constructing Player");
+	}
+
+	Player::~Player()
+	{
+		LOG_TO_TERMINAL(Logger::Trace, "Destroying player");
 	}
 
 	void Player::OnUpdate(float timestep)
 	{
-	}
-
-	void Player::OnDestroy()
-	{
+		LOG_TO_TERMINAL(Logger::Trace, "Updating player");
 	}
 }

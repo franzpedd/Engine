@@ -11,13 +11,13 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<Window> Window::Create(const char* title, int width, int height)
-	{
-		return std::make_shared<Window>(title, width, height);
-	}
+	Window* Window::sWindow = nullptr;
 
 	Window::Window(const char* title, int width, int height)
 	{
+		LOG_ASSERT(sWindow == nullptr, "Window already created");
+		sWindow = this;
+
 		mTitle = title;
 		mWidth = width;
 		mHeight = height;

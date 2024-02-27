@@ -23,25 +23,25 @@ namespace Cosmos
 
 	public:
 
-		// returns a smart pointer to a new window
-		static std::shared_ptr<Window> Create(const char* title, int width, int height);
-
 		// constructor
 		Window(const char* title, int width, int height);
 
 		// destructor
 		~Window();
 
-		// returns the native glfw window
-		inline GLFWwindow* NativeWindow() { return mWindow; }
+		// returns the singleton
+		static inline Window* Get() { return sWindow; }
 
-	public:
+		// returns the native glfw window
+		inline GLFWwindow* GetNativeWindow() { return mWindow; }
 
 		// returns private members
 		inline Data& GetData() { return mData; }
 
 		// returns current time
 		double GetTime();
+
+	public:
 
 		// returns the cursor position
 		void GetCursorPosition(double* x, double* y);
@@ -114,6 +114,7 @@ namespace Cosmos
 
 	private:
 
+		static Window* sWindow;
 		const char* mTitle;
 		int mWidth;
 		int mHeight;

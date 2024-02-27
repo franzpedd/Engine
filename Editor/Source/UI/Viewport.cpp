@@ -8,10 +8,8 @@
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<GUI>& ui, std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera, SceneHierarchy* sceneHierarcy,
-		TextureBrowser* textureBrowser)
-		: Widget("UI:Viewport"), mUI(ui), mRenderer(renderer), mCamera(camera), mSceneHierarcy(sceneHierarcy),
-		mTextureBrowser(textureBrowser)
+	Viewport::Viewport(std::shared_ptr<Renderer>& renderer, SceneHierarchy* sceneHierarcy, TextureBrowser* textureBrowser)
+		: Widget("UI:Viewport"), mRenderer(renderer), mSceneHierarcy(sceneHierarcy), mTextureBrowser(textureBrowser)
 	{
 		Commander::Get().Insert("Viewport");
 		Commander::Get().MakePrimary("Viewport"); // set viewport renderpass to main renderpass
@@ -172,7 +170,7 @@ namespace Cosmos
 			
 			// updating aspect ratio for the docking
 			mCurrentSize = ImGui::GetWindowSize();
-			mCamera->SetAspectRatio((float)(mCurrentSize.x / mCurrentSize.y));
+			Scene::Get()->GetCamera()->SetAspectRatio((float)(mCurrentSize.x / mCurrentSize.y));
 			
 			// viewport boundaries
 			mContentRegionMin = ImGui::GetWindowContentRegionMin();
@@ -359,8 +357,9 @@ namespace Cosmos
 		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 		
 		// camera
-		glm::mat4 view = mCamera->GetView();
-		glm::mat4 proj = glm::perspectiveRH(glm::radians(mCamera->GetFov()), mCurrentSize.x / mCurrentSize.y, mCamera->GetNear(), mCamera->GetFar());
+		auto& camera = Scene::Get()->GetCamera();
+		glm::mat4 view = camera->GetView();
+		glm::mat4 proj = glm::perspectiveRH(glm::radians(camera->GetFov()), mCurrentSize.x / mCurrentSize.y, camera->GetNear(), camera->GetFar());
 
 		// entity
 		auto& tc = selectedEntity->GetComponent<TransformComponent>();

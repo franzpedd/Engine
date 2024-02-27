@@ -23,7 +23,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mainmenu(Scene* scene, std::unique_ptr<Project>& project, std::shared_ptr<Camera>& camera, Grid* grid, SceneHierarchy* sceneHierarchy);
+		Mainmenu(std::unique_ptr<Project>& project, Grid* grid, SceneHierarchy* sceneHierarchy);
 
 		// destructor
 		virtual ~Mainmenu() = default;
@@ -43,9 +43,7 @@ namespace Cosmos
 
 	private:
 
-		Scene* mScene = nullptr;
 		std::unique_ptr<Project>& mProject;
-		std::shared_ptr<Camera>& mCamera;
 		Grid* mGrid;
 		SceneHierarchy* mSceneHierarchy;
 		

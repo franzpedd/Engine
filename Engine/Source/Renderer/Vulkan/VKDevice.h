@@ -19,10 +19,10 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new device
-		static std::shared_ptr<VKDevice> Create(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance);
+		static std::shared_ptr<VKDevice> Create(std::shared_ptr<VKInstance> instance);
 
 		// constructor
-		VKDevice(std::shared_ptr<Window>& window, std::shared_ptr<VKInstance> instance);
+		VKDevice(std::shared_ptr<VKInstance> instance);
 
 		// destructor
 		virtual ~VKDevice();
@@ -76,7 +76,6 @@ namespace Cosmos
 	private:
 
 		std::shared_ptr<VKInstance> mInstance;
-		std::shared_ptr<Window>& mWindow;
 
 		VkSurfaceKHR mSurface;
 		VkDevice mDevice;
