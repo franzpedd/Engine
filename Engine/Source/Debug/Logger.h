@@ -71,7 +71,7 @@ namespace Cosmos
 }
 
 // macros to facilitate using logging (only enabled on debug)
-#if defined(ENGINE_DEBUG) || defined(EDITOR_DEBUG) || (GAME_DEBUG)
+#if defined(ENGINE_DEBUG) || defined(EDITOR_DEBUG) || defined(GAME_DEBUG)
 
 #define LOG_TO_FILE(severity, filepath, ...)										\
 {																					\

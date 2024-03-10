@@ -32,7 +32,8 @@ project "Engine"
         "%{includelist.GLFW}",
         "%{includelist.GLM}",
         "%{includelist.Assimp}",
-        "%{includelist.ImGui}"
+        "%{includelist.ImGui}",
+        "%{includelist.OpenAL}"
     }
 
     links
@@ -53,10 +54,38 @@ project "Engine"
         runtime "Debug"
         symbols "On"
 
+        if os.host() == "windows" then
+            links
+            {
+                "%{librarylist.Assimp}/Debug/assimp-vc143-mtd.lib",
+                "%{librarylist.AssimpZLIB}/Debug/zlibstaticd.lib",
+                "%{librarylist.OpenAL}/Debug/Debug/OpenAL32.lib"
+            }
+
+            postbuildcommands  
+            {
+                "{COPYFILE} %{librarylist.OpenAL}/Debug/Debug/OpenAL32.dll " .. dirpath;
+            }
+        end
+
     filter "configurations:Release"
         defines { "ENGINE_RELEASE" }
         runtime "Release"
         optimize "On"
+
+        if os.host() == "windows" then
+            links
+            {
+                "%{librarylist.Assimp}/Release/assimp-vc143-mt.lib",
+                "%{librarylist.AssimpZLIB}/Release/zlibstatic.lib",
+                "%{librarylist.OpenAL}/Release/Release/OpenAL32.lib"
+            }
+
+            postbuildcommands  
+            {
+                "{COPYFILE} %{librarylist.OpenAL}/Release/Release/OpenAL32.dll " .. dirpath;
+            }
+        end
 
     filter "system:windows"
         defines 
@@ -66,17 +95,3 @@ project "Engine"
         }
 
         linkoptions { "/ignore:4006" }
-
-    filter {"configurations:Release", "system:windows"}
-        links
-        {
-            "%{librarylist.Assimp}/Release/assimp-vc143-mt.lib",
-            "%{librarylist.AssimpZLIB}/Release/zlibstatic.lib"
-        }
-
-    filter {"configurations:Debug", "system:windows"}
-        links
-        {
-            "%{librarylist.Assimp}/Debug/assimp-vc143-mtd.lib",
-            "%{librarylist.AssimpZLIB}/Debug/zlibstaticd.lib"
-        }

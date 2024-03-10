@@ -18,12 +18,13 @@ includelist["GLFW"] = "%{wks.location}/Thirdparty/glfw/include"
 includelist["GLM"] = "%{wks.location}/Thirdparty/glm"
 includelist["Assimp"] = "%{wks.location}/Thirdparty/assimp/include"
 includelist["ImGui"] = "%{wks.location}/Thirdparty/imgui"
+includelist["OpenAL"] = "%{wks.location}/Thirdparty/openal/include"
 
 -- libraries used
 librarylist = {}
 librarylist["Vulkan"] = "%{vkpath}/Lib/vulkan-1.lib"
 librarylist["Shaderc"] = "%{vkpath}/Lib/shaderc_shared.lib"
-
+librarylist["OpenAL"] = "%{wks.location}/Thirdparty/openal/build";
 librarylist["Assimp"] = "%{wks.location}/Thirdparty/assimp/lib/"
 librarylist["AssimpZLIB"] = "%{wks.location}/Thirdparty/assimp/contrib/zlib/"
 

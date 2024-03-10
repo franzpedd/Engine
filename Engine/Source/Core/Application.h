@@ -57,6 +57,11 @@ namespace Cosmos
 		// called when a keyboard key is released
 		void OnKeyboardRelease(Keycode key);
 
+	private:
+
+		// called after everyting on the tick was updated, to retrieve fps count
+		void FinishFrameCalculation();
+
 	protected:
 
 		static Application* sApplication;
@@ -70,8 +75,11 @@ namespace Cosmos
 		std::chrono::steady_clock::time_point mEnd = {};
 		double mTimeDifference = 0.0f;
 		float mFpsTimer = 0.0f;
-		uint32_t mFrames = 0; // renderer average fps
+		uint32_t mFrames = 0; // average fps
 		float mTimeStep = 1.0f; // timestep/delta time (used to update logic)
 		uint32_t mLastFPS = 0;
 	};
+
+	// creates an application object
+	Application* CreateApplication();
 }

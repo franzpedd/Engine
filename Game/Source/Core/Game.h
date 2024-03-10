@@ -1,11 +1,13 @@
 #pragma once
 
 #include <Engine.h>
-
-#include "Entity/Player.h"
+#include <Platform/Main.h>
 
 namespace Cosmos
 {
+	// forward declarations
+	class Player;
+
 	class Game : public Application
 	{
 	public:

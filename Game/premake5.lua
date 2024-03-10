@@ -23,7 +23,8 @@ project "Game"
         "%{includelist.Vulkan}",
         "%{includelist.GLM}",
         "%{includelist.Assimp}",
-        "%{includelist.ImGui}"
+        "%{includelist.ImGui}",
+        "%{includelist.OpenAL}"
     }
 
     links

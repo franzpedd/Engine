@@ -12,6 +12,12 @@
 
 namespace Cosmos
 {
+	// defined on engine Platform/Main.h
+	Application* CreateApplication()
+	{
+		return new Editor();
+	}
+
 	Editor::Editor()
 	{
 		mProject = std::make_unique<Project>("Project");

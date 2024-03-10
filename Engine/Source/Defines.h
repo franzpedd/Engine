@@ -9,5 +9,6 @@
 // how many chars a file may have in total (starting at 'Data')
 #define MAX_SEARCH_PATH_SIZE 256
 
-// how many joints any model may have at max (untested beyond that)
-#define MAX_NUM_JOINTS 128u
+// how many channels the sound engine has
+#define SOUND_ENGINE_CHANNELS 2
+

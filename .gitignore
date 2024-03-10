@@ -2,16 +2,12 @@
 .vs/
 .vscode/
 _Build/
-Build/
 Thirdparty/assimp
-Thirdparty/entt
 Thirdparty/glfw
-Thirdparty/gli
 Thirdparty/glm
 Thirdparty/imgui
-Thirdparty/json
+Thirdparty/openal
 Thirdparty/premake
-Thirdparty/tinygltf
 Thirdparty/vulkan-sdk
 Editor/Build
 Editor/Profiler
@@ -23,4 +19,3 @@ Engine/Build
 *.vcxproj.filters
 *.vcxproj.user
 *.spv
-*Makefile

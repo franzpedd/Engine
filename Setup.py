@@ -56,6 +56,29 @@ class Dependencies :
         os.chdir(scriptdir);
         print("\n------------------------Assimp building has finished------------------------\n");
 
+    @classmethod
+    def BuildOpenAL(itself) :
+
+        if(os.path.isdir("Thirdparty/openal/build") is False) : os.makedirs("Thirdparty/openal/build");
+
+        if(os.path.isdir("Thirdparty/openal/build/Debug") is False) : 
+            os.makedirs("Thirdparty/openal/build/Debug");
+
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/openal");
+            subprocess.call(f"cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=DEBUG", shell = True);
+            subprocess.call(f"cmake --build build/Debug --config Debug", shell = True);
+            os.chdir(scriptdir);
+
+        if(os.path.isdir("Thirdparty/openal/build/Release") is False) : 
+            os.makedirs("Thirdparty/openal/build/Release");
+        
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/openal");
+            subprocess.call(f"cmake -S . -B build/Release -DCMAKE_BUILD_TYPE=RELEASE", shell = True);
+            subprocess.call(f"cmake --build build/Release --config Release", shell = True);
+            os.chdir(scriptdir);
+
 class Vulkan : 
 
     @classmethod
@@ -127,8 +150,10 @@ Util.Clone("https://github.com/CedricGuillemet/ImGuizmo", "imgui/imguizmo", "mas
 Util.Clone("https://github.com/glfw/glfw", "glfw", "3.3-stable");
 Util.Clone("https://github.com/g-truc/glm", "glm", "0.9.8");
 Util.Clone("https://github.com/assimp/assimp", "assimp", "master")
+Util.Clone("https://github.com/kcat/openal-soft", "openal", "master");
 
 Dependencies.BuildAssimp();
+Dependencies.BuildOpenAL();
 
 Premake.Download("5.0.0-beta2");
 Premake.Generate();

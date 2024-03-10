@@ -5,7 +5,7 @@
 
 namespace Cosmos::entity
 {
-	NativeScript::NativeScript( const char* name, Entity* entity)
+	NativeScript::NativeScript(const char* name, Entity* entity)
 		: mName(name), mEntity(entity)
 	{
 		// create a new entity on the scene if entity is nullptr
