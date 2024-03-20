@@ -83,8 +83,10 @@ namespace Cosmos
 		// update camera
 		mCamera->OnUpdate(timestep);
 
-		// update native scripts
+		// updates only when playing
+		if (mStatus == Status::Playing)
 		{
+			// update scripts
 			mRegistry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& component)
 				{
 					if (component.script != nullptr)
@@ -92,7 +94,11 @@ namespace Cosmos
 						component.script->OnUpdate(timestep);
 					}
 				});
+
+			// update sounds
+
 		}
+
 
 		// update models
 		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
@@ -203,6 +209,16 @@ namespace Cosmos
 				component.model->LoadAlbedoTexture(entityData["Model"]["Albedo"].GetString());
 			}
 
+			// check if sound source exists
+			if (entityData.Exists("SoundSource"))
+			{
+				entity.AddComponent<SoundSourceComponent>();
+				auto& component = entity.GetComponent<SoundSourceComponent>();
+
+				component.source = std::make_shared<sound::Source>();
+				component.source->Create(entityData["SoundSource"]["Path"].GetString());
+			}
+
 			// assign the entity to the map
 			mEntityMap[id] = entity;
 		}
@@ -258,6 +274,15 @@ namespace Cosmos
 
 				place["Path"].SetString(component.model->GetPath());
 				place["Albedo"].SetString(component.model->GetAlbedoPath());
+			}
+
+			// write sound source component if it exists
+			if (entity->HasComponent<SoundSourceComponent>())
+			{
+				auto& component = entity->GetComponent<SoundSourceComponent>();
+				auto& place = save["Entities"][uuidComponent]["SoundSource"];
+
+				place["Path"].SetString(component.source->GetPath());
 			}
 		}
 

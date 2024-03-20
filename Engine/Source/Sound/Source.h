@@ -1,5 +1,11 @@
 #pragma once
 
+// used for uploading the wave file asynchronously
+#include "Thread/AsyncResource.h"
+#include "Util/Math.h"
+
+#include <future>
+
 namespace Cosmos::sound
 {
 	// Sources are sounds that exists on the program, they are spatialized and is possible to configure it's property
@@ -22,22 +28,27 @@ namespace Cosmos::sound
 	public:
 
 		// constructor
-		Source(const char* path);
+		Source() = default;
 
 		// destructor
 		~Source();
 
+		// returns sound's path on disk
+		std::string& GetPath();
+
 		// returns sound's buffer id on the OpenAL backend side
-		unsigned int GetBufferID() const;
+		uint32_t GetBufferID() const;
 
 		// returns sound's source id on the OpenAL backend side
-		unsigned int GetSourceID() const;
-
-		// returns sound's path on disk
-		const char* GetPath() const;
+		uint32_t GetSourceID() const;
 
 		// returns the sound current status
 		const Source::Status GetStatus() const;
+
+	public:
+
+		// creates or recreates the sound given a path
+		void Create(std::string path);
 
 	public: // controlls the sound status
 
@@ -59,51 +70,51 @@ namespace Cosmos::sound
 	public: // controll various aspects of the sound sorce
 
 		// returns the position of the source
-		void GetPosition(float* x, float* y, float* z) const;
+		glm::vec3 GetPosition() const;
 
 		// changes the position of the source
-		void SetPosition(const float& x, const float& y, const float& z);
+		void SetPosition(const glm::vec3 position, bool changeImmediatly = true);
 
 		// returns the position of the source
-		void GetVelocity(float* x, float* y, float* z) const;
+		glm::vec3 GetVelocity() const;
 
 		// changes the velocity of the source
-		void SetVelocity(const float& x, const float& y, const float& z);
+		void SetVelocity(const glm::vec3 velocity, bool changeImmediatly = true);
 
 		// returns the sound current volume
 		float GetVolume() const;
 
 		// changes the sound current volume
-		void SetVolume(const float& volume);
+		void SetVolume(const float& volume, bool changeImmediatly = true);
 
 		// returns if the sound is on looping mode
 		bool GetLooping() const;
 
 		// changes the sound to looping mode
-		void SetLooping(bool loop);
+		void SetLooping(bool loop, bool changeImmediatly = true);
 
 		// returns the sound orientation
-		void GetOrientation(float* atX, float* atY, float* atZ, float* upX, float* upY, float* upZ) const;
+		std::pair<glm::vec3, glm::vec3> GetOrientation(void) const;
 
 		// changes the sound orientation
-		void SetOrientation(const float& atX, const float& atY, const float& atZ, const float& upX, const float& upY, const float& upZ);
+		void SetOrientation(const glm::vec3& at, const glm::vec3& up, bool changeImmediatly = true);
 
 	private:
 
-		const char* mPath;
-		bool mStereo = true;
-
-		unsigned int mBufferID = 0;
-		unsigned int mSourceID = 0;
-		Status mStatus = Initial;
-
+		Source::Status mStatus = Stopped;
+		std::string mPath = {};
+		uint32_t mBufferID = 0;
+		uint32_t mSourceID = 0;
 		float mPitch = 1.0f;
 		float mVolume = 1.0f;
-		float mPosition[3] = { 0.0f, 0.0f, 0.0f };
-		float mVelocity[3] = { 0.0f, 0.0f, 0.0f };
 		bool mLoop = false;
+		bool mStereo = true;
+		glm::vec3 mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 mVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 mAt = glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 mUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-		//			 		      at.x  at.y  at.z   up.x  up.x  up.z
-		float mOrientation[6] = { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f };
+		std::future<thread::Status> mAsyncCall;
+		thread::WaveAsync::Arguments mWavInfo;
 	};
 }

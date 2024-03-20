@@ -5,6 +5,7 @@
 #include "Platform/Window.h"
 #include "Renderer/Renderer.h"
 #include "Sound/Listener.h"
+#include "Thread/Pool.h"
 #include "UI/GUI.h"
 #include "Util/FileSystem.h"
 
@@ -23,6 +24,7 @@ namespace Cosmos
 
 		// create objects
 		sound::Listener::GetInstance();
+		thread::PoolManager::GetInstance();
 		mWindow = std::make_shared<Window>("Cosmos Application", 1280, 720);
 		mScene = std::make_shared<Scene>();
 		mRenderer = Renderer::Create();

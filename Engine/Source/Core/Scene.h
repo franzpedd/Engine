@@ -19,6 +19,15 @@ namespace Cosmos
 	{
 	public:
 
+		enum Status
+		{
+			Initial = 0,
+			Paused,
+			Playing
+		};
+
+	public:
+
 		// constructor
 		Scene();
 
@@ -29,6 +38,12 @@ namespace Cosmos
 		static inline Scene* Get() { return sScene; }
 
 	public:
+
+		// returns the status of the scene
+		inline Status GetStatus() const { return mStatus; }
+
+		// sets the scene to a new status
+		inline void SetStatus(Status status) { mStatus = status; }
 
 		// returns a reference to the registry
 		inline entt::registry& GetRegistry() { return mRegistry; }
@@ -93,6 +108,8 @@ namespace Cosmos
 	private:
 
 		static Scene* sScene;
+		Status mStatus = Initial;
+
 		entt::registry mRegistry;
 
 		// must be connected, at the moment the scene is initialized before renderer

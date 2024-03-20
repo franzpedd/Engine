@@ -9,6 +9,5 @@
 // how many chars a file may have in total (starting at 'Data')
 #define MAX_SEARCH_PATH_SIZE 256
 
-// how many channels the sound engine has
-#define SOUND_ENGINE_CHANNELS 2
-
+// how many threads the sound resources have
+#define RESOURCES_THREAD_SOUND_COUNT 4

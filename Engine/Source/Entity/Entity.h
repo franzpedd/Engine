@@ -3,6 +3,7 @@
 #include "Components/Base.h"
 #include "Components/Renderable.h"
 #include "Components/Scriptable.h"
+#include "Components/Sound.h"
 
 #include "Core/Application.h"
 #include "Core/Scene.h"

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Entity/Renderable/Model.h"
 #include "Util/DataFile.h"
 #include "Util/Math.h"
 #include "Util/UUID.h"

@@ -92,6 +92,7 @@ namespace Cosmos
 			{
 				DisplayAddComponentEntry<TransformComponent>("Transform");
 				DisplayAddComponentEntry<ModelComponent>("Model");
+				DisplayAddComponentEntry<SoundSourceComponent>("Sound Source");
 
 				ImGui::EndMenu();
 			}
@@ -251,6 +252,41 @@ namespace Cosmos
 							component.model->LoadAlbedoTexture(path.string());
 						}
 					
+						ImGui::EndDragDropTarget();
+					}
+				}
+			});
+
+		// 3d sound source
+		DrawComponent<SoundSourceComponent>("Sound Source", mSelectedEntity, [&](SoundSourceComponent& component)
+			{
+				if (!component.source)
+					component.source = std::make_shared<sound::Source>();
+
+				// sound path
+				{
+					ImGui::BeginGroup();
+
+					ImGui::Text(ICON_LC_MUSIC " ");
+					ImGui::SameLine();
+
+					auto& soundPath = component.source->GetPath();
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					strncpy_s(buffer, sizeof(buffer), soundPath.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.source->Create(path.string());
+						}
+
 						ImGui::EndDragDropTarget();
 					}
 				}

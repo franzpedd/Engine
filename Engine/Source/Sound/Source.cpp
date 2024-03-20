@@ -1,59 +1,11 @@
 #include "epch.h"
 #include "Source.h"
 
-#include "WaveLoader.h"
+#include "Thread/Pool.h"
 #include <AL/al.h>
 
 namespace Cosmos::sound
 {
-	Source::Source(const char* path)
-		: mPath(path)
-	{
-		// load wave file
-		WaveLoader audioFile;
-		audioFile.Load(path);
-		std::vector<uint8_t> monoPCMDataBytes;
-		audioFile.WritePCMToBuffer(monoPCMDataBytes);
-
-		ALenum format = AL_NONE;
-
-		if (audioFile.GetBitDepth() == 8)
-		{
-			format = audioFile.IsStereo() ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-		}
-
-		else if (audioFile.GetBitDepth() == 16)
-		{
-			format = audioFile.IsStereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-		}
-
-		else
-		{
-			LOG_TO_TERMINAL(Logger::Error, "The bit depth %s is not supported by OpenAL, convert it to 8 or 16", audioFile.GetBitDepth());
-			return;
-		}
-
-		alGenBuffers(1, &mBufferID);
-		alBufferData(mBufferID, format, monoPCMDataBytes.data(), (ALsizei)monoPCMDataBytes.size(), audioFile.GetSampleRate());
-
-		// set all initial flags
-		alGenSources(1, &mSourceID);
-		alSourcef(mSourceID, AL_PITCH, mPitch);
-		alSourcef(mSourceID, AL_GAIN, mVolume);
-		alSourcei(mSourceID, AL_LOOPING, mLoop);
-		alSourcei(mSourceID, AL_BUFFER, mBufferID);
-
-		// 3D stuff is enabled only on mono-audio
-		if (audioFile.IsMono())
-		{
-			alSource3f(mSourceID, AL_POSITION, mPosition[0], mPosition[1], mPosition[2]);
-			alSource3f(mSourceID, AL_VELOCITY, mVelocity[0], mVelocity[1], mVelocity[2]);
-			alSourcefv(mSourceID, AL_ORIENTATION, mOrientation);
-
-			mStereo = false;
-		}
-	}
-
 	Source::~Source()
 	{
 		if (mStatus != Stopped)
@@ -67,24 +19,56 @@ namespace Cosmos::sound
 		}
 	}
 
-	unsigned int Source::GetBufferID() const
+	std::string& Source::GetPath()
+	{
+		return mPath;
+	}
+
+	uint32_t Source::GetBufferID() const
 	{
 		return mBufferID;
 	}
 
-	unsigned int Source::GetSourceID() const
+	uint32_t Source::GetSourceID() const
 	{
 		return mSourceID;
-	}
-
-	const char* Source::GetPath() const
-	{
-		return mPath;
 	}
 
 	const Source::Status Source::GetStatus() const
 	{
 		return mStatus;
+	}
+
+	void Source::Create(std::string path)
+	{
+		mPath = path;
+
+		// clean previous sound if exists
+		if (alIsSource(mSourceID))
+		{
+			if(mStatus != Stopped)
+				Stop();
+
+			alDeleteSources(1, &mSourceID);
+
+			if (mBufferID && alIsBuffer(mBufferID))
+			{
+				alDeleteBuffers(1, &mBufferID);
+			}
+		}
+
+		// upload the wave file and create the sound using a separate thread
+		mWavInfo = {};
+		mWavInfo.path = mPath;
+		mWavInfo.pitch = mPitch;
+		mWavInfo.volume = mVolume;
+		mWavInfo.position = mPosition;
+		mWavInfo.velocity = mVelocity;
+		mWavInfo.at = mAt;
+		mWavInfo.up = mUp;
+		mWavInfo.looping = mLoop;
+		mWavInfo.stereo = mStereo;
+		mAsyncCall = thread::PoolManager::GetInstance().GetResourcesPool()->Enqueue(thread::UploadWaveFile, &mWavInfo, &mBufferID, &mSourceID);
 	}
 
 	void Source::Start()
@@ -122,14 +106,12 @@ namespace Cosmos::sound
 		}
 	}
 
-	void Source::GetPosition(float* x, float* y, float* z) const
+	glm::vec3 Source::GetPosition() const
 	{
-		*x = mPosition[0];
-		*y = mPosition[1];
-		*z = mPosition[2];
+		return mPosition;
 	}
 
-	void Source::SetPosition(const float& x, const float& y, const float& z)
+	void Source::SetPosition(const glm::vec3 position, bool changeImmediatly)
 	{
 		if (mStereo)
 		{
@@ -137,20 +119,18 @@ namespace Cosmos::sound
 			return;
 		}
 
-		alSource3f(mSourceID, AL_POSITION, x, y, z);
-		mPosition[0] = x;
-		mPosition[1] = y;
-		mPosition[2] = z;
+		mPosition = position;
+
+		if(changeImmediatly)
+			alSource3f(mSourceID, AL_POSITION, position.x, position.y, position.z);
 	}
 
-	void Source::GetVelocity(float* x, float* y, float* z) const
+	glm::vec3 Source::GetVelocity() const
 	{
-		*x = mVelocity[0];
-		*y = mVelocity[1];
-		*z = mVelocity[2];
+		return mVelocity;
 	}
 
-	void Source::SetVelocity(const float& x, const float& y, const float& z)
+	void Source::SetVelocity(const glm::vec3 velocity, bool changeImmediatly)
 	{
 		if (mStereo)
 		{
@@ -158,10 +138,10 @@ namespace Cosmos::sound
 			return;
 		}
 
-		alSource3f(mSourceID, AL_VELOCITY, x, y, z);
-		mVelocity[0] = x;
-		mVelocity[1] = y;
-		mVelocity[2] = z;
+		mVelocity = velocity;
+
+		if (changeImmediatly)
+			alSource3f(mSourceID, AL_VELOCITY, velocity.x, velocity.y, velocity.z);
 	}
 
 	float Source::GetVolume() const
@@ -169,10 +149,12 @@ namespace Cosmos::sound
 		return mVolume;
 	}
 
-	void Source::SetVolume(const float& volume)
+	void Source::SetVolume(const float& volume, bool changeImmediatly)
 	{
-		alSourcef(mSourceID, AL_GAIN, volume);
 		mVolume = volume;
+
+		if (changeImmediatly)
+			alSourcef(mSourceID, AL_GAIN, volume);
 	}
 
 	bool Source::GetLooping() const
@@ -180,22 +162,20 @@ namespace Cosmos::sound
 		return mLoop;
 	}
 
-	void Source::SetLooping(bool loop)
+	void Source::SetLooping(bool loop, bool changeImmediatly)
 	{
-		alSourcei(mSourceID, AL_LOOPING, (int)loop);
+		mLoop = loop;
+
+		if (changeImmediatly)
+			alSourcei(mSourceID, AL_LOOPING, (int)loop);
 	}
 
-	void Source::GetOrientation(float* atX, float* atY, float* atZ, float* upX, float* upY, float* upZ) const
+	std::pair<glm::vec3, glm::vec3> Source::GetOrientation() const
 	{
-		*atX = mOrientation[0];
-		*atY = mOrientation[1];
-		*atZ = mOrientation[2];
-		*upX = mOrientation[3];
-		*upY = mOrientation[4];
-		*upZ = mOrientation[5];
+		return std::make_pair(mAt, mUp);
 	}
 
-	void Source::SetOrientation(const float& atX, const float& atY, const float& atZ, const float& upX, const float& upY, const float& upZ)
+	void Source::SetOrientation(const glm::vec3& at, const glm::vec3& up, bool changeImmediatly)
 	{
 		if (mStereo)
 		{
@@ -203,12 +183,20 @@ namespace Cosmos::sound
 			return;
 		}
 
-		alSourcefv(mSourceID, AL_ORIENTATION, mOrientation);
-		mOrientation[0] = atX;
-		mOrientation[1] = atY;
-		mOrientation[2] = atZ;
-		mOrientation[3] = upX;
-		mOrientation[4] = upY;
-		mOrientation[5] = upZ;
+		mAt = at;
+		mUp = up;
+		
+		if (changeImmediatly)
+		{
+			float orientation[6] = {};
+			orientation[0] = at.x;
+			orientation[1] = at.y;
+			orientation[2] = at.z;
+			orientation[3] = up.x;
+			orientation[4] = up.y;
+			orientation[5] = up.z;
+			
+			alSourcefv(mSourceID, AL_ORIENTATION, orientation);
+		}
 	}
 }
