@@ -35,9 +35,6 @@ namespace Cosmos
 		// destructor
 		~GUI();
 
-		// returns the singleton
-		static inline GUI* Get() { return sGUI; }
-
 		// returns the fonts
 		inline Fonts& GetFonts() { return mFonts; }
 
@@ -50,7 +47,7 @@ namespace Cosmos
 		void OnUpdate();
 
 		// updates the draw calls with extra draw calls (outside imgui)
-		void OnRenderDraw();
+		void OnRender();
 
 		// event handling
 		void OnEvent(Shared<Event> event);
@@ -74,7 +71,6 @@ namespace Cosmos
 
 	private:
 
-		static GUI* sGUI;
 		std::shared_ptr<Renderer> mRenderer;
 		Fonts mFonts;
 		WidgetStack mWidgetStack;

@@ -47,9 +47,9 @@ namespace Cosmos
 			vkDestroyDescriptorSetLayout(mDevice->GetDevice(), descriptorSetLayout.second, nullptr);
 	}
 
-	std::shared_ptr<Instance> VKRenderer::GetInstance()
+	Shared<VKInstance> VKRenderer::GetInstance()
 	{
-		return std::static_pointer_cast<Instance>(mInstance);
+		return mInstance;
 	}
 
 	std::shared_ptr<Device> VKRenderer::GetDevice()
@@ -345,7 +345,7 @@ namespace Cosmos
 			renderPassBeginInfo.pClearValues = &clearValue;
 			vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			GUI::Get()->Draw(cmdBuffer);
+			Application::GetInstance()->GetGUI()->Draw(cmdBuffer);
 
 			vkCmdEndRenderPass(cmdBuffer);
 

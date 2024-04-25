@@ -5,7 +5,7 @@
 #include "Device.h"
 #include "Swapchain.h"
 
-#include <memory>
+#include "Util/Memory.h"
 
 namespace Cosmos
 {
@@ -19,7 +19,7 @@ namespace Cosmos
 	public:
 
 		// returns a smart pointer to a new renderer
-		static std::shared_ptr<Renderer> Create();
+		static Shared<Renderer> Create();
 
 		// constructor
 		Renderer() = default;
@@ -28,9 +28,6 @@ namespace Cosmos
 		virtual ~Renderer() = default;
 
 	public:
-
-		// returns the backend instance class object
-		virtual std::shared_ptr<Instance> GetInstance() = 0;
 
 		// returns the backend device class object
 		virtual std::shared_ptr<Device> GetDevice() = 0;

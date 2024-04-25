@@ -7,6 +7,8 @@
 #include "Event/WindowEvent.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Vulkan/VKRenderer.h"
+
 #include "Util/FileSystem.h"
 
 // Thirdparty/imgui_extra
@@ -19,14 +21,9 @@
 
 namespace Cosmos
 {
-	GUI* GUI::sGUI = nullptr;
-
 	GUI::GUI(std::shared_ptr<Renderer> renderer)
 		: mRenderer(renderer)
 	{
-		LOG_ASSERT(sGUI == nullptr, "GUI already created");
-		sGUI = this;
-
 		Commander::Get().Insert("ImGui");
 		Commander::Get().GetEntries()["ImGui"]->msaa = VK_SAMPLE_COUNT_1_BIT;
 
@@ -69,7 +66,7 @@ namespace Cosmos
 		}
 	}
 
-	void GUI::OnRenderDraw()
+	void GUI::OnRender()
 	{
 		for (Widget* widget : mWidgetStack)
 		{
@@ -202,7 +199,7 @@ namespace Cosmos
 		ImGui_ImplSDL2_InitForVulkan(Application::GetInstance()->GetWindow()->GetNativeWindow());
 
 		ImGui_ImplVulkan_InitInfo initInfo = {};
-		initInfo.Instance = mRenderer->GetInstance()->GetInstance();
+		initInfo.Instance = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetInstance()->GetInstance();
 		initInfo.PhysicalDevice = mRenderer->GetDevice()->GetPhysicalDevice();
 		initInfo.Device = mRenderer->GetDevice()->GetDevice();
 		initInfo.Queue = mRenderer->GetDevice()->GetGraphicsQueue();

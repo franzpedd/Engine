@@ -92,7 +92,7 @@ namespace Cosmos
 
 	void Scene::OnRender()
 	{
-		GUI::Get()->OnRenderDraw();
+		Application::GetInstance()->GetGUI()->OnRender();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };

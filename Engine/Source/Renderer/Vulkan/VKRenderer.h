@@ -34,7 +34,7 @@ namespace Cosmos
 	public:
 
 		// returns the backend instance class object
-		virtual std::shared_ptr<Instance> GetInstance() override;
+		Shared<VKInstance> GetInstance();
 
 		// returns the backend device class object
 		virtual std::shared_ptr<Device> GetDevice() override;
@@ -83,7 +83,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<VKInstance> mInstance;
+		Shared<VKInstance> mInstance;
 		std::shared_ptr<VKDevice> mDevice;
 		std::shared_ptr<VKSwapchain> mSwapchain;
 

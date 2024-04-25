@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Renderer/Instance.h"
-#include <vulkan/vulkan.h>
+#include "VKDefines.h"
 #include <memory>
 #include <vector>
 
 namespace Cosmos
 {
-	class VKInstance : public Instance
+	class VKInstance
 	{
 	public:
 
@@ -18,24 +17,24 @@ namespace Cosmos
 		VKInstance(const char* appName, const char* engineName, bool validations = true);
 
 		// destructor
-		virtual ~VKInstance();
+		~VKInstance();
 
 	public:
 
 		// returns a reference to the vulkan instance
-		virtual VkInstance GetInstance() override;
+		VkInstance GetInstance();
 
 		// returns a reference to the vulkan debug utils messenger
-		virtual VkDebugUtilsMessengerEXT GetDebugger() override;
+		VkDebugUtilsMessengerEXT GetDebugger();
 
 		// returns if validations are enabled
-		virtual bool GetValidations() override;
+		bool GetValidations();
 
 		// returns listed validations
-		virtual const std::vector<const char*> GetValidationsList() override;
+		const std::vector<const char*> GetValidationsList();
 
 		// returns the required extensions by the vkinstance
-		virtual std::vector<const char*> GetRequiredExtensions() override;
+		std::vector<const char*> GetRequiredExtensions();
 
 	private:
 

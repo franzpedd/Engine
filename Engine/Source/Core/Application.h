@@ -28,7 +28,7 @@ namespace Cosmos
 		static inline Application* GetInstance() { return sApplication; }
 
 		// returns the main window
-		inline std::shared_ptr<Window> GetWindow() { return mWindow; }
+		inline Shared<Window> GetWindow() { return mWindow; }
 
 		// returns the main camera
 		inline Shared<Camera> GetCamera() { return mCamera; }
@@ -37,10 +37,10 @@ namespace Cosmos
 		inline Shared<FramesPerSecond> GetFPSSystem() { return mFpsSystem; }
 
 		// returns the user interface
-		inline std::shared_ptr<GUI> GetGUI() { return mUI; }
+		inline Shared<GUI> GetGUI() { return mUI; }
 
 		// returns the active scene
-		inline std::shared_ptr<Scene> GetActiveScene() { return mScene; }
+		inline Shared<Scene> GetActiveScene() { return mScene; }
 
 	public:
 
@@ -53,10 +53,10 @@ namespace Cosmos
 	protected:
 
 		static Application* sApplication;
-		std::shared_ptr<Window> mWindow;
-		std::shared_ptr<Scene> mScene;
-		std::shared_ptr<Renderer> mRenderer;
-		std::shared_ptr<GUI> mUI;
+		Shared<Window> mWindow;
+		Shared<Scene> mScene;
+		Shared<Renderer> mRenderer;
+		Shared<GUI> mUI;
 		Shared<FramesPerSecond> mFpsSystem;
 		Shared<Camera> mCamera;
 	};
