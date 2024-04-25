@@ -2,262 +2,202 @@
 #include "Window.h"
 
 #include "Core/Application.h"
+#include "Event/InputEvent.h"
+#include "Event/WindowEvent.h"
+#include "Util/Memory.h"
 
-#define GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_VULKAN
-#include <glfw/glfw3.h>
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
+#include "UI/GUI.h"
 
 namespace Cosmos
 {
-	Window* Window::sWindow = nullptr;
+    Window::Window(const char* title, uint32_t width, uint32_t height)
+    {
+        mTitle = title;
+        mWidth = width;
+        mHeight = height;
 
-	Window::Window(const char* title, int width, int height)
-	{
-		LOG_ASSERT(sWindow == nullptr, "Window already created");
-		sWindow = this;
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
+        {
+            LOG_TO_TERMINAL(Logger::Error, "Failed to initialize SDL2");
+            return;
+        }
 
-		mTitle = title;
-		mWidth = width;
-		mHeight = height;
+        SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
-		if (glfwInit() != GLFW_TRUE)
-		{
-			LOG_ASSERT(false, "Failed to initialize GLFW");
-		}
-		
-		if (glfwVulkanSupported() != GLFW_TRUE)
-		{
-			LOG_ASSERT(false, "Your computer doesnt minimally support Vulkan");
-		}
-		
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        mWindow = SDL_CreateWindow
+        (
+            mTitle,
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            mWidth,
+            mHeight,
+            SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+        );
 
-		mWindow = glfwCreateWindow(width, height, title, nullptr, nullptr);
-		LOG_ASSERT(mWindow != nullptr, "Failed to create Window");
+        LOG_ASSERT(mWindow != nullptr, "Window could not be created. Error: %s", SDL_GetError());
+    }
 
-		glfwSetWindowUserPointer(mWindow, reinterpret_cast<void*>(this));
-		SetCallbacks();
-	}
+    Window::~Window()
+    {
+        SDL_DestroyWindow(mWindow);
+        SDL_Quit();
+    }
 
-	Window::~Window()
-	{
-		glfwDestroyWindow(mWindow);
-		glfwTerminate();
-	}
+    void Window::OnUpdate()
+    {
+        SDL_Event e;
 
-	double Window::GetTime()
-	{
-		return glfwGetTime();
-	}
+        while (SDL_PollEvent(&e))
+        {
+            GUI::HandleInternalEvent(&e);
 
-	void Window::GetCursorPosition(double* x, double* y)
-	{
-		glfwGetCursorPos(mWindow, x, y);
-	}
+            switch (e.type)
+            {
+                // input
+                case SDL_KEYDOWN:
+                {
+                    Shared<KeyboardPressEvent> event = CreateShared<KeyboardPressEvent>((Keycode)e.key.keysym.sym, e.key.keysym.mod = KMOD_NONE ? true : false);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	const char* Window::GetTitle() const
-	{
-		return mTitle;
-	}
+                case SDL_KEYUP:
+                {
+                    Shared<KeyboardReleaseEvent> event = CreateShared<KeyboardReleaseEvent>((Keycode)e.key.keysym.sym, e.key.keysym.mod = KMOD_NONE ? true : false);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	void Window::SetTitle(const char* title)
-	{
-		glfwSetWindowTitle(mWindow, title);
-		mTitle = title;
-	}
+                case SDL_MOUSEBUTTONDOWN:
+                {
+                    Shared<MousePressEvent> event = CreateShared<MousePressEvent>((Buttoncode)e.button.button);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	int Window::GetWidth() const
-	{
-		return mWidth;
-	}
+                case SDL_MOUSEBUTTONUP:
+                {
+                    Shared<MouseReleaseEvent> event = CreateShared<MouseReleaseEvent>((Buttoncode)e.button.button);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	void Window::SetWidth(int width)
-	{
-		glfwSetWindowSize(mWindow, width, mHeight);
-		mWidth = width;
-	}
+                case SDL_MOUSEWHEEL:
+                {
+                    Shared<MouseWheelEvent> event = CreateShared<MouseWheelEvent>(e.wheel.y);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	int Window::GetHeight() const
-	{
-		return mHeight;
-	}
+                case SDL_MOUSEMOTION:
+                {
+                    Shared<MouseMoveEvent> event = CreateShared<MouseMoveEvent>(e.motion.xrel, e.motion.yrel);
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	void Window::SetHeight(int height)
-	{
-		glfwSetWindowSize(mWindow, mWidth, height);
-		mHeight = height;
-	}
+                // window
+                case SDL_QUIT:
+                {
+                    mShouldQuit = true;
 
-	bool Window::IsKeyDown(Keycode key)
-	{
-		return glfwGetKey(mWindow, (int)key);
-	}
+                    Shared<WindowCloseEvent> event = CreateShared<WindowCloseEvent>();
+                    Application::GetInstance()->OnEvent(event);
+                    break;
+                }
 
-	bool Window::IsButtonDown(Buttoncode button)
-	{
-		return glfwGetMouseButton(mWindow, (int)button);
-	}
+                case SDL_WINDOWEVENT:
+                {
+                    if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    {
+                        mShouldResizeWindow = true;
 
-	int Window::Hovered()
-	{
-		return glfwGetWindowAttrib(mWindow, GLFW_HOVERED);
-	}
+                        Shared<WindowResizeEvent> event = CreateShared<WindowResizeEvent>(e.window.data1, e.window.data2);
+                        Application::GetInstance()->OnEvent(event);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-	void Window::OnUpdate()
-	{
-		PROFILER_FUNCTION();
+    void Window::GetFrameBufferSize(int32_t* width, int32_t* height)
+    {
+        SDL_GL_GetDrawableSize(mWindow, width, height);
+    }
 
-		glfwPollEvents();
-	}
+    float Window::GetAspectRatio()
+    {
+        int32_t width = 0;
+        int32_t height = 0;
+        GetFrameBufferSize(&width, &height);
 
-	bool Window::ShouldQuit()
-	{
-		return glfwWindowShouldClose(mWindow);
-	}
+        if (height == 0) // avoid division by 0
+        {
+            return 1.0f;
+        }
 
-	bool Window::ShouldResizeWindow() const
-	{
-		return mShouldResizeWindow;
-	}
+        return (float)(width / height);
+    }
 
-	void Window::HintResizeWindow(bool value)
-	{
-		mShouldResizeWindow = value;
-	}
+    bool Window::IsKeyPressed(Keycode key)
+    {
+        const uint8_t* keys = SDL_GetKeyboardState(nullptr);
 
-	void Window::ToogleCursorMode(bool hide)
-	{
-		if(hide)
-		{
-			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		}
+        return keys[(SDL_Scancode)key];
+    }
 
-		else
-		{
-			glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	}
+    bool Window::IsButtonPressed(Buttoncode button)
+    {
+        int32_t x, y;
 
-	int Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface, const VkAllocationCallbacks* allocator)
-	{
-		return (int)glfwCreateWindowSurface(instance, mWindow, allocator, surface);
-	}
+        if (SDL_GetMouseState(&x, &y) & SDL_BUTTON((uint32_t)button))
+        {
+            return true;
+        }
 
-	void Window::GetFramebufferSize(int* width, int* height)
-	{
-		glfwGetFramebufferSize(mWindow, width, height);
-	}
+        return false;
+    }
 
-	float Window::GetAspectRatio()
-	{
-		int width = 0;
-		int height = 0;
-		GetFramebufferSize(&width, &height);
+    void Window::ToggleCursor(bool hide)
+    {
+        if (hide)
+        {
+            SDL_ShowCursor(SDL_DISABLE);
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+        }
 
-		if (height == 0) // avoid division by 0
-		{
-			return 1.0f;
-		}
+        else
+        {
+            SDL_ShowCursor(SDL_ENABLE);
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+        }
+    }
 
-		return (float)width / (float)height;
-	}
+    void FramesPerSecond::StartFrame()
+    {
+        mStart = std::chrono::high_resolution_clock::now();
+    }
 
-	void Window::WaitEvents()
-	{
-		glfwWaitEvents();
-	}
+    void FramesPerSecond::EndFrame()
+    {
+        mEnd = std::chrono::high_resolution_clock::now();	// ends timer
+        mFrames++;											// add frame to the count
 
-	const char** Window::GetRequiredInstanceExtensions(unsigned int* count)
-	{
-		return glfwGetRequiredInstanceExtensions(count);
-	}
+        // calculates time taken by the renderer updating
+        mTimeDiff = std::chrono::duration<double, std::milli>(mEnd - mStart).count();
 
-	void Window::SetCallbacks()
-	{
-		// internal error
-		glfwSetErrorCallback([](int error, const char* desc)
-			{
-				LOG_TO_TERMINAL(Logger::Severity::Error, "GLFW Error %d:%s", error, desc);
-			});
+        mTimestep = (float)mTimeDiff / 1000.0f; // timestep
 
-		// window resized
-		glfwSetFramebufferSizeCallback(mWindow, [](GLFWwindow* window, int width, int height)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-				win->HintResizeWindow(true);
-			});
+        // calculates time taken by last timestamp and renderer finished
+        mFpsTimer += (float)mTimeDiff;
 
-		// unicode key presed
-		glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int keycode)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-			});
+        if (mFpsTimer > 1000.0f) // greater than next frame, reset frame counting
+        {
+            mLastFPS = (uint32_t)((float)mFrames * (1000.0f / mFpsTimer));
+            mFrames = 0;
+            mFpsTimer = 0.0f;
+        }
+    }
 
-		// keyboard key pressed
-		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-
-				if (action == GLFW_PRESS)
-				{
-					Application::Get()->OnKeyboardPress((Keycode)key);
-				}
-
-				else if (action == GLFW_RELEASE)
-				{
-					Application::Get()->OnKeyboardRelease((Keycode)key);
-				}
-			});
-
-		// mouse button pressed
-		glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-
-				if (action == GLFW_PRESS)
-				{
-					Application::Get()->OnMousePress((Buttoncode)button);
-				}
-				
-				else if (action == GLFW_RELEASE)
-				{
-					Application::Get()->OnMouseRelease((Buttoncode)button);
-				}
-			});
-
-		// mouse scrolled
-		glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double x, double y)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-
-				Application::Get()->OnMouseScroll((float)y);
-			});
-
-		// mouse moved
-		glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double x, double y)
-			{
-				Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-
-				float xPos = (float)x;
-				float yPos = (float)y;
-
-				if (win->GetData().mouseFirstMoved)
-				{
-					win->GetData().mouseLastX = xPos;
-					win->GetData().mouseLastY = yPos;
-					win->GetData().mouseFirstMoved = false;
-				}
-
-				float xOffset = xPos - win->GetData().mouseLastX;
-				float yOffset = yPos - win->GetData().mouseLastY; // check reversed order also
-
-				win->GetData().mouseLastX = xPos;
-				win->GetData().mouseLastY = yPos;
-				
-				Application::Get()->OnMouseMove(xOffset, yOffset);
-			});
-	}
 }

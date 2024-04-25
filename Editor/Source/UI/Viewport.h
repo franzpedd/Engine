@@ -62,7 +62,7 @@ namespace Cosmos
 		virtual void OnUpdate() override;
 
 		// window was recently resized
-		virtual void OnWindowResize() override;
+		virtual void OnEvent(Shared<Event> event) override;
 
 	private:
 

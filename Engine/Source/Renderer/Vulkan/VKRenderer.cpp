@@ -5,8 +5,9 @@
 #include "VKShader.h"
 #include "Entity/Renderable/Vertex.h"
 
+#include "Core/Application.h"
 #include "Core/Scene.h"
-#include "Platform/Window.h"
+#include "Event/WindowEvent.h"
 #include "UI/GUI.h"
 #include "Util/FileSystem.h"
 
@@ -182,17 +183,19 @@ namespace Cosmos
 
 			res = vkQueuePresentKHR(mDevice->GetPresentQueue(), &presentInfo);
 
-			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || Window::Get()->ShouldResizeWindow())
+			if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || Application::GetInstance()->GetWindow()->ShouldResizeWindow())
 			{
-				Window::Get()->HintResizeWindow(false);
+				Application::GetInstance()->GetWindow()->HintResizeWindow(false);
 				mSwapchain->Recreate();
 
-				float aspect = Window::Get()->GetAspectRatio();
+				Application::GetInstance()->GetCamera()->SetAspectRatio(Application::GetInstance()->GetWindow()->GetAspectRatio());
+				Application::GetInstance()->GetGUI()->SetImageCount(mSwapchain->GetImageCount());
 
-				Scene::Get()->GetCamera()->SetAspectRatio(Window::Get()->GetAspectRatio());
+				int32_t width = (int32_t)mSwapchain->GetExtent().width;
+				int32_t height = (int32_t)mSwapchain->GetExtent().height;
 
-				GUI::Get()->SetImageCount(mSwapchain->GetImageCount());
-				GUI::Get()->OnWindowResize();
+				Shared<WindowResizeEvent> event = CreateShared<WindowResizeEvent>(width, height);
+				Application::GetInstance()->OnEvent(event);
 			}
 
 			else if (res != VK_SUCCESS)
@@ -256,7 +259,7 @@ namespace Cosmos
 			// render scene, only if not on viewport
 			if (!mCommander->Exists("Viewport"))
 			{
-				Scene::Get()->OnRenderDraw();
+				Application::GetInstance()->GetActiveScene()->OnRender();
 			}
 
 			vkCmdEndRenderPass(cmdBuffer);
@@ -307,7 +310,7 @@ namespace Cosmos
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			// render scene and special widgets
-			Scene::Get()->OnRenderDraw();
+			Application::GetInstance()->GetActiveScene()->OnRender();
 
 			vkCmdEndRenderPass(cmdBuffer);
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Platform/Keycodes.h"
+#include "Event/Event.h"
+#include "Util/Memory.h"
 #include <vector>
 
 namespace Cosmos
@@ -24,30 +25,10 @@ namespace Cosmos
 		virtual void OnUpdate() {}
 
 		// for renderer drawing
-		virtual void OnRenderDraw() {}
-
-	public:
+		virtual void OnRender() {}
 
 		// // called when the window is resized
-		virtual void OnWindowResize() {}
-
-		// called when a mouse position changes
-		virtual void OnMouseMove(float x, float y) {}
-
-		// called when a mouse scroll happens
-		virtual void OnMouseScroll(float y) {}
-
-		// called when a mouse button was pressed
-		virtual void OnMousePress(Buttoncode button) {}
-
-		// called when a mouse button was released
-		virtual void OnMouseRelease(Buttoncode button) {}
-
-		// called when a keyboard key is pressed
-		virtual void OnKeyboardPress(Keycode key) {}
-
-		// called when a keyboard key is released
-		virtual void OnKeyboardRelease(Keycode key) {}
+		virtual void OnEvent(Shared<Event> event) {}
 
 	private:
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Entity/Entt.h"
 #include "Camera.h"
-#include "Platform/Keycodes.h"
 #include "Util/UUID.h"
 #include "Util/DataFile.h"
+
+#include "Wrapper_entt.h"
 #include <memory>
 
 namespace Cosmos
@@ -15,47 +15,26 @@ namespace Cosmos
 	class Renderer;
 	class GUI;
 
-	class Scene
+	class Scene : public std::enable_shared_from_this<Scene>
 	{
 	public:
 
-		enum Status
-		{
-			Initial = 0,
-			Paused,
-			Playing
-		};
-
-	public:
-
 		// constructor
-		Scene();
+		Scene(Shared<Renderer> renderer);
 
 		// destructor
-		~Scene() = default;
-
-		// returns the singleton
-		static inline Scene* Get() { return sScene; }
+		~Scene();
 
 	public:
 
-		// returns the status of the scene
-		inline Status GetStatus() const { return mStatus; }
-
-		// sets the scene to a new status
-		inline void SetStatus(Status status) { mStatus = status; }
+		// returns a smart reference to the scene object
+		std::shared_ptr<Scene> GetSmartRef() { return shared_from_this(); }
 
 		// returns a reference to the registry
 		inline entt::registry& GetRegistry() { return mRegistry; }
 
 		// returns a reference to the entity unordered map
 		inline std::unordered_map<std::string, Entity>& GetEntityMap() { return mEntityMap; }
-
-		// returns a renderer reference
-		inline std::shared_ptr<Camera>& GetCamera() { return mCamera; }
-
-		// connects the scene to the renderer
-		inline void ConnectRenderer(std::shared_ptr<Renderer> renderer) { mRenderer = renderer; }
 
 		// returns a renderer reference
 		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
@@ -80,13 +59,10 @@ namespace Cosmos
 		void OnUpdate(float timestep);
 
 		// draws the scene drawables
-		void OnRenderDraw();
+		void OnRender();
 
-		// cleans the entities resources
-		void Destroy();
-
-		// erases all entities(that contain components) of the scene
-		void CleanCurrentScene();
+		// event handling
+		void OnEvent(Shared<Event> event);
 
 		// loads a new scene
 		void Deserialize(DataFile& data);
@@ -94,29 +70,10 @@ namespace Cosmos
 		// serializes the scene and returns a structure with it serialized
 		DataFile Serialize();
 
-	public:
-
-		// mouse was recently moved
-		void OnMouseMove(float x, float y);
-
-		// mouse was recently scrolled
-		void OnMouseScroll(float y);
-
-		// keyboard key was recrently pressed
-		void OnKeyboardPress(Keycode key);
-
 	private:
 
-		static Scene* sScene;
-		Status mStatus = Initial;
-
+		Shared<Renderer> mRenderer;
 		entt::registry mRegistry;
-
-		// must be connected, at the moment the scene is initialized before renderer
-		std::shared_ptr<Renderer> mRenderer;
-
-		// must be connected, to pass view and projection for entities
-		std::shared_ptr<Camera> mCamera;
 
 		// holds the scene entities
 		std::unordered_map<std::string, Entity> mEntityMap = {};

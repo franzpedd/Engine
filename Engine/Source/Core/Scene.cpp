@@ -10,16 +10,16 @@
 
 namespace Cosmos
 {
-	Scene* Scene::sScene = nullptr;
-
-	Scene::Scene()
+	Scene::Scene(Shared<Renderer> renderer)
+		: mRenderer(renderer)
 	{
-		LOG_ASSERT(sScene == nullptr, "Scene already created");
-		sScene = this;
-
 		Logger() << "Creating Scene";
+	}
 
-		mCamera = std::make_shared<Camera>();
+	Scene::~Scene()
+	{
+		mEntityMap.clear();
+		mRegistry.clear();
 	}
 
 	Entity* Scene::CreateEntity(const char* name)
@@ -27,8 +27,7 @@ namespace Cosmos
 		UUID id = UUID();
 		entt::entity entt = mRegistry.create();
 
-		Entity entity{ entt };
-		entity.AddComponent<IDComponent>(id);
+		Entity entity{ shared_from_this(), mRegistry.create(), id };
 		entity.AddComponent<NameComponent>(name);
 		
 		mEntityMap[id] = entity;
@@ -78,28 +77,6 @@ namespace Cosmos
 
 	void Scene::OnUpdate(float timestep)
 	{
-		PROFILER_FUNCTION();
-
-		// update camera
-		mCamera->OnUpdate(timestep);
-
-		// updates only when playing
-		if (mStatus == Status::Playing)
-		{
-			// update scripts
-			mRegistry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& component)
-				{
-					if (component.script != nullptr)
-					{
-						component.script->OnUpdate(timestep);
-					}
-				});
-
-			// update sounds
-
-		}
-
-
 		// update models
 		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
 		for (auto ent : modelsGroup)
@@ -113,7 +90,7 @@ namespace Cosmos
 		}
 	}
 
-	void Scene::OnRenderDraw()
+	void Scene::OnRender()
 	{
 		GUI::Get()->OnRenderDraw();
 
@@ -134,26 +111,8 @@ namespace Cosmos
 		}
 	}
 
-	void Scene::Destroy()
+	void Scene::OnEvent(Shared<Event> event)
 	{
-		CleanCurrentScene();
-	}
-
-	void Scene::CleanCurrentScene()
-	{
-		LOG_TO_TERMINAL(Logger::Warn, "Erasing entity on the entitymap is crashing stuff");
-		
-		// erase all entities
-		for (auto& ent : mEntityMap)
-		{
-			if (mEntityMap.empty())
-				break;
-		
-			DestroyEntity(&ent.second);
-		}
-		
-		mEntityMap.clear();
-		mRegistry.clear();
 	}
 
 	void Scene::Deserialize(DataFile& data)
@@ -164,15 +123,13 @@ namespace Cosmos
 
 		for (size_t i = 0; i < entityCount; i++)
 		{
+			// get entity id
+			DataFile entityData = data["Entities"][i];
+			std::string id = entityData["Id"].GetString();
+
 			// create blank entity
 			entt::entity entt = mRegistry.create();
-			Entity entity = { entt };
-
-			DataFile entityData = data["Entities"][i];
-			
-			// add entity id
-			std::string id = entityData["Id"].GetString();
-			entity.AddComponent<IDComponent>(id);
+			Entity entity = { shared_from_this(), entt, id };
 			
 			// add entity name
 			std::string name = entityData["Name"].GetString();
@@ -203,7 +160,7 @@ namespace Cosmos
 				entity.AddComponent<ModelComponent>();
 				auto& component = entity.GetComponent<ModelComponent>();
 
-				component.model = std::make_shared<Model>(mRenderer, mCamera);
+				component.model = std::make_shared<Model>(mRenderer, Application::GetInstance()->GetCamera());
 
 				component.model->LoadFromFile(entityData["Model"]["Path"].GetString());
 				component.model->LoadAlbedoTexture(entityData["Model"]["Albedo"].GetString());
@@ -236,12 +193,12 @@ namespace Cosmos
 			if (entity == nullptr)
 				continue;
 
-			// discard entities that doesnt have id nor name
-			if (!entity->HasComponent<IDComponent>() || !entity->HasComponent<NameComponent>())
+			// discard entities that doesnt have name
+			if( !entity->HasComponent<NameComponent>())
 				continue;
 
 			// write name and id components, they should exists by default
-			std::string uuidComponent = entity->GetComponent<IDComponent>().id;
+			std::string uuidComponent = std::to_string(entity->GetUUID());
 			std::string nameComponent = entity->GetComponent<NameComponent>().name;
 
 			save["Entities"][uuidComponent]["Id"].SetString(uuidComponent);
@@ -287,20 +244,5 @@ namespace Cosmos
 		}
 
 		return save;
-	}
-
-	void Scene::OnMouseMove(float x, float y)
-	{
-		mCamera->OnMouseMove(x, y);
-	}
-
-	void Scene::OnMouseScroll(float y)
-	{
-		mCamera->OnMouseScroll(y);
-	}
-
-	void Scene::OnKeyboardPress(Keycode key)
-	{
-		mCamera->OnKeyboardPress(key);
 	}
 }

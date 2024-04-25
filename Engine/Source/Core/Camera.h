@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Platform/Keycodes.h"
+#include "Event/Event.h"
 #include "Util/Math.h"
+#include "Util/Memory.h"
 
 #include <memory>
 
@@ -25,11 +26,29 @@ namespace Cosmos
 		// destructor
 		~Camera() = default;
 
+	public:
+
+		// enables/disables the camera movement
+		inline void SetMove(bool value) { mShouldMove = value; }
+
+		// query if camera movement is enabled
+		inline bool CanMove() const { return mShouldMove; }
+
+		// returns camera's mode
+		inline Type GetType() const { return mType; }
+
+		// sets a new camera's mode
+		inline void SetType(Type type) { mType = type; }
+
+	public:
+
 		// returns the perspective/projection matrix, using defaults aspect ratio
 		glm::mat4& GetProjection();
 
 		// returns the view matrix
 		glm::mat4& GetView();
+
+	public:
 
 		// returns the camera field of view
 		float GetFov() const { return mFov; }
@@ -41,7 +60,7 @@ namespace Cosmos
 		float GetFar() const { return mZfar; }
 
 		// returns the camera eyes
-		glm::vec3& GetFront() { return camFront; }
+		glm::vec3& GetFront() { return mFront; }
 
 		// returns the current camera position
 		glm::vec3& GetPosition() { return mPosition; }
@@ -54,19 +73,13 @@ namespace Cosmos
 
 	public:
 
-		// mouse was recently moved
-		void OnMouseMove(float x, float y);
-
-		// mouse was recently scrolled
-		void OnMouseScroll(float y);
-
-		// keyboard key was recrently pressed
-		void OnKeyboardPress(Keycode key);
-
-	public:
-
 		// updates the camera
 		void OnUpdate(float timestep);
+
+		// event handling
+		void OnEvent(Shared<Event> event);
+
+	private:
 
 		// updates the camera's view
 		void UpdateViewMatrix();
@@ -93,9 +106,15 @@ namespace Cosmos
 		glm::mat4 mPerspective = glm::mat4(1.0f);
 		glm::mat4 mView = glm::mat4(1.0f);
 
-		glm::vec3 camFront = glm::vec3(0.0f);
+		glm::vec3 mFront = glm::vec3(0.0f);
 		glm::vec3 mRotation = glm::vec3(0.0f);
 		glm::vec3 mPosition = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::vec3 mScale = glm::vec3(1.0f);
+
+		// W A S D
+		bool mMovingForward = false;
+		bool mMovingBackward = false;
+		bool mMovingLeft = false;
+		bool mMovingRight = false;
 	};
 }

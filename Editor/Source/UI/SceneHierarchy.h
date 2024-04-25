@@ -12,7 +12,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		SceneHierarchy();
+		SceneHierarchy(Shared<Renderer> renderer, Shared<Camera> camera);
 
 		// destructor
 		virtual ~SceneHierarchy() = default;
@@ -54,6 +54,8 @@ namespace Cosmos
 
 	private:
 
+		Shared<Renderer> mRenderer;
+		Shared<Camera> mCamera;
 		Entity* mSelectedEntity = nullptr;
 	};
 }

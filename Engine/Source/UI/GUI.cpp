@@ -3,24 +3,16 @@
 
 #include "Icons.h"
 #include "Spectrum.h"
-#include "Platform/Window.h"
+#include "Core/Application.h"
+#include "Event/WindowEvent.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Renderer.h"
 #include "Util/FileSystem.h"
 
-// not using own implementation of GLFW + VULKAN for ImGUI
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 26451 )
-#endif
-
-#include <backends/imgui_impl_glfw.cpp>
-#include <backends/imgui_impl_vulkan.cpp>
-#include <ImGuizmo/imguizmo.h>
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+// Thirdparty/imgui_extra
+#include <imguizmo.cpp>
+#include <imgui_impl_sdl2.cpp>
+#include <imgui_impl_vulkan.cpp>
 
 #include <array>
 #include <vector>
@@ -45,7 +37,7 @@ namespace Cosmos
 	GUI::~GUI()
 	{
 		ImGui_ImplVulkan_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
+		ImGui_ImplSDL2_Shutdown();
 		ImGui::DestroyContext();
 
 		Commander::Get().Erase("ImGui", mRenderer->GetDevice()->GetDevice());
@@ -57,7 +49,7 @@ namespace Cosmos
 
 		// new frame
 		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 
@@ -81,24 +73,17 @@ namespace Cosmos
 	{
 		for (Widget* widget : mWidgetStack)
 		{
-			widget->OnRenderDraw();
+			widget->OnRender();
 		}
 	}
 
-	void GUI::Draw(VkCommandBuffer cmd)
+	void GUI::OnEvent(Shared<Event> event)
 	{
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-	}
-
-	void GUI::SetImageCount(uint32_t count)
-	{
-		ImGui_ImplVulkan_SetMinImageCount(count);
-	}
-
-	void GUI::OnWindowResize()
-	{
-		// recreate framebuffer based on image views
+		if (event->GetType() == EventType::WindowResize)
 		{
+			vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+
+			// recreate frame buffers
 			for (auto framebuffer : Commander::Get().GetEntries()["ImGui"]->framebuffers)
 			{
 				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
@@ -118,14 +103,35 @@ namespace Cosmos
 				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
 				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				LOG_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+
+				VK_ASSERT
+				(
+					vkCreateFramebuffer
+					(
+						mRenderer->GetDevice()->GetDevice(),
+						&framebufferCI,
+						nullptr,
+						&Commander::Get().GetEntries()["ImGui"]->framebuffers[i]
+					),
+					"Failed to create framebuffer"
+				);
 			}
 		}
 
 		for (Widget* widget : mWidgetStack)
 		{
-			widget->OnWindowResize();
+			widget->OnEvent(event);
 		}
+	}
+
+	void GUI::Draw(VkCommandBuffer cmd)
+	{
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+	}
+
+	void GUI::SetImageCount(uint32_t count)
+	{
+		ImGui_ImplVulkan_SetMinImageCount(count);
 	}
 
 	void GUI::SetupConfiguration()
@@ -193,7 +199,7 @@ namespace Cosmos
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
-		ImGui_ImplGlfw_InitForVulkan(Window::Get()->GetNativeWindow(), true);
+		ImGui_ImplSDL2_InitForVulkan(Application::GetInstance()->GetWindow()->GetNativeWindow());
 
 		ImGui_ImplVulkan_InitInfo initInfo = {};
 		initInfo.Instance = mRenderer->GetInstance()->GetInstance();
@@ -300,118 +306,23 @@ namespace Cosmos
 		}
 	}
 
-	void GUI::SetupCustomStyle()
+	void GUI::HandleInternalEvent(SDL_Event* e)
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
+		ImGui_ImplSDL2_ProcessEvent(e);
+	}
 
-		// Color palette
-		ImVec4 _black = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-		ImVec4 _white = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-		ImVec4 _grey = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-		ImVec4 _dark = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
-		ImVec4 _darkgrey = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
-		ImVec4 _lighgrey = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+	void UIToggleCursor(bool hide)
+	{
+		ImGuiIO& io = ImGui::GetIO();
 
-		// Colors
+		if (hide)
 		{
-			style.Colors[ImGuiCol_Text] = _white;
-			style.Colors[ImGuiCol_TextDisabled] = _grey;
-			style.Colors[ImGuiCol_WindowBg] = _dark;
-			style.Colors[ImGuiCol_ChildBg] = _dark;
-			style.Colors[ImGuiCol_PopupBg] = _dark;
-			style.Colors[ImGuiCol_Border] = _grey;
-			style.Colors[ImGuiCol_BorderShadow] = _black;
-			style.Colors[ImGuiCol_FrameBg] = _darkgrey;
-			style.Colors[ImGuiCol_FrameBgHovered] = _grey;
-			style.Colors[ImGuiCol_FrameBgActive] = _grey;
-			style.Colors[ImGuiCol_TitleBg] = _darkgrey;
-			style.Colors[ImGuiCol_TitleBgActive] = _darkgrey;
-			style.Colors[ImGuiCol_TitleBgCollapsed] = _darkgrey;
-			style.Colors[ImGuiCol_MenuBarBg] = _darkgrey;
-			style.Colors[ImGuiCol_ScrollbarBg] = _darkgrey;
-			style.Colors[ImGuiCol_ScrollbarGrabHovered] = _grey;
-			style.Colors[ImGuiCol_ScrollbarGrabActive] = _grey;
-			style.Colors[ImGuiCol_CheckMark] = _lighgrey;
-			style.Colors[ImGuiCol_SliderGrab] = _lighgrey;
-			style.Colors[ImGuiCol_SliderGrabActive] = _white;
-			style.Colors[ImGuiCol_Button] = _darkgrey;
-			style.Colors[ImGuiCol_ButtonHovered] = _grey;
-			style.Colors[ImGuiCol_ButtonActive] = _darkgrey;
-			style.Colors[ImGuiCol_Header] = _darkgrey;
-			style.Colors[ImGuiCol_HeaderHovered] = _grey;
-			style.Colors[ImGuiCol_HeaderActive] = _grey;
-			style.Colors[ImGuiCol_Separator] = _grey;
-			style.Colors[ImGuiCol_SeparatorHovered] = _grey;
-			style.Colors[ImGuiCol_SeparatorActive] = _grey;
-			style.Colors[ImGuiCol_ResizeGrip] = _darkgrey;
-			style.Colors[ImGuiCol_ResizeGripHovered] = _grey;
-			style.Colors[ImGuiCol_ResizeGripActive] = _grey;
-			style.Colors[ImGuiCol_Tab] = _darkgrey;
-			style.Colors[ImGuiCol_TabHovered] = _grey;
-			style.Colors[ImGuiCol_TabActive] = _grey;
-			style.Colors[ImGuiCol_TabUnfocused] = _grey;
-			style.Colors[ImGuiCol_TabUnfocused] = _grey;
-			style.Colors[ImGuiCol_TabUnfocusedActive] = _grey;
-			style.Colors[ImGuiCol_DockingPreview] = _grey;
-			style.Colors[ImGuiCol_DockingEmptyBg] = _grey;
-			style.Colors[ImGuiCol_PlotLines] = _white;
-			style.Colors[ImGuiCol_PlotLinesHovered] = _grey;
-			style.Colors[ImGuiCol_PlotHistogram] = _white;
-			style.Colors[ImGuiCol_PlotHistogramHovered] = _grey;
-			style.Colors[ImGuiCol_TableHeaderBg] = _dark;
-			style.Colors[ImGuiCol_TableBorderStrong] = _darkgrey;
-			style.Colors[ImGuiCol_TableBorderLight] = _grey;
-			style.Colors[ImGuiCol_TableRowBg] = _black;
-			style.Colors[ImGuiCol_TableRowBgAlt] = _white;
-			style.Colors[ImGuiCol_TextSelectedBg] = _darkgrey;
-			style.Colors[ImGuiCol_DragDropTarget] = _darkgrey;
-			style.Colors[ImGuiCol_NavHighlight] = _grey;
-			style.Colors[ImGuiCol_NavWindowingHighlight] = _grey;
-			style.Colors[ImGuiCol_NavWindowingDimBg] = _grey;
-			style.Colors[ImGuiCol_ModalWindowDimBg] = _grey;
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+			return;
 		}
-		 
-		// Style
-		{
-			// main
-			style.WindowPadding = ImVec2(5.0f, 0.0f);
-			style.FramePadding = ImVec2(10.0f, 10.0f);
-			style.CellPadding = ImVec2(10.0f, 10.0f);
-			style.ItemSpacing = ImVec2(5.0f, 5.0f);
-			style.ItemInnerSpacing = ImVec2(5.0f, 5.0f);
-			style.TouchExtraPadding = ImVec2(0.0f, 0.0f);
-			style.IndentSpacing = 15.0f;
-			style.ScrollbarSize = 10.0f;
-			style.GrabMinSize = 10.0f;
-			// border
-			style.WindowBorderSize = 0.0f;
-			style.ChildBorderSize = 0.0f;
-			style.PopupBorderSize = 0.0f;
-			style.FrameBorderSize = 0.0f;
-			style.TabBorderSize = 0.0f;
-			// rounding
-			style.WindowRounding = 3.0f;
-			style.ChildRounding = 3.0f;
-			style.FrameRounding = 3.0f;
-			style.PopupRounding = 3.0f;
-			style.ScrollbarRounding = 3.0f;
-			style.GrabRounding = 3.0f;
-			style.TabRounding = 3.0f;
-			// widgets
-			style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
-			style.WindowMenuButtonPosition = ImGuiDir_None;
-			style.ColorButtonPosition = ImGuiDir_Left;
-			style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
-			style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
-			style.SeparatorTextBorderSize = 5.0f;
-			style.SeparatorTextAlign = ImVec2(0.0f, 0.5f);
-			style.SeparatorTextPadding = ImVec2(20.0f, 0.0f);
-			style.LogSliderDeadzone = 0.0f;
-			// docking
-			style.DockingSeparatorSize = 0.0f;
-			// misc
-			style.DisplaySafeAreaPadding = ImVec2(0.0f, 0.0f);
-		}
+
+		io.ConfigFlags ^= ImGuiConfigFlags_NoMouse;
 	}
 
 	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout)

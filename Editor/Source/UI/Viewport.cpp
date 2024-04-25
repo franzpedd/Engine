@@ -3,7 +3,6 @@
 #include "SceneHierarchy.h"
 #include "TextureBrowser.h"
 
-#include <imguizmo/ImGuizmo.h>
 #include <array>
 
 namespace Cosmos
@@ -170,7 +169,7 @@ namespace Cosmos
 			
 			// updating aspect ratio for the docking
 			mCurrentSize = ImGui::GetWindowSize();
-			Scene::Get()->GetCamera()->SetAspectRatio((float)(mCurrentSize.x / mCurrentSize.y));
+			Application::GetInstance()->GetCamera()->SetAspectRatio((float)(mCurrentSize.x / mCurrentSize.y));
 			
 			// viewport boundaries
 			mContentRegionMin = ImGui::GetWindowContentRegionMin();
@@ -187,25 +186,53 @@ namespace Cosmos
 		ImGui::End();
 	}
 
-	void Viewport::OnWindowResize()
+	void Viewport::OnEvent(Shared<Event> event)
 	{
-		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
-
-		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
+		if (event->GetType() == EventType::KeyboardPress)
 		{
-			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
+			auto camera = Application::GetInstance()->GetCamera();
+			auto castedEvent = std::dynamic_pointer_cast<KeyboardPressEvent>(event);
+			Keycode key = castedEvent->GetKeycode();
+
+			// toggle editor viewport camera, move to viewport
+			if (key == KEY_Z)
+			{
+				if (camera->CanMove() && camera->GetType() == Camera::Type::EDITOR_FLY)
+				{
+					camera->SetMove(false);
+					Application::GetInstance()->GetWindow()->ToggleCursor(false);
+					UIToggleCursor(false);
+				}
+
+				else if (!camera->CanMove() && camera->GetType() == Camera::Type::EDITOR_FLY)
+				{
+					camera->SetMove(true);
+					Application::GetInstance()->GetWindow()->ToggleCursor(true);
+					UIToggleCursor(true);
+				}
+			}
 		}
 
-		for (auto& framebuffer : Commander::Get().GetEntries()["Viewport"]->framebuffers)
+		if (event->GetType() == EventType::WindowResize)
 		{
-			vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
-		}
+			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
+			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
 
-		CreateResources();
+			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
+			{
+				vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+				vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+				vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
+			}
+
+			for (auto& framebuffer : Commander::Get().GetEntries()["Viewport"]->framebuffers)
+			{
+				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
+			}
+
+			CreateResources();
+		}
 	}
 
 	void Viewport::CreateResources()
@@ -357,7 +384,7 @@ namespace Cosmos
 		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 		
 		// camera
-		auto& camera = Scene::Get()->GetCamera();
+		auto& camera = Application::GetInstance()->GetCamera();
 		glm::mat4 view = camera->GetView();
 		glm::mat4 proj = glm::perspectiveRH(glm::radians(camera->GetFov()), mCurrentSize.x / mCurrentSize.y, camera->GetNear(), camera->GetFar());
 
@@ -376,7 +403,7 @@ namespace Cosmos
 			glm::value_ptr(view),
 			glm::value_ptr(proj),
 			(ImGuizmo::OPERATION)mGizmoType,
-			ImGuizmo::LOCAL,
+			ImGuizmo::MODE::LOCAL,
 			glm::value_ptr(transform),
 			nullptr,
 			snap ? snapValues : nullptr

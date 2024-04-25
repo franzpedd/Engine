@@ -30,7 +30,7 @@ namespace Cosmos
 		vkDestroyPipeline(mRenderer->GetDevice()->GetDevice(), mGraphicsPipeline, nullptr);
 	}
 
-	void Grid::OnRenderDraw()
+	void Grid::OnRender()
 	{
 		if (!mVisible) return;
 
@@ -47,8 +47,8 @@ namespace Cosmos
 	{
 		UniformBufferObject ubo = {};
 		ubo.model = glm::mat4(1.0f);
-		ubo.view = Scene::Get()->GetCamera()->GetView();
-		ubo.proj = Scene::Get()->GetCamera()->GetProjection();
+		ubo.view = Application::GetInstance()->GetCamera()->GetView();
+		ubo.proj = Application::GetInstance()->GetCamera()->GetProjection();
 		
 		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
 	}

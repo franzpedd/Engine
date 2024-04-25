@@ -2,8 +2,8 @@
 
 namespace Cosmos
 {
-	SceneHierarchy::SceneHierarchy()
-		: Widget("UI:Scene Hierarchy")
+	SceneHierarchy::SceneHierarchy(Shared<Renderer> renderer, Shared<Camera> camera)
+		: Widget("UI:Scene Hierarchy"), mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Scene Hierarchy";
 	}
@@ -42,7 +42,7 @@ namespace Cosmos
 				
 				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
 				{
-					Entity* ent = Scene::Get()->CreateEntity();
+					Entity* ent = Application::GetInstance()->GetActiveScene()->CreateEntity();
 				}
 			}
 			ImGui::EndGroup();
@@ -51,7 +51,7 @@ namespace Cosmos
 		ImGui::EndMenuBar();
 		
 		// draws all existing entity nodes
-		for (auto& ent : Scene::Get()->GetEntityMap())
+		for (auto& ent : Application::GetInstance()->GetActiveScene()->GetEntityMap())
 		{
 			bool redraw = false;
 			DrawEntityNode(&ent.second, &redraw);
@@ -123,7 +123,7 @@ namespace Cosmos
 			{
 				if (ImGui::MenuItem("Remove Entity"))
 				{
-					Scene::Get()->DestroyEntity(mSelectedEntity);
+					Application::GetInstance()->GetActiveScene()->DestroyEntity(mSelectedEntity);
 					mSelectedEntity = nullptr;
 					*redraw = true;
 				}
@@ -143,7 +143,7 @@ namespace Cosmos
 			ImGui::Separator();
 
 			{
-				uint64_t id = entity->GetComponent<IDComponent>().id;
+				uint64_t id = entity->GetUUID();
 				std::string idStr = "ID: ";
 				idStr.append(std::to_string(id));
 
@@ -194,7 +194,7 @@ namespace Cosmos
 		DrawComponent<ModelComponent>("Model", mSelectedEntity, [&](ModelComponent& component)
 			{
 				if(!component.model)
-					component.model = std::make_shared<Model>(Scene::Get()->GetRenderer(), Scene::Get()->GetCamera());
+					component.model = std::make_shared<Model>(mRenderer, mCamera);
 
 				// model path
 				{

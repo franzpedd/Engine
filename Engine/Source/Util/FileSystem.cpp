@@ -20,7 +20,7 @@ namespace Cosmos::util
 		// assuming the folder we're in is Editor or Game
 		// this allows us to load stuff on editor or game relatively, it is hacky but allow
 		// files to be saved without full path directories
-		std::string assetsFolder = "../Data/";
+		std::string assetsFolder = "Data/";
 
 		return assetsFolder;
 	}

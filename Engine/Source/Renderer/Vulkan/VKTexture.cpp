@@ -5,7 +5,7 @@
 #include "VKDevice.h"
 #include "VKImage.h"
 
-#include "stb/stb_image.h"
+#include "Wrapper_stb.h"
 
 namespace Cosmos
 {

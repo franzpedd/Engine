@@ -1,0 +1,5 @@
+// disclaimer: This is here to "fix" the SDL.h path.
+// When using a linux-os the default SDL path when linked is SDL2/SDL.h however ImGui insists on SDL.h only
+// and will an error when compiled; 
+
+// imgui extensions are also here

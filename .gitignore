@@ -8,6 +8,7 @@ Thirdparty/glm
 Thirdparty/imgui
 Thirdparty/openal
 Thirdparty/premake
+Thirdparty/sdl
 Thirdparty/vulkan-sdk
 Editor/Build
 Editor/Profiler

@@ -21,17 +21,15 @@ namespace Cosmos
 
 		ImGuiWindowFlags flags = {};
 
-		auto& camera = Scene::Get()->GetCamera();
+		auto& camera = Application::GetInstance()->GetCamera();
 
 		ImGui::Begin("Info", nullptr, flags);
-		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::Get()->GetAverageFPS());
-		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::Get()->GetTimeStep());
+		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::GetInstance()->GetFPSSystem()->GetFPS());
+		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::GetInstance()->GetFPSSystem()->GetTimestep());
 		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", camera->GetRotation().x, camera->GetRotation().y, camera->GetRotation().z);
 
 		ImGui::End();
-
-		ImGui::ShowDemoWindow();
 	}
 
 	void Mainmenu::DisplayMainMenu()
@@ -82,7 +80,7 @@ namespace Cosmos
 		{
 			case Cosmos::Mainmenu::New:
 			{
-				if (!Scene::Get()->GetEntityMap().empty())
+				if (!Application::GetInstance()->GetActiveScene()->GetEntityMap().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}
@@ -98,7 +96,7 @@ namespace Cosmos
 			
 			case Cosmos::Mainmenu::Open:
 			{
-				if (!Scene::Get()->GetEntityMap().empty())
+				if (!Application::GetInstance()->GetActiveScene()->GetEntityMap().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}

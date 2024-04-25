@@ -6,14 +6,6 @@
 
 namespace Cosmos
 {
-	struct IDComponent
-	{
-		UUID id;
-
-		// constructor
-		IDComponent() = default;
-	};
-
 	struct NameComponent
 	{
 		std::string name;

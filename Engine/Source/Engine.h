@@ -8,6 +8,10 @@
 
 #include "Entity/Entity.h"
 
+#include "Event/Event.h"
+#include "Event/InputEvent.h"
+#include "Event/WindowEvent.h"
+
 #include "Debug/Logger.h"
 #include "Debug/Profiler.h"
 

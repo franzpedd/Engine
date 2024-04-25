@@ -1,125 +1,112 @@
 #pragma once
 
-#include "Platform/Keycodes.h"
-#include <memory>
-#include <vulkan/vulkan.h>
+#include "Defines.h"
+#include "Input.h"
 
-// forward declaration
-struct GLFWwindow;
+#include "Wrapper_sdl.h"
+
+#include <chrono>
+#include <vector>
 
 namespace Cosmos
 {
-	class Window
-	{
-	public:
+    class Window
+    {
+    public:
 
-		struct Data
-		{
-			bool lockMousePos = false;
-			bool mouseFirstMoved = true;
-			float mouseLastX = 0.0f;
-			float mouseLastY = 0.0f;
-		};
+        // constructor
+        Window(const char* title, uint32_t width, uint32_t height);
 
-	public:
+        // destructor
+        ~Window();
 
-		// constructor
-		Window(const char* title, int width, int height);
+        // returns the native window (sdl2)
+        inline SDL_Window* GetNativeWindow() { return mWindow; }
 
-		// destructor
-		~Window();
+    public:
 
-		// returns the singleton
-		static inline Window* Get() { return sWindow; }
+        // updates the window 
+        void OnUpdate();
 
-		// returns the native glfw window
-		inline GLFWwindow* GetNativeWindow() { return mWindow; }
+        // returns the framebuffer size
+        void GetFrameBufferSize(int32_t* width, int32_t* height);
 
-		// returns private members
-		inline Data& GetData() { return mData; }
+        // returns the window's aspect ratio
+        float GetAspectRatio();
 
-		// returns current time
-		double GetTime();
+        // returns if a keyboard keyis pressed
+        bool IsKeyPressed(Keycode key);
 
-	public:
+        // returns if a mouse button is pressed
+        bool IsButtonPressed(Buttoncode button);
 
-		// returns the cursor position
-		void GetCursorPosition(double* x, double* y);
+        // enables or disables the cursor
+        void ToggleCursor(bool hide);
 
-		// return window's title
-		const char* GetTitle() const;
+    public:
 
-		// sets a new window title
-		void SetTitle(const char* title);
+        // returns if the application should exit
+        inline bool ShouldQuit() const { return mShouldQuit; }
 
-		// return window's width
-		int GetWidth() const;
+        // returns if the window should be resized
+        inline bool ShouldResizeWindow() const { return mShouldResizeWindow; }
 
-		// sets a new window width
-		void SetWidth(int width);
+        // sets the window resize flag
+        inline void HintResizeWindow(bool value) { mShouldResizeWindow = value; }
 
-		// returns window's height
-		int GetHeight() const;
+    public:
 
-		// sets a new window height
-		void SetHeight(int height);
+        // returns the window's title
+        inline const char* GetTitle() { return mTitle; }
 
-		// returns if a key is pressed
-		bool IsKeyDown(Keycode key);
+        // returns the window's width
+        inline uint32_t GetWidth() const { return mWidth; }
 
-		// returns if a button is pressed
-		bool IsButtonDown(Buttoncode button);
+        // returns the window's height
+        inline uint32_t GetHeight() const { return mHeight; }
 
-		// returns if main window object is focused
-		int Hovered();
+    private:
 
-	public:
+        const char* mTitle = nullptr;
+        uint32_t mWidth = 0;
+        uint32_t mHeight = 0;
+        SDL_Window* mWindow = nullptr;
+        bool mShouldQuit = false;
+        bool mShouldResizeWindow = false;
+    };
 
-		// updates the window
-		void OnUpdate();
+    class FramesPerSecond
+    {
+    public:
 
-		// checks if application quit was requested
-		bool ShouldQuit();
+        // constructor
+        FramesPerSecond() = default;
 
-		// checks if window resize was requested
-		bool ShouldResizeWindow() const;
+        // destructor
+        ~FramesPerSecond() = default;
 
-		// sets the window should resize flag
-		void HintResizeWindow(bool value);
+        // returns the average fps count
+        inline uint32_t GetFPS() const { return mLastFPS; }
 
-		// hides/unhides cursor
-		void ToogleCursorMode(bool hide);
+        // returns the timestep
+        inline float GetTimestep() const { return mTimestep; }
 
-		// creates a window surface for vulkan
-		int CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface, const VkAllocationCallbacks* allocator);
+    public:
 
-		// gets the framebuffer size
-		void GetFramebufferSize(int* width, int* height);
+        // starts the frames per second count
+        void StartFrame();
 
-		// returns the window's aspect ratio
-		float GetAspectRatio();
+        // ends the frames per second count
+        void EndFrame();
 
-		// waits for all window events to be handled
-		void WaitEvents();
+    private:
 
-	public:
-
-		// returns VK_KHR_surface and OS-specific extension
-		static const char** GetRequiredInstanceExtensions(unsigned int* count);
-
-	private:
-
-		// set event callbacks
-		void SetCallbacks();
-
-	private:
-
-		static Window* sWindow;
-		const char* mTitle;
-		int mWidth;
-		int mHeight;
-		GLFWwindow* mWindow;
-		bool mShouldResizeWindow = false;
-		Data mData;
-	};
+        std::chrono::high_resolution_clock::time_point mStart;
+        std::chrono::high_resolution_clock::time_point mEnd;
+        double mTimeDiff = 0.0f;
+        float mFpsTimer = 0.0f;
+        uint32_t mFrames = 0; // average fps
+        float mTimestep = 1.0f; // timestep/delta time (used to update logic)
+        uint32_t mLastFPS = 0;
+    };
 }

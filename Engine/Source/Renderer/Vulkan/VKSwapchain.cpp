@@ -4,7 +4,7 @@
 #include "VKDevice.h"
 #include "VKInstance.h"
 #include "VKImage.h"
-#include "Platform/Window.h"
+#include "Core/Application.h"
 #include "Renderer/Commander.h"
 
 namespace Cosmos
@@ -332,14 +332,16 @@ namespace Cosmos
 
 	void VKSwapchain::Recreate()
 	{
-		int width = 0;
-		int height = 0;
-		Window::Get()->GetFramebufferSize(&width, &height);
+		SDL_Event e;
+
+		int32_t width = 0;
+		int32_t height = 0;
+		SDL_Vulkan_GetDrawableSize(Application::GetInstance()->GetWindow()->GetNativeWindow(), &width, &height);
 
 		while (width == 0 || height == 0)
 		{
-			Window::Get()->GetFramebufferSize(&width, &height);
-			Window::Get()->WaitEvents();
+			SDL_Vulkan_GetDrawableSize(Application::GetInstance()->GetWindow()->GetNativeWindow(), &width, &height);
+			SDL_WaitEvent(&e);
 		}
 
 		vkDeviceWaitIdle(mDevice->GetDevice());
@@ -436,8 +438,8 @@ namespace Cosmos
 
 		else
 		{
-			int width, height;
-			Window::Get()->GetFramebufferSize(&width, &height);
+			int32_t width, height;
+			SDL_Vulkan_GetDrawableSize(Application::GetInstance()->GetWindow()->GetNativeWindow(), &width, &height);
 
 			VkExtent2D actualExtent = { (uint32_t)width, (uint32_t)height };
 			actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);

@@ -1,6 +1,7 @@
 #include "epch.h"
 #include "VKDevice.h"
 
+#include "Core/Application.h"
 #include "VKInstance.h"
 #include "Platform/Window.h"
 
@@ -16,7 +17,11 @@ namespace Cosmos
 	{
 		Logger() << "Creating VKDevice";
 
-		Window::Get()->CreateWindowSurface(instance->GetInstance(), &mSurface, nullptr);
+		if (!SDL_Vulkan_CreateSurface(Application::GetInstance()->GetWindow()->GetNativeWindow(), mInstance->GetInstance(), &mSurface))
+		{
+			LOG_TO_TERMINAL(Logger::Assert, "Error when creating SDL Window Surface for Vulkan. Error: %s", SDL_GetError());
+		}
+
 		SelectPhysicalDevice();
 
 		// get physical device properties

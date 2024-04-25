@@ -8,9 +8,8 @@
 #include "Core/Application.h"
 #include "Core/Scene.h"
 #include "Debug/Logger.h"
-#include "Entity/EnTT.h"
-#include "Platform/Keycodes.h"
 
+#include "Wrapper_entt.h"
 #include <vector>
 
 namespace Cosmos
@@ -23,16 +22,16 @@ namespace Cosmos
 		Entity() = default;
 
 		// constructor with an id already assigned
-		Entity(entt::entity id) : mEntityHandle(id) {}
+		Entity(Shared<Scene> scene, entt::entity enttHandle, UUID id);
 
 		// destructor
-		virtual ~Entity() = default;
+		~Entity() = default;
 
 		// returns EnTT handle
 		inline entt::entity GetHandle() const { return mEntityHandle; }
 
 		// returns the entity uuid
-		inline UUID GetUUID() { return GetComponent<IDComponent>().id; }
+		inline UUID GetUUID() { return mUUID; }
 
 	public:
 
@@ -48,33 +47,34 @@ namespace Cosmos
 		template<typename T>
 		bool HasComponent()
 		{
-			return Scene::Get()->GetRegistry().all_of<T>(mEntityHandle);
+			return mScene->GetRegistry().all_of<T>(mEntityHandle);
 		}
 
 		// adds a component for the entity
 		template<typename T, typename...Args>
 		T& AddComponent(Args&&... args)
 		{
-			return Scene::Get()->GetRegistry().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
+			return mScene->GetRegistry().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
 		}
 
 		// returns the component
 		template<typename T>
 		T& GetComponent()
 		{
-			return Scene::Get()->GetRegistry().get<T>(mEntityHandle);
+			return mScene->GetRegistry().get<T>(mEntityHandle);
 		}
 
 		// removes the component
 		template<typename T>
 		void RemoveComponent()
 		{
-			Scene::Get()->GetRegistry().remove<T>(mEntityHandle);
+			mScene->GetRegistry().remove<T>(mEntityHandle);
 		}
 
 	protected:
 
-		bool mSelected = false;
+		Shared<Scene> mScene;
 		entt::entity mEntityHandle = entt::null;
+		UUID mUUID = 0;
 	};
 }

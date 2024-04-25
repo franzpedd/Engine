@@ -1,7 +1,8 @@
 #include "epch.h"
 #include "Camera.h"
 
-#include "Platform/Window.h"
+#include "Application.h"
+#include "Event/InputEvent.h"
 #include "UI/GUI.h"
 
 namespace Cosmos
@@ -9,7 +10,7 @@ namespace Cosmos
 	Camera::Camera()
 	{
 		// initial camera aspect ratio
-		mAspectRatio = Window::Get()->GetAspectRatio();
+		mAspectRatio = Application::GetInstance()->GetWindow()->GetAspectRatio();
 
 		// update initial position
 		UpdateViewMatrix();
@@ -37,65 +38,86 @@ namespace Cosmos
 		mAspectRatio = aspect;
 	}
 
-	void Camera::OnMouseMove(float x, float y)
-	{
-		if (!mShouldMove) return;
-
-		// disables scene flipping 
-		if (mRotation.x >= 89.0f) mRotation.x = 89.0f;
-		if (mRotation.x <= -89.0f) mRotation.x = -89.0f;
-
-		// fix rotation
-		if (mRotation.x >= 360.0f) mRotation.x = 0.0f;
-		if (mRotation.x <= -360.0f) mRotation.x = 0.0f;
-		if (mRotation.y >= 360.0f) mRotation.y = 0.0f;
-		if (mRotation.y <= -360.0f) mRotation.y = 0.0f;
-
-		Rotate(glm::vec3(-y * mRotationSpeed * 0.5f, x * mRotationSpeed * 0.5f, 0.0f));
-	}
-
-	void Camera::OnMouseScroll(float y)
-	{
-		// doing nothing right now
-	}
-
-	void Camera::OnKeyboardPress(Keycode key)
-	{
-		if (!Window::Get()->Hovered()) // disable outside window commands
-			return;
-
-		if (key == KEY_Z && mShouldMove && mType == EDITOR_FLY)
-		{
-			mShouldMove = false;
-			Window::Get()->ToogleCursorMode(false);
-			ToogleMouseCursor(false);
-		}
-
-		else if (key == KEY_Z && !mShouldMove && mType == EDITOR_FLY)
-		{
-			mShouldMove = true;
-			Window::Get()->ToogleCursorMode(true);
-			ToogleMouseCursor(true);
-		}
-	}
-
 	void Camera::OnUpdate(float timestep)
 	{
-		if (!mShouldMove) return;
+		if (!mShouldMove)
+			return;
 
-		camFront.x = -cos(glm::radians(mRotation.x)) * sin(glm::radians(mRotation.y));
-		camFront.y = sin(glm::radians(mRotation.x));
-		camFront.z = cos(glm::radians(mRotation.x)) * cos(glm::radians(mRotation.y));
-		camFront = glm::normalize(camFront);
+		mFront.x = -cos(glm::radians(mRotation.x)) * sin(glm::radians(mRotation.y));
+		mFront.y = sin(glm::radians(mRotation.x));
+		mFront.z = cos(glm::radians(mRotation.x)) * cos(glm::radians(mRotation.y));
 
 		float moveSpeed = timestep * mMovementSpeed;
 
-		if (Window::Get()->IsKeyDown(KEY_W)) mPosition += camFront * moveSpeed;
-		if (Window::Get()->IsKeyDown(KEY_S)) mPosition -= camFront * moveSpeed;
-		if (Window::Get()->IsKeyDown(KEY_A)) mPosition -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-		if (Window::Get()->IsKeyDown(KEY_D)) mPosition += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+		if (mMovingForward) mPosition += mFront * moveSpeed;
+		if (mMovingBackward) mPosition -= mFront * moveSpeed;
+		if (mMovingLeft) mPosition -= glm::normalize(glm::cross(mFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+		if (mMovingRight) mPosition += glm::normalize(glm::cross(mFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
 
 		UpdateViewMatrix();
+	}
+
+	void Camera::OnEvent(Shared<Event> event)
+	{
+		switch (event->GetType())
+		{
+			case EventType::MouseMove:
+			{
+				if (!mShouldMove) return;
+
+				// avoid scene flip
+				if (mRotation.x >= 89.0f) mRotation.x = 89.0f;
+				if (mRotation.x <= -89.0f) mRotation.x = -89.0f;
+
+				// reset rotation on 360 degrees
+				if (mRotation.x >= 360.0f) mRotation.x = 0.0f;
+				if (mRotation.x <= -360.0f) mRotation.x = 0.0f;
+				if (mRotation.y >= 360.0f) mRotation.y = 0.0f;
+				if (mRotation.y <= -360.0f) mRotation.y = 0.0f;
+
+				float x = (float)std::dynamic_pointer_cast<MouseMoveEvent>(event)->GetXOffset();
+				float y = (float)std::dynamic_pointer_cast<MouseMoveEvent>(event)->GetYOffset();
+
+				Rotate(glm::vec3(-y * mRotationSpeed * 0.5f, x * mRotationSpeed * 0.5f, 0.0f));
+				break;
+			}
+
+			case EventType::MouseWheel:
+			{
+				if (!mShouldMove) return;
+
+				float delta = (float)std::dynamic_pointer_cast<MouseWheelEvent>(event)->GetDelta();
+
+				mPosition += delta * mMovementSpeed;
+				break;
+			}
+
+			case EventType::KeyboardPress:
+			{
+				auto castedEvent = std::dynamic_pointer_cast<KeyboardPressEvent>(event);
+				Keycode key = castedEvent->GetKeycode();
+
+				if (key == KEY_W && mShouldMove) mMovingForward = true;
+				if (key == KEY_S && mShouldMove) mMovingBackward = true;
+				if (key == KEY_A && mShouldMove) mMovingLeft = true;
+				if (key == KEY_D && mShouldMove) mMovingRight = true;
+
+				break;
+			}
+
+			case EventType::KeyboardRelease:
+			{
+				auto castedEvent = std::dynamic_pointer_cast<KeyboardReleaseEvent>(event);
+				Keycode key = castedEvent->GetKeycode();
+
+				if (key == KEY_W && mShouldMove) mMovingForward = false;
+				if (key == KEY_S && mShouldMove) mMovingBackward = false;
+				if (key == KEY_A && mShouldMove) mMovingLeft = false;
+				if (key == KEY_D && mShouldMove) mMovingRight = false;
+
+				break;
+			}
+		}
 	}
 
 	void Camera::UpdateViewMatrix()

@@ -21,7 +21,7 @@ namespace Cosmos
 	public:
 
 		// draws the entity (leave empty if not required)
-		virtual void OnRenderDraw() override;
+		virtual void OnRender() override;
 
 		// updates the entity (leave empty if doesnt required)
 		virtual void OnUpdate() override;

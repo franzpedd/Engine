@@ -25,7 +25,7 @@ namespace Cosmos
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
 		mTextureBrowser = new TextureBrowser(mRenderer);
-		mSceneHierarchy = new SceneHierarchy();
+		mSceneHierarchy = new SceneHierarchy(mRenderer, mCamera);
 		mViewport = new Viewport(mRenderer, mSceneHierarchy, mTextureBrowser);
 		mGrid = new Grid(mRenderer);
 		mMainmenu = new Mainmenu(mProject, mGrid, mSceneHierarchy);

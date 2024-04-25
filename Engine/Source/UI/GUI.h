@@ -3,21 +3,9 @@
 #include "Widget.h"
 #include "Renderer/Commander.h"
 #include "Util/Math.h"
-#include <vulkan/vulkan.h>
 
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 26451 26495 6255 6001 6263 )
-#endif
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <ImGuizmo/imguizmo.h>
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+#include "Wrapper_imgui.h"
+#include "Wrapper_sdl.h"
 
 #include <memory>
 
@@ -64,14 +52,14 @@ namespace Cosmos
 		// updates the draw calls with extra draw calls (outside imgui)
 		void OnRenderDraw();
 
+		// event handling
+		void OnEvent(Shared<Event> event);
+
 		// draws the ui
 		void Draw(VkCommandBuffer cmd);
 
 		// sets the minimum image count, used whenever the swapchain is resized and image count change
 		void SetImageCount(uint32_t count);
-
-		// handles framebuffer resizes
-		void OnWindowResize();
 
 	public:
 
@@ -81,8 +69,8 @@ namespace Cosmos
 		// create vulkan resources
 		void CreateResources();
 
-		// ui style
-		void SetupCustomStyle();
+		// sends sdl events to user interface
+		static void HandleInternalEvent(SDL_Event* e);
 
 	private:
 
@@ -91,6 +79,9 @@ namespace Cosmos
 		Fonts mFonts;
 		WidgetStack mWidgetStack;
 	};
+
+	// toogles on or off the mouse cursor
+	void UIToggleCursor(bool hide);
 
 	// adds a texture in the user interface for later usage
 	VkDescriptorSet AddTexture(VkSampler sampler, VkImageView view, VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

@@ -1,7 +1,7 @@
 #include "epch.h"
 #include "VKInstance.h"
 
-#include "Platform/Window.h"
+#include "Core/Application.h"
 
 namespace Cosmos
 {
@@ -111,21 +111,20 @@ namespace Cosmos
 
 	std::vector<const char*> VKInstance::GetRequiredExtensions()
 	{
-		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions;
-		glfwExtensions = Window::GetRequiredInstanceExtensions(&glfwExtensionCount);
+		uint32_t count = 0;
+		SDL_Vulkan_GetInstanceExtensions(Application::GetInstance()->GetWindow()->GetNativeWindow(), &count, NULL);
 
-		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-		//extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+		std::vector<const char*> extensions(count);
+		SDL_Vulkan_GetInstanceExtensions(Application::GetInstance()->GetWindow()->GetNativeWindow(), &count, extensions.data());
+
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+		//extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
 		if (mValidations)
 		{
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-
 		}
-
 		return extensions;
 	}
 

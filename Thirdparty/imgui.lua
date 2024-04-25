@@ -19,13 +19,7 @@ project "ImGui"
         "imgui/imgui.cpp",
         "imgui/imstb_rectpack.h",
         "imgui/imstb_textedit.h",
-        "imgui/imstb_truetype.h",
-
-        "imgui/backends/imgui_impl_glfw.h",
-        "imgui/backends/imgui_impl_vulkan.h",
-
-        "imgui/imguizmo/ImGuizmo.h",
-        "imgui/imguizmo/ImGuizmo.cpp"
+        "imgui/imstb_truetype.h"
     }
 
     includedirs
@@ -39,12 +33,6 @@ project "ImGui"
         symbols "On"
     
     filter "configurations:Release"
+        warnings "Default"
         runtime "Release"
         optimize "On"
-
-    filter "toolset:vs*"
-        defines
-        { 
-            "IMGUI_API __declspec( dllexport )",
-            "IMGUI_API __declspec( dllimport )"
-        }
