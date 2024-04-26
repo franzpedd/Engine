@@ -10,9 +10,11 @@
 #if defined(PLATFORM_LINUX) && defined(INCLUDE_VULKAN_RENDERER)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
+#include <SDL2/SDL_scancode.h>
 #elif defined(PLATFORM_WINDOWS) && defined(INCLUDE_VULKAN_RENDERER)
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <SDL_scancode.h>
 #endif
 
 #if defined(PLATFORM_WINDOWS)

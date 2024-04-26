@@ -21,7 +21,7 @@ namespace Cosmos
 
 		ImGuiWindowFlags flags = {};
 
-		auto& camera = Application::GetInstance()->GetCamera();
+		auto camera = Application::GetInstance()->GetCamera();
 
 		ImGui::Begin("Info", nullptr, flags);
 		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::GetInstance()->GetFPSSystem()->GetFPS());

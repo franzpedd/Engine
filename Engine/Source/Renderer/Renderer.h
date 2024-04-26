@@ -1,7 +1,6 @@
 #pragma once
 #include "Defines.h"
 
-#include "Instance.h"
 #include "Device.h"
 #include "Swapchain.h"
 

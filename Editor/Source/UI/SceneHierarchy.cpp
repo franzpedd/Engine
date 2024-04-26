@@ -157,7 +157,7 @@ namespace Cosmos
 				auto& name = entity->GetComponent<NameComponent>().name;
 				char buffer[ENTITY_NAME_MAX_CHARS];
 				memset(buffer, 0, sizeof(buffer));
-				strncpy_s(buffer, sizeof(buffer), name.c_str(), sizeof(buffer));
+				std::strncpy(buffer, name.c_str(), sizeof(buffer));
 
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
 
@@ -203,10 +203,10 @@ namespace Cosmos
 					ImGui::Text(ICON_FA_CUBE " ");
 					ImGui::SameLine();
 
-					auto& modelPath = component.model->GetPath();
+					auto modelPath = component.model->GetPath();
 					char buffer[ENTITY_NAME_MAX_CHARS];
 					memset(buffer, 0, sizeof(buffer));
-					strncpy_s(buffer, sizeof(buffer), modelPath.c_str(), sizeof(buffer));
+					std::strncpy(buffer, modelPath.c_str(), sizeof(buffer));
 
 					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
@@ -233,10 +233,10 @@ namespace Cosmos
 					ImGui::Text(ICON_FA_PAINT_BRUSH " ");
 					ImGui::SameLine();
 					
-					auto& texturePath = component.model->GetAlbedoPath();
+					auto texturePath = component.model->GetAlbedoPath();
 					char buffer[ENTITY_NAME_MAX_CHARS];
 					memset(buffer, 0, sizeof(buffer));
-					strncpy_s(buffer, sizeof(buffer), texturePath.c_str(), sizeof(buffer));
+					std::strncpy(buffer, texturePath.c_str(), sizeof(buffer));
 					
 					//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
 					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
@@ -273,7 +273,7 @@ namespace Cosmos
 					auto& soundPath = component.source->GetPath();
 					char buffer[ENTITY_NAME_MAX_CHARS];
 					memset(buffer, 0, sizeof(buffer));
-					strncpy_s(buffer, sizeof(buffer), soundPath.c_str(), sizeof(buffer));
+					std::strncpy(buffer, soundPath.c_str(), sizeof(buffer));
 
 					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
@@ -309,7 +309,7 @@ namespace Cosmos
 	}
 
 	template<typename T, typename F>
-	static void SceneHierarchy::DrawComponent(const char* name, Entity* entity, F func)
+	void SceneHierarchy::DrawComponent(const char* name, Entity* entity, F func)
 	{
 		if (entity == nullptr)
 			return;

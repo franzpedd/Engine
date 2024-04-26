@@ -5,7 +5,7 @@
 
 namespace Cosmos
 {
-	VkResult BufferCreate(std::shared_ptr<Device>& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
+	VkResult BufferCreate(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
 	{
 		// specify buffer
 		VkBufferCreateInfo bufferCI = {};
@@ -53,7 +53,7 @@ namespace Cosmos
 		return VK_SUCCESS;
 	}
 
-	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool)
+	VkCommandBuffer BeginSingleTimeCommand(std::shared_ptr<VKDevice> device, VkCommandPool& commandPool)
 	{
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -73,7 +73,7 @@ namespace Cosmos
 		return commandBuffer;
 	}
 
-	void EndSingleTimeCommand(std::shared_ptr<VKDevice>& device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer)
+	void EndSingleTimeCommand(std::shared_ptr<VKDevice> device, VkCommandPool& commandPool, VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 

@@ -5,11 +5,12 @@
 #include "VKDevice.h"
 #include "VKImage.h"
 
-#include "Wrapper_stb.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "wrapper_stb.h"
 
 namespace Cosmos
 {
-	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice>& device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
+	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
 		: mDevice(device), mPath(path), mMSAA(msaa), mKTX(ktx)
 	{
 		LOG_ASSERT(!ktx, "Khronos Texture format not yet implemented");

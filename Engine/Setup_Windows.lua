@@ -28,8 +28,7 @@ project "Engine"
         "%{includes.ImGui}",
         "%{includes.ImGuiExtra}",
         "%{includes.EnTT}",
-        "%{includes.STB}",
-        "%{includes.Assimp}",
+        "%{includes.STB}"
 
         "%{vulkan_path}/Include",
         "%{wks.location}/Thirdparty/sdl/SDL2-2.30.2/include",

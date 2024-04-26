@@ -3,7 +3,7 @@
 #include "Defines.h"
 #include "Input.h"
 
-#include "Wrapper_sdl.h"
+#include "wrapper_sdl.h"
 
 #include <chrono>
 #include <vector>

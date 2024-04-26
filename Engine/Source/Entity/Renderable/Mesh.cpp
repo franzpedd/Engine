@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-	Mesh::Mesh(std::shared_ptr<Renderer>& renderer, std::vector<Vertex> vertices, std::vector<uint32_t> indices)
+	Mesh::Mesh(std::shared_ptr<Renderer> renderer, std::vector<Vertex> vertices, std::vector<uint32_t> indices)
 		: mRenderer(renderer), mVertices(vertices), mIndices(indices)
 	{
 		CreateResources();

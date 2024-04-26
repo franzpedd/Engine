@@ -1,7 +1,9 @@
 #include "epch.h"
 #include "WaveLoader.h"
 
+#include <cstring>
 #include <fstream>
+#include <iterator>
 
 namespace Cosmos::sound
 {

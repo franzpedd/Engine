@@ -4,8 +4,8 @@
 #include "Renderer/Commander.h"
 #include "Util/Math.h"
 
-#include "Wrapper_imgui.h"
-#include "Wrapper_sdl.h"
+#include "wrapper_imgui.h"
+#include "wrapper_sdl.h"
 
 #include <memory>
 

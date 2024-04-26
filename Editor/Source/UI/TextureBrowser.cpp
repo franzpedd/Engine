@@ -39,7 +39,7 @@ namespace Cosmos
 
 			char buffer[MAX_SEARCH_PATH_SIZE];
 			memset(buffer, 0, sizeof(buffer));
-			strncpy_s(buffer, sizeof(buffer), mSearchStr.c_str(), sizeof(buffer));
+			std::strncpy(buffer, mSearchStr.c_str(), sizeof(buffer));
 			
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
 			{

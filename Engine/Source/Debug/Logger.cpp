@@ -22,14 +22,15 @@ namespace Cosmos
 		vsnprintf(buffer, LOG_MAX_SIZE, msg, args);
 		va_end(args);
 
-		time_t ttime = time(0);
-		tm* local_time = new tm();
-		localtime_s(local_time, &ttime);
+		time_t now = time(NULL);
+		char buf[40];
+		struct tm tstruct = *localtime(&now);
+		strftime(buf, sizeof(buf), "%X", &tstruct); // format: HH:MM:SS
 
 		// external console
 		{
 			std::ostringstream oss;
-			oss << "[" << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+			oss << "[" << buf << "]";
 			oss << "[" << SeverityToConstChar(severity) << "]";
 			oss << ": " << buffer;
 
@@ -46,16 +47,13 @@ namespace Cosmos
 		// os console
 		{
 			std::ostringstream oss;
-			oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
-			oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+			oss << "[" << buf <<  "]";
 			oss << "[" << file << " - " << line << "]";
 			oss << "[" << SeverityToConstChar(severity) << "]";
 			oss << ": " << buffer;
 
 			printf("%s\n", oss.str().c_str());
-		}	
-
-		delete local_time;
+		}
 	}
 	
 	void Logger::ToFile(Severity severity, const char* path, const char* file, int line, const char* msg, ...)
@@ -68,13 +66,13 @@ namespace Cosmos
 		vsnprintf(buffer, LOG_MAX_SIZE, msg, args);
 		va_end(args);
 
-		time_t ttime = time(0);
-		tm* local_time = new tm();
-		localtime_s(local_time, &ttime);
+		time_t now = time(NULL);
+		char buf[40];
+		struct tm tstruct = *localtime(&now);
+		strftime(buf, sizeof(buf), "%X", &tstruct); // format: HH:MM:SS
 
 		std::stringstream oss;
-		oss << "[" << local_time->tm_mday << "/" << 1 + local_time->tm_mon << "/" << 1900 + local_time->tm_year;
-		oss << " - " << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << "]";
+		oss << "[" << buf << "]";
 		oss << "[" << file << " - " << line << "]";
 		oss << "[" << SeverityToConstChar(severity) << "]";
 		oss << ": " << buffer;
@@ -82,8 +80,6 @@ namespace Cosmos
 		fprintf(f, "%s\n", oss.str().c_str());
 
 		fclose(f);
-
-		delete local_time;
 	}
 
 	const char* Logger::SeverityToConstChar(Severity severity)

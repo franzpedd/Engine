@@ -16,14 +16,17 @@ project "Editor"
     includedirs
     {
         "%{includes.Engine}/Source",
-        "%{includes.Engine}/Utility",
+        "%{includes.Engine}/Wrapper",
 
         "%{includes.Editor}/Source",
         "%{includes.GLM}",
         "%{includes.ImGui}",
         "%{includes.ImGuiExtra}",
         "%{includes.EnTT}",
-        "%{includes.STB}"
+        "%{includes.STB}",
+
+        "%{wks.location}/Thirdparty/assimp/include",
+        "%{wks.location}/Thirdparty/openal/include"
     }
 
     links
@@ -31,18 +34,30 @@ project "Editor"
         "Engine",
         "ImGui"
     }
-
     
     filter "configurations:Debug"
         defines { "EDITOR_DEBUG" }
         runtime "Debug"
         symbols "On"
 
+        libdirs
+        {
+            "%{wks.location}/Thirdparty/assimp/build/Debug/lib",
+            "%{wks.location}/Thirdparty/assimp/build/Debug/contrib/zlib",
+            "%{wks.location}/Thirdparty/openal/build/Debug"
+        }
+
         links 
         {
             "vulkan",
             "shaderc_shared",
-            "SDL2"
+            "SDL2",
+            
+            -- assimp
+            "assimp",
+            "zlibstatic",
+            --openal
+            "openal"
         }
 
         prebuildcommands
@@ -54,12 +69,25 @@ project "Editor"
         defines { "EDITOR_RELEASE" }
         runtime "Release"
         optimize "On"
+
+        libdirs
+        {
+            "%{wks.location}/Thirdparty/assimp/build/Release/lib",
+            "%{wks.location}/Thirdparty/assimp/build/Release/contrib/zlib",
+            "%{wks.location}/Thirdparty/openal/build/Release"
+        }
     
         links 
         {
             "vulkan",
             "shaderc_shared",
-            "SDL2"
+            "SDL2",
+            
+            -- assimp
+            "assimp",
+            "zlibstatic",
+            --openal
+            "openal"
         }
 
         prebuildcommands

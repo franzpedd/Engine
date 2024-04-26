@@ -16,7 +16,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mesh(std::shared_ptr<Renderer>& renderer, std::vector<Vertex> vertices, std::vector<uint32_t> indices);
+		Mesh(std::shared_ptr<Renderer> renderer, std::vector<Vertex> vertices, std::vector<uint32_t> indices);
 
 		// destructor
 		~Mesh() = default;
@@ -54,7 +54,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Renderer>& mRenderer;
+		std::shared_ptr<Renderer> mRenderer;
 		std::vector<Vertex> mVertices;
 		std::vector<uint32_t> mIndices;
 

@@ -132,33 +132,59 @@ class Dependencies:
 
         Util.Clone("https://github.com/assimp/assimp", "assimp", version);
 
-        if((os.path.isdir("Thirdparty/assimp/lib") is True)) :
-            return;
+        if(os.path.isdir("Thirdparty/assimp/build") is False) :
+            os.makedirs("Thirdparty/assimp/build");
 
-        print("\n------------------------Building Assimp------------------------\n");
+        if(os.path.isdir("Thirdparty/assimp/build/Debug") is False) : 
+            os.makedirs("Thirdparty/assimp/build/Debug");
 
-        scriptdir = os.getcwd();
-        os.chdir("Thirdparty/assimp");
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/assimp");
+            subprocess.call(f"cmake -S . -B build/Debug -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_GLTF_IMPORTER=ON ", shell = True);
+            subprocess.call(f"cmake --build build/Debug --config Debug", shell = True);
+            os.chdir(scriptdir);
 
-        params = '''-DBUILD_SHARED_LIBS=OFF 
-                    -DASSIMP_BUILD_ZLIB=ON 
-                    -DASSIMP_NO_EXPORT=ON 
-                    -DASSIMP_BUILD_TESTS=OFF 
-                    -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF 
-                    -DASSIMP_BUILD_GLTF_IMPORTER=ON '''
-
-        if(platform.system() == "Windows") :
-            subprocess.call(f"cmake CMakeLists.txt {params}", shell = True);
-            subprocess.call(f"cmake --build . --config Debug", shell = True);
-            subprocess.call(f"cmake --build . --config Release", shell = True);
+        if(os.path.isdir("Thirdparty/assimp/build/Release") is False) : 
+            os.makedirs("Thirdparty/assimp/build/Release");
         
-        os.chdir(scriptdir);
-        print("\n------------------------Assimp building has finished------------------------\n");
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/assimp");
+            subprocess.call(f"cmake -S . -B build/Release -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_GLTF_IMPORTER=ON ", shell = True);
+            subprocess.call(f"cmake --build build/Release --config Release", shell = True);
+            os.chdir(scriptdir);
+
+    # openal spatialized audio, 3D-Audio library
+    @classmethod
+    def DownloadOpenAL(itslef, version) :
+
+        Util.Clone("https://github.com/kcat/openal-soft", "openal", version);
+
+        if(os.path.isdir("Thirdparty/openal/build") is False) :
+            os.makedirs("Thirdparty/openal/build");
+
+        if(os.path.isdir("Thirdparty/openal/build/Debug") is False) : 
+            os.makedirs("Thirdparty/openal/build/Debug");
+
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/openal");
+            subprocess.call(f"cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=DEBUG", shell = True);
+            subprocess.call(f"cmake --build build/Debug --config Debug", shell = True);
+            os.chdir(scriptdir);
+
+        if(os.path.isdir("Thirdparty/openal/build/Release") is False) : 
+            os.makedirs("Thirdparty/openal/build/Release");
+        
+            scriptdir = os.getcwd();
+            os.chdir("Thirdparty/openal");
+            subprocess.call(f"cmake -S . -B build/Release -DCMAKE_BUILD_TYPE=RELEASE", shell = True);
+            subprocess.call(f"cmake --build build/Release --config Release", shell = True);
+            os.chdir(scriptdir);
 
 # main
 Dependencies.DownloadVulkan("1.3.236.0");
 Dependencies.DownloadSDL("2.30.2");
 Dependencies.DownloadAssimp("master");
+Dependencies.DownloadOpenAL("master");
 Util.Clone("https://github.com/g-truc/glm", "glm", "0.9.8");
 Util.Clone("https://github.com/ocornut/imgui", "imgui", "docking");
 Premake.Download("5.0.0-beta2");

@@ -425,8 +425,9 @@ namespace Cosmos
 
 			window->DrawList->AddPolyline(pts, 3, ImGui::GetColorU32(ImGuiCol_CheckMark), false, 2.0f);
 
-			if (g.LogEnabled) ImGui::LogRenderedText(&text_bb.GetTL(), *v ? "[X]" : "[]");
-			if (label_size.x > 0.0f) ImGui::RenderText(text_bb.GetTL(), label);
+			LOG_TO_TERMINAL(Logger::Todo, "Fix above on linux or discard function");
+			//if (g.LogEnabled) ImGui::LogRenderedText(&text_bb.GetTL(), *v ? "[X]" : "[]");
+			//if (label_size.x > 0.0f) ImGui::RenderText(text_bb.GetTL(), label);
 
 		}
 
@@ -512,7 +513,7 @@ namespace Cosmos
 		if (window->SkipItems) return false;
 
 		ImGuiContext& g = *GImGui;
-		const ImGuiStyle& style = ImGuiStyle::ImGuiStyle();
+		const ImGuiStyle& style = ImGuiStyle();
 		const ImGuiID id = window->GetID(label);
 		const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
 		const ImVec2 pading = ImVec2(2, 2);

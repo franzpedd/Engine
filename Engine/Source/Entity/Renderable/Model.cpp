@@ -17,7 +17,7 @@
 
 namespace Cosmos
 {
-	Model::Model(std::shared_ptr<Renderer>& renderer, std::shared_ptr<Camera>& camera)
+	Model::Model(std::shared_ptr<Renderer> renderer, std::shared_ptr<Camera> camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
 		mAlbedoPath = util::GetAssetSubDir("Textures/dev/colors/orange.png");

@@ -2,7 +2,7 @@
 
 #include "Defines.h"
 
-#include <SDL_scancode.h>
+#include "wrapper_sdl.h"
 
 #define SCANCODE_MASK (1<<30)
 #define SCANCODE_TO_KEYCODE(X)  (X | SCANCODE_MASK)

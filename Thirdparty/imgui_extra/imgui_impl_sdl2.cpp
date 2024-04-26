@@ -101,8 +101,8 @@
 #endif
 
 #if defined(PLATFORM_LINUX)
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 #elif defined(PLATFORM_WINDOWS)
 #include <SDL.h>
 #include <SDL_syswm.h>

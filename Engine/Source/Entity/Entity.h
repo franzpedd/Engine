@@ -9,7 +9,7 @@
 #include "Core/Scene.h"
 #include "Debug/Logger.h"
 
-#include "Wrapper_entt.h"
+#include "wrapper_entt.h"
 #include <vector>
 
 namespace Cosmos

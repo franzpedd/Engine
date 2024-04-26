@@ -7,7 +7,7 @@
 
 namespace Cosmos
 {
-	Viewport::Viewport(std::shared_ptr<Renderer>& renderer, SceneHierarchy* sceneHierarcy, TextureBrowser* textureBrowser)
+	Viewport::Viewport(std::shared_ptr<Renderer> renderer, SceneHierarchy* sceneHierarcy, TextureBrowser* textureBrowser)
 		: Widget("UI:Viewport"), mRenderer(renderer), mSceneHierarcy(sceneHierarcy), mTextureBrowser(textureBrowser)
 	{
 		Commander::Get().Insert("Viewport");
@@ -384,7 +384,7 @@ namespace Cosmos
 		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 		
 		// camera
-		auto& camera = Application::GetInstance()->GetCamera();
+		auto camera = Application::GetInstance()->GetCamera();
 		glm::mat4 view = camera->GetView();
 		glm::mat4 proj = glm::perspectiveRH(glm::radians(camera->GetFov()), mCurrentSize.x / mCurrentSize.y, camera->GetNear(), camera->GetFar());
 

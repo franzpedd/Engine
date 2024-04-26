@@ -81,7 +81,7 @@ namespace Cosmos
 		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
 		for (auto ent : modelsGroup)
 		{
-			auto& [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
+			auto [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
 
 			if (modelComponent.model == nullptr || !modelComponent.model->IsLoaded())
 				continue;
