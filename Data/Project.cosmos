@@ -2,26 +2,69 @@
 Entities
 {
 
-	2633115804785721045
+	12429939312781067553
 	{
-		Id = 2633115804785721045
-		Name = Entity
+		Id = 12429939312781067553
+		Name = wall_0
 
 		Transform
 		{
 
 			Translation
 			{
-				X = 0.500000
-				Y = 0.000000
-				Z = -4.000000
+				X = -1.029363
+				Y = 1.024825
+				Z = -0.216720
 			}
 
 
 			Rotation
 			{
 				X = 0.000000
-				Y = 3.141593
+				Y = 1.570796
+				Z = 0.000000
+			}
+
+
+			Scale
+			{
+				X = 0.998458
+				Y = 0.499299
+				Z = 0.029952
+			}
+
+		}
+
+
+		Model
+		{
+			Path = Data/Models/Primitive/cube.gltf
+			Albedo = Data/Textures/wall_bricks.jpg
+		}
+
+	}
+
+
+	17485703036200039611
+	{
+		Id = 17485703036200039611
+		Name = floor
+
+		Transform
+		{
+
+			Translation
+			{
+				X = -0.000515
+				Y = 0.556536
+				Z = -0.219110
+			}
+
+
+			Rotation
+			{
+				X = 0.000000
+				Y = 0.000000
 				Z = 0.000000
 			}
 
@@ -29,7 +72,7 @@ Entities
 			Scale
 			{
 				X = 1.000000
-				Y = 1.000000
+				Y = 0.030000
 				Z = 1.000000
 			}
 
@@ -38,8 +81,51 @@ Entities
 
 		Model
 		{
-			Path = ../Data/Models/Room/Room.obj
-			Albedo = ../Data/Textures/Room/Room.png
+			Path = Data/Models/Primitive/cube.gltf
+			Albedo = Data/Textures/floor_terracota.jpg
+		}
+
+	}
+
+
+	15113583312486786614
+	{
+		Id = 15113583312486786614
+		Name = wall_0
+
+		Transform
+		{
+
+			Translation
+			{
+				X = 0.000303
+				Y = 1.024825
+				Z = 0.809584
+			}
+
+
+			Rotation
+			{
+				X = 0.000000
+				Y = 0.000000
+				Z = 0.000000
+			}
+
+
+			Scale
+			{
+				X = 1.000000
+				Y = 0.499299
+				Z = 0.030000
+			}
+
+		}
+
+
+		Model
+		{
+			Path = Data/Models/Primitive/cube.gltf
+			Albedo = Data/Textures/wall_bricks.jpg
 		}
 
 	}

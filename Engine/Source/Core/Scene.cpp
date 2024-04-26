@@ -9,8 +9,8 @@
 
 namespace Cosmos
 {
-	Scene::Scene(Shared<Renderer> renderer)
-		: mRenderer(renderer)
+	Scene::Scene(Shared<Renderer> renderer, Shared<Camera> camera)
+		: mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Scene";
 	}
@@ -71,6 +71,44 @@ namespace Cosmos
 		
 		mEntityMap[id] = entity;
 		return &mEntityMap[id];
+	}
+
+	void Scene::DuplicateEntity(Entity* entity)
+	{
+		// name is an existing component
+		std::string name = entity->GetComponent<NameComponent>().name;
+		name.append(" copy");
+
+		Entity* newEnt = CreateEntity(name.c_str());
+
+		// transform
+		if (entity->HasComponent<TransformComponent>())
+		{
+			newEnt->AddComponent<TransformComponent>();
+			newEnt->GetComponent<TransformComponent>().rotation = entity->GetComponent<TransformComponent>().rotation;
+			newEnt->GetComponent<TransformComponent>().translation = entity->GetComponent<TransformComponent>().translation;
+			newEnt->GetComponent<TransformComponent>().scale = entity->GetComponent<TransformComponent>().scale;
+		}
+		
+		// model
+		if (entity->HasComponent<ModelComponent>())
+		{
+			newEnt->AddComponent<ModelComponent>();
+			newEnt->GetComponent<ModelComponent>().model = CreateShared<Model>(mRenderer, mCamera);
+
+			// testing
+			auto previousModel = entity->GetComponent<ModelComponent>().model;
+
+			if (previousModel->IsLoaded())
+			{
+				newEnt->GetComponent<ModelComponent>().model->LoadFromFile(previousModel->GetPath());
+
+				if (previousModel->IsCustomAlbedoLoaded())
+				{
+					newEnt->GetComponent<ModelComponent>().model->LoadAlbedoTexture(previousModel->GetAlbedoPath());
+				}
+			}
+		}
 	}
 
 	void Scene::DestroyEntity(Entity* entity)

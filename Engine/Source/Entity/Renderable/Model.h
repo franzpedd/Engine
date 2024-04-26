@@ -35,6 +35,9 @@ namespace Cosmos
 		// returns the model's albedo
 		inline std::string GetAlbedoPath() const { return mAlbedoPath; }
 
+		// returns if model's albedo is not the default dev texture
+		inline bool IsCustomAlbedoLoaded() const { return mLoadedAlbedo;  }
+
 		// returns if the model is loaded
 		inline bool IsLoaded() const { return mLoaded; }
 

@@ -19,7 +19,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Scene(Shared<Renderer> renderer);
+		Scene(Shared<Renderer> renderer, Shared<Camera> camera);
 
 		// destructor
 		~Scene();
@@ -51,6 +51,9 @@ namespace Cosmos
 		// creates a new entt entity
 		Entity* CreateEntity(const char* name = "Entity");
 
+		// duplicates an entity and insert's it on the entitymap
+		void DuplicateEntity(Entity* entity);
+
 		// deleste an entity and free it's resources
 		void DestroyEntity(Entity* entity);
 
@@ -71,6 +74,7 @@ namespace Cosmos
 	private:
 
 		Shared<Renderer> mRenderer;
+		Shared<Camera> mCamera;
 		entt::registry mRegistry;
 		std::unordered_map<std::string, Entity> mEntityMap = {};
 	};

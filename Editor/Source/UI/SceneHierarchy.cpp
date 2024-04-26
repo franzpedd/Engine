@@ -123,12 +123,20 @@ namespace Cosmos
 
 			if (ImGui::BeginPopupContextItem("##RightClickEntity"))
 			{
+				if (ImGui::MenuItem("Duplicar"))
+				{
+					Application::GetInstance()->GetActiveScene()->DuplicateEntity(mSelectedEntity);
+				}
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Remove Entity"))
 				{
 					Application::GetInstance()->GetActiveScene()->DestroyEntity(mSelectedEntity);
 					mSelectedEntity = nullptr;
 					*redraw = true;
 				}
+
 				ImGui::EndPopup();
 			}
 			ImGui::TreePop();

@@ -25,7 +25,7 @@ namespace Cosmos
 		mWindow = CreateShared<Window>("Cosmos Application", 1280, 720);
 		mCamera = CreateShared<Camera>();
 		mRenderer = Renderer::Create();
-		mScene = CreateShared<Scene>(mRenderer);
+		mScene = CreateShared<Scene>(mRenderer, mCamera);
 		mUI = CreateShared<GUI>(mRenderer);
 	}
 

@@ -113,6 +113,7 @@ namespace Cosmos
 		UpdateDescriptorSets();
 
 		mAlbedoPath = path;
+		mLoadedAlbedo = true;
 	}
 
 	void Model::ProcessNode(aiNode* node, const aiScene* scene)
