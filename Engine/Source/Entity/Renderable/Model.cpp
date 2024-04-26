@@ -17,7 +17,7 @@
 
 namespace Cosmos
 {
-	Model::Model(std::shared_ptr<Renderer> renderer, std::shared_ptr<Camera> camera)
+	Model::Model(Shared<Renderer> renderer, Shared<Camera> camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
@@ -65,7 +65,7 @@ namespace Cosmos
 		}
 
 		if (mAlbedoTexture)
-			mAlbedoTexture->Destroy();
+			mAlbedoTexture.reset();
 
 		mMeshes.clear();
 	}
@@ -106,8 +106,7 @@ namespace Cosmos
 
 		vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 
-		if(mAlbedoTexture)
-			mAlbedoTexture->Destroy();
+		if (mAlbedoTexture) mAlbedoTexture.reset();
 
 		mAlbedoTexture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), path.c_str());
 

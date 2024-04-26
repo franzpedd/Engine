@@ -2,7 +2,7 @@
 
 namespace Cosmos
 {
-	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
+	Explorer::Explorer(Shared<Renderer> renderer)
 		: Widget("UI:Explorer"), mRenderer(renderer)
 	{
 		mCurrentDir = GetAssetDir();
@@ -32,20 +32,6 @@ namespace Cosmos
 
 	Explorer::~Explorer()
 	{
-		mUndefinedResource.texture->Destroy();
-		mFolderResource.texture->Destroy();
-		mTextResource.texture->Destroy();
-		mModelResource.texture->Destroy();
-		mVertexResource.texture->Destroy();
-		mFragmentResource.texture->Destroy();
-		mSpirvResource.texture->Destroy();
-
-		// clear last path custom assets
-		for (auto& asset : mCurrentDirAssets)
-		{
-			if (asset.type == AssetType::Image)
-				asset.resource.texture->Destroy();
-		}
 		mCurrentDirAssets.clear();
 	}
 
@@ -157,11 +143,6 @@ namespace Cosmos
 	void Explorer::ReadFolder(std::string path)
 	{
 		// clear current path assets
-		for (auto& asset : mCurrentDirAssets)
-		{
-			if(asset.type == AssetType::Image)
-				asset.resource.texture->Destroy();
-		}
 		mCurrentDirAssets.clear();
 			
 		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::directory_iterator(path))

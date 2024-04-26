@@ -2,7 +2,6 @@
 
 #include "Renderer/Texture.h"
 #include <vulkan/vulkan.h>
-#include <memory>
 
 namespace Cosmos
 {
@@ -14,15 +13,12 @@ namespace Cosmos
 	public:
 
 		// constructor
-		VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT);
+		VKTexture2D(Shared<VKDevice> device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT);
 
 		// destructor
-		~VKTexture2D() = default;
+		~VKTexture2D();
 
 	public:
-
-		// free used resoruces before destructor
-		virtual void Destroy() override;
 
 		// returns a reference to the image view
 		virtual VkImageView GetView() override;
@@ -40,7 +36,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<VKDevice> mDevice;
+		Shared<VKDevice> mDevice;
 		const char* mPath = nullptr;
 		VkSampleCountFlagBits mMSAA = VK_SAMPLE_COUNT_1_BIT;
 

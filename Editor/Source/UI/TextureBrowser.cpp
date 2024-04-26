@@ -2,7 +2,7 @@
 
 namespace Cosmos
 {
-	TextureBrowser::TextureBrowser(std::shared_ptr<Renderer>& renderer)
+	TextureBrowser::TextureBrowser(Shared<Renderer> renderer)
 		: mRenderer(renderer)
 	{
 		RefreshFilesExplorer(GetAssetSubDir("Textures"));
@@ -10,15 +10,7 @@ namespace Cosmos
 
 	TextureBrowser::~TextureBrowser()
 	{
-		for (auto& item : mTextures)
-		{
-			item.texture->Destroy();
-		}
 
-		if (mLastSelectedTexture.texture)
-		{
-			mLastSelectedTexture.texture->Destroy();
-		}
 	}
 
 	void TextureBrowser::OnUpdate()

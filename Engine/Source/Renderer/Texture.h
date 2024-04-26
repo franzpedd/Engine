@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vulkan/VKDefines.h"
-#include <memory>
+#include "Util/Memory.h"
 
 namespace Cosmos
 {
@@ -27,7 +27,7 @@ namespace Cosmos
 	public:
 
 		// creates a texture from an input file
-		static std::shared_ptr<Texture2D> Create(std::shared_ptr<VKDevice> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT);
+		static Shared<Texture2D> Create(Shared<VKDevice> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT);
 
 		// constructor
 		Texture2D() = default;
@@ -36,9 +36,6 @@ namespace Cosmos
 		virtual ~Texture2D() = default;
 
 	public:
-
-		// free used resoruces before destructor
-		virtual void Destroy() = 0;
 
 		// returns a reference to the image view
 		virtual VkImageView GetView() = 0;

@@ -23,7 +23,7 @@ namespace Cosmos
 
 		struct TextureProperties
 		{
-			std::shared_ptr<Texture2D> texture;
+			Shared<Texture2D> texture;
 			std::filesystem::path path;
 			Extension type = UNDEFINED;
 			VkDescriptorSet descriptor = VK_NULL_HANDLE;
@@ -32,7 +32,7 @@ namespace Cosmos
 	public:
 
 		// constructure
-		TextureBrowser(std::shared_ptr<Renderer>& renderer);
+		TextureBrowser(Shared<Renderer> renderer);
 
 		// destructor
 		virtual ~TextureBrowser();
@@ -55,7 +55,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Renderer>& mRenderer;
+		Shared<Renderer> mRenderer;
 		std::string mRoot = {};
 		bool mShowWindow = false;
 		std::string mSearchStr;

@@ -11,7 +11,7 @@
 
 namespace Cosmos
 {
-	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa)
+	VKTexture2D::VKTexture2D(Shared<VKDevice> device, const char* path, VkSampleCountFlagBits msaa)
 		: mDevice(device), mPath(path), mMSAA(msaa)
 	{
 		LoadTexture();
@@ -45,10 +45,10 @@ namespace Cosmos
 		mDescriptor.imageLayout = mLayout;
 	}
 
-	void VKTexture2D::Destroy()
+	VKTexture2D::~VKTexture2D()
 	{
 		vkDeviceWaitIdle(mDevice->GetDevice());
-	
+
 		vkDestroyImageView(mDevice->GetDevice(), mView, nullptr);
 		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
 		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);

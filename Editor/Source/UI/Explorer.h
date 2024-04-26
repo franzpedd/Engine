@@ -25,7 +25,7 @@ namespace Cosmos
 
 		typedef struct AssetResource
 		{
-			std::shared_ptr<Texture2D> texture = {};
+			Shared<Texture2D> texture = {};
 			VkDescriptorSet descriptor = VK_NULL_HANDLE;
 		} AssetResource;
 
@@ -40,7 +40,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Explorer(std::shared_ptr<Renderer>& renderer);
+		Explorer(Shared<Renderer> renderer);
 
 		// destructor
 		virtual ~Explorer();
@@ -57,7 +57,7 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Renderer>& mRenderer;
+		std::shared_ptr<Renderer> mRenderer;
 
 		// explorer directory
 		std::string mCurrentDir = {};

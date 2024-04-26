@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Entity/Renderable/Mesh.h"
+#include "Renderer/Texture.h"
+#include "Util/Memory.h"
 #include <vector>
 
 // forward declarations
@@ -14,14 +16,13 @@ namespace Cosmos
 	class Device;
 	class Camera;
 	class Renderer;
-	class Texture2D;
 
 	class Model
 	{
 	public:
 
 		// constructor
-		Model(std::shared_ptr<Renderer> renderer, std::shared_ptr<Camera> camera);
+		Model(Shared<Renderer> renderer, Shared<Camera> camera);
 
 		// destructor
 		~Model() = default;
@@ -75,8 +76,8 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Renderer> mRenderer;
-		std::shared_ptr<Camera> mCamera;
+		Shared<Renderer> mRenderer;
+		Shared<Camera> mCamera;
 		std::string mPath = {};
 		bool mLoaded = false;
 		
@@ -90,7 +91,7 @@ namespace Cosmos
 		std::vector<void*> mUniformBuffersMapped;
 
 		std::string mAlbedoPath;
-		std::shared_ptr<Texture2D> mAlbedoTexture;
+		Shared<Texture2D> mAlbedoTexture;
 		bool mLoadedAlbedo = false;
 	};
 }
