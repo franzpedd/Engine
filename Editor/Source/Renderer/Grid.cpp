@@ -36,7 +36,7 @@ namespace Cosmos
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer cmdBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
+		VkCommandBuffer cmdBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
 		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[currentFrame], 0, nullptr);
@@ -91,7 +91,7 @@ namespace Cosmos
 			VkPipelineInputAssemblyStateCreateInfo IASCI = vulkan::PipelineInputAssemblyStateCrateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
 			VkPipelineViewportStateCreateInfo VSCI = vulkan::PipelineViewportStateCreateInfo(1, 1);
 			VkPipelineRasterizationStateCreateInfo RSCI = vulkan::PipelineRasterizationCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(Commander::Get().GetPrimary()->msaa);
+			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(VKCommander::GetInstance()->GetMainRef()->msaa);
 			VkPipelineDepthStencilStateCreateInfo DSSCI = vulkan::PipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
 			VkPipelineColorBlendAttachmentState CBAS = vulkan::PipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
 			VkPipelineColorBlendStateCreateInfo CBSCI = vulkan::PipelineColorBlendStateCreateInfo(1, &CBAS);
@@ -110,7 +110,7 @@ namespace Cosmos
 			pipelineCI.pColorBlendState = &CBSCI;
 			pipelineCI.pDynamicState = &DSCI;
 			pipelineCI.layout = mPipelineLayout;
-			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
+			pipelineCI.renderPass = VKCommander::GetInstance()->GetMainRef()->renderPass;
 			pipelineCI.subpass = 0;
 			VK_ASSERT(vkCreateGraphicsPipelines(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 		}

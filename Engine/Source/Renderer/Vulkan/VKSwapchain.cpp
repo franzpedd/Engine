@@ -1,11 +1,11 @@
 #include "epch.h"
 #include "VKSwapchain.h"
 
+#include "VKCommander.h"
 #include "VKDevice.h"
 #include "VKInstance.h"
 #include "VKImage.h"
 #include "Core/Application.h"
-#include "Renderer/Commander.h"
 
 namespace Cosmos
 {
@@ -19,9 +19,9 @@ namespace Cosmos
 	{
 		Logger() << "Creating VKSwapchain";
 
-		Commander::Get().Insert("Swapchain");
-		Commander::Get().MakePrimary("Swapchain");
-		Commander::Get().GetEntries()["Swapchain"]->msaa = mDevice->GetMSAA();
+		VKCommander::GetInstance()->Insert("Swapchain", mDevice->GetDevice());
+		VKCommander::GetInstance()->SetMain("Swapchain");
+		VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->msaa = mDevice->GetMSAA();
 
 		CreateSwapchain();
 		CreateImageViews();
@@ -166,7 +166,7 @@ namespace Cosmos
 		renderPassCI.pSubpasses = &subpass;
 		renderPassCI.dependencyCount = 1;
 		renderPassCI.pDependencies = &dependency;
-		VK_ASSERT(vkCreateRenderPass(mDevice->GetDevice(), &renderPassCI, nullptr, &Commander::Get().GetEntries()["Swapchain"]->renderPass), "Failed to create render pass");
+		VK_ASSERT(vkCreateRenderPass(mDevice->GetDevice(), &renderPassCI, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->renderPass), "Failed to create render pass");
 	}
 
 	void VKSwapchain::CreateSwapchain()
@@ -288,7 +288,7 @@ namespace Cosmos
 
 		// create frame buffers
 		{
-			Commander::Get().GetEntries()["Swapchain"]->framebuffers.resize(mImageViews.size());
+			VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->frameBuffers.resize(mImageViews.size());
 
 			for (size_t i = 0; i < mImageViews.size(); i++)
 			{
@@ -296,13 +296,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = Commander::Get().GetEntries()["Swapchain"]->renderPass;
+				framebufferCI.renderPass = VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
 				framebufferCI.width = mExtent.width;
 				framebufferCI.height = mExtent.height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mDevice->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["Swapchain"]->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(mDevice->GetDevice(), &framebufferCI, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->frameBuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
@@ -317,9 +317,9 @@ namespace Cosmos
 		vkDestroyImage(mDevice->GetDevice(), mColorImage, nullptr);
 		vkFreeMemory(mDevice->GetDevice(), mColorMemory, nullptr);
 
-		for (uint32_t i = 0; i < Commander::Get().GetEntries()["Swapchain"]->framebuffers.size(); i++)
+		for (uint32_t i = 0; i < VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->frameBuffers.size(); i++)
 		{
-			vkDestroyFramebuffer(mDevice->GetDevice(), Commander::Get().GetEntries()["Swapchain"]->framebuffers[i], nullptr);
+			vkDestroyFramebuffer(mDevice->GetDevice(), VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->frameBuffers[i], nullptr);
 		}
 
 		for (auto imageView : mImageViews)
@@ -387,19 +387,19 @@ namespace Cosmos
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_ASSERT(vkCreateCommandPool(mDevice->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Swapchain"]->commandPool), "Failed to create command pool");
+		VK_ASSERT(vkCreateCommandPool(mDevice->GetDevice(), &cmdPoolInfo, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->commandPool), "Failed to create command pool");
 	}
 
 	void VKSwapchain::CreateCommandBuffers()
 	{
-		Commander::Get().GetEntries()["Swapchain"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+		VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["Swapchain"]->commandPool;
+		cmdBufferAllocInfo.commandPool = VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->commandPool;
 		cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["Swapchain"]->commandBuffers.size();
-		VK_ASSERT(vkAllocateCommandBuffers(mDevice->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["Swapchain"]->commandBuffers.data()), "Failed to create command buffers");
+		cmdBufferAllocInfo.commandBufferCount = (uint32_t)VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->commandBuffers.size();
+		VK_ASSERT(vkAllocateCommandBuffers(mDevice->GetDevice(), &cmdBufferAllocInfo, VKCommander::GetInstance()->GetEntriesRef()["Swapchain"]->commandBuffers.data()), "Failed to create command buffers");
 	}
 
 	VkSurfaceFormatKHR VKSwapchain::ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

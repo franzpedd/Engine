@@ -31,7 +31,7 @@ namespace Cosmos
 
 	Application::~Application()
 	{
-		mRenderer->OnTerminate();
+
 	}
 
 	void Application::Run()

@@ -16,7 +16,7 @@ namespace Cosmos
 	{
 		mInstance = VKInstance::Create("Cosmos Application", "Cosmos", true);
 		mDevice = VKDevice::Create(mInstance);
-		mCommander = new Commander();
+		mCommander = CreateShared<VKCommander>();
 		mSwapchain = VKSwapchain::Create(mInstance, mDevice);
 
 		CreateResources();
@@ -88,11 +88,6 @@ namespace Cosmos
 		return mImageIndex;
 	}
 
-	void VKRenderer::OnTerminate()
-	{
-		mCommander->Erase("Swapchain", mDevice->GetDevice());
-	}
-
 	void VKRenderer::OnUpdate()
 	{
 		PROFILER_FUNCTION();
@@ -130,16 +125,16 @@ namespace Cosmos
 		// submits to graphics queue
 		{
 			// 
-			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommander->GetEntries()["Swapchain"]->commandBuffers[mCurrentFrame] };
+			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommander->GetEntriesRef()["Swapchain"]->commandBuffers[mCurrentFrame] };
 
 			if (mCommander->Exists("Viewport"))
 			{
-				submitCommandBuffers.push_back(mCommander->GetEntries()["Viewport"]->commandBuffers[mCurrentFrame]);
+				submitCommandBuffers.push_back(mCommander->GetEntriesRef()["Viewport"]->commandBuffers[mCurrentFrame]);
 			}
 
 			if (mCommander->Exists("ImGui"))
 			{
-				submitCommandBuffers.push_back(mCommander->GetEntries()["ImGui"]->commandBuffers[mCurrentFrame]);
+				submitCommandBuffers.push_back(mCommander->GetEntriesRef()["ImGui"]->commandBuffers[mCurrentFrame]);
 			}
 
 			VkSubmitInfo submitInfo = {};
@@ -202,9 +197,9 @@ namespace Cosmos
 		// color and depth render pass
 		if(mCommander->Exists("Swapchain"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["Swapchain"]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander->GetEntries()["Swapchain"]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander->GetEntries()["Swapchain"]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["Swapchain"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["Swapchain"]->frameBuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntriesRef()["Swapchain"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -255,9 +250,9 @@ namespace Cosmos
 		// viewport
 		if(mCommander->Exists("Viewport"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["Viewport"]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander->GetEntries()["Viewport"]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander->GetEntries()["Viewport"]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["Viewport"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["Viewport"]->frameBuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntriesRef()["Viewport"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -305,9 +300,9 @@ namespace Cosmos
 		// user interface
 		if(mCommander->Exists("ImGui"))
 		{
-			VkCommandBuffer& cmdBuffer = mCommander->GetEntries()["ImGui"]->commandBuffers[mCurrentFrame];
-			VkFramebuffer& frameBuffer = mCommander->GetEntries()["ImGui"]->framebuffers[imageIndex];
-			VkRenderPass& renderPass = mCommander->GetEntries()["ImGui"]->renderPass;
+			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["ImGui"]->commandBuffers[mCurrentFrame];
+			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["ImGui"]->frameBuffers[imageIndex];
+			VkRenderPass& renderPass = mCommander->GetEntriesRef()["ImGui"]->renderPass;
 
 			vkResetCommandBuffer(cmdBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 

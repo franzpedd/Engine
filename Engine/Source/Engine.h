@@ -20,6 +20,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture.h"
 
+#include "Renderer/Vulkan/VKCommander.h"
 #include "Renderer/Vulkan/VKDevice.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"

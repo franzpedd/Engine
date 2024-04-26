@@ -10,9 +10,9 @@ namespace Cosmos
 	Viewport::Viewport(std::shared_ptr<Renderer> renderer, SceneHierarchy* sceneHierarcy, TextureBrowser* textureBrowser)
 		: Widget("UI:Viewport"), mRenderer(renderer), mSceneHierarcy(sceneHierarcy), mTextureBrowser(textureBrowser)
 	{
-		Commander::Get().Insert("Viewport");
-		Commander::Get().MakePrimary("Viewport"); // set viewport renderpass to main renderpass
-		Commander::Get().GetEntries()["Viewport"]->msaa = VK_SAMPLE_COUNT_1_BIT;
+		VKCommander::GetInstance()->Insert("Viewport", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
+		VKCommander::GetInstance()->SetMain("Viewport"); // set viewport renderpass to main renderpass
+		VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->msaa = VK_SAMPLE_COUNT_1_BIT;
 		
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Rework Commander class and main RenderPass usage");
 
@@ -25,7 +25,7 @@ namespace Cosmos
 
 			// color attachment
 			attachments[0].format = mSurfaceFormat;
-			attachments[0].samples = Commander::Get().GetEntries()["Viewport"]->msaa;
+			attachments[0].samples = VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->msaa;
 			attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -34,7 +34,7 @@ namespace Cosmos
 			attachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			// depth attachment
 			attachments[1].format = mDepthFormat;
-			attachments[1].samples = Commander::Get().GetEntries()["Viewport"]->msaa;
+			attachments[1].samples = VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->msaa;
 			attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -88,7 +88,7 @@ namespace Cosmos
 			renderPassCI.pSubpasses = &subpassDescription;
 			renderPassCI.dependencyCount = (uint32_t)dependencies.size();
 			renderPassCI.pDependencies = dependencies.data();
-			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &renderPassCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->renderPass), "Failed to create renderpass");
+			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &renderPassCI, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->renderPass), "Failed to create renderpass");
 		}
 
 		// command pool
@@ -103,19 +103,19 @@ namespace Cosmos
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Viewport"]->commandPool), "Failed to create command pool");
+			VK_ASSERT(vkCreateCommandPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandPool), "Failed to create command pool");
 		}
 
 		// command buffers
 		{
-			Commander::Get().GetEntries()["Viewport"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 			VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 			cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["Viewport"]->commandPool;
-			cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["Viewport"]->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["Viewport"]->commandBuffers.data()), "Failed to allocate command buffers");
+			cmdBufferAllocInfo.commandPool = VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandPool;
+			cmdBufferAllocInfo.commandBufferCount = (uint32_t)VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandBuffers.size();
+			VK_ASSERT(vkAllocateCommandBuffers(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdBufferAllocInfo, VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandBuffers.data()), "Failed to allocate command buffers");
 		}
 
 		// sampler
@@ -159,8 +159,6 @@ namespace Cosmos
 			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
 			vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImages[i], nullptr);
 		}
-		
-		Commander::Get().Erase("Viewport", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 	}
 
 	void Viewport::OnUpdate()
@@ -230,7 +228,7 @@ namespace Cosmos
 				vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImages[i], nullptr);
 			}
 
-			for (auto& framebuffer : Commander::Get().GetEntries()["Viewport"]->framebuffers)
+			for (auto& framebuffer : VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->frameBuffers)
 			{
 				vkDestroyFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
@@ -251,7 +249,7 @@ namespace Cosmos
 				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width,
 				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height,
 				1,
-				Commander::Get().GetEntries()["Viewport"]->msaa,
+				VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->msaa,
 				mDepthFormat,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -269,7 +267,7 @@ namespace Cosmos
 			mImageMemories.resize(size);
 			mImageViews.resize(size);
 			mDescriptorSets.resize(size);
-			Commander::Get().GetEntries()["Viewport"]->framebuffers.resize(size);
+			VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->frameBuffers.resize(size);
 
 			for (size_t i = 0; i < size; i++)
 			{
@@ -279,7 +277,7 @@ namespace Cosmos
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width,
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height,
 					1,
-					Commander::Get().GetEntries()["Viewport"]->msaa,
+					VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->msaa,
 					mSurfaceFormat,
 					VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -288,7 +286,7 @@ namespace Cosmos
 					mImageMemories[i]
 				);
 
-				VkCommandBuffer command = BeginSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), Commander::Get().GetEntries()["Viewport"]->commandPool);
+				VkCommandBuffer command = BeginSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandPool);
 
 				InsertImageMemoryBarrier
 				(
@@ -303,7 +301,7 @@ namespace Cosmos
 					VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 				);
 
-				EndSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), Commander::Get().GetEntries()["Viewport"]->commandPool, command);
+				EndSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->commandPool, command);
 
 				mImageViews[i] = CreateImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 				mDescriptorSets[i] = AddTexture(mSampler, mImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -312,13 +310,13 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = Commander::Get().GetEntries()["Viewport"]->renderPass;
+				framebufferCI.renderPass = VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
 				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
 				framebufferCI.height = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &framebufferCI, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["Viewport"]->frameBuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}

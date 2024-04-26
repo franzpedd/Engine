@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Renderer/Vulkan/VKDefines.h"
 #include "Widget.h"
-#include "Renderer/Commander.h"
 #include "Util/Math.h"
 
 #include "wrapper_imgui.h"

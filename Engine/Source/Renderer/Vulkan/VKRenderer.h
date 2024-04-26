@@ -1,18 +1,19 @@
 #pragma once
 
 #include "Defines.h"
-#include "Renderer/Commander.h"
+#include "VKDefines.h"
+
 #include "Renderer/Renderer.h"
 #include "Entity/Entity.h"
 
 #include "GlobalResources.h"
 #include "VKBuffer.h"
+#include "VKCommander.h"
 #include "VKInstance.h"
 #include "VKDevice.h"
 #include "VKSwapchain.h"
 
-#include <vulkan/vulkan.h>
-#include <memory>
+#include "Util/Memory.h"
 
 namespace Cosmos
 {
@@ -64,9 +65,6 @@ namespace Cosmos
 
 	public:
 
-		// called after the main loop is finished
-		virtual void OnTerminate() override;
-
 		// updates the renderer
 		virtual void OnUpdate() override;
 
@@ -87,7 +85,7 @@ namespace Cosmos
 		Shared<VKDevice> mDevice;
 		Shared<VKSwapchain> mSwapchain;
 
-		Commander* mCommander;
+		Shared<VKCommander> mCommander;
 		VkPipelineCache mPipelineCache;
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;

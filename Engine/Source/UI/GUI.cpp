@@ -5,8 +5,10 @@
 #include "Spectrum.h"
 #include "Core/Application.h"
 #include "Event/WindowEvent.h"
-#include "Renderer/Vulkan/VKBuffer.h"
+
 #include "Renderer/Renderer.h"
+#include "Renderer/Vulkan/VKBuffer.h"
+#include "Renderer/Vulkan/VKCommander.h"
 #include "Renderer/Vulkan/VKRenderer.h"
 
 #include "Util/FileSystem.h"
@@ -24,8 +26,8 @@ namespace Cosmos
 	GUI::GUI(std::shared_ptr<Renderer> renderer)
 		: mRenderer(renderer)
 	{
-		Commander::Get().Insert("ImGui");
-		Commander::Get().GetEntries()["ImGui"]->msaa = VK_SAMPLE_COUNT_1_BIT;
+		VKCommander::GetInstance()->Insert("ImGui", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
+		VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->msaa = VK_SAMPLE_COUNT_1_BIT;
 
 		CreateResources();
 		SetupConfiguration();
@@ -36,8 +38,6 @@ namespace Cosmos
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplSDL2_Shutdown();
 		ImGui::DestroyContext();
-
-		Commander::Get().Erase("ImGui", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 	}
 
 	void GUI::OnUpdate()
@@ -81,12 +81,12 @@ namespace Cosmos
 			vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 
 			// recreate frame buffers
-			for (auto framebuffer : Commander::Get().GetEntries()["ImGui"]->framebuffers)
+			for (auto framebuffer : VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->frameBuffers)
 			{
 				vkDestroyFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
 
-			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
+			VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->frameBuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
 
 			for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size(); i++)
 			{
@@ -94,7 +94,7 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
+				framebufferCI.renderPass = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
 				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
@@ -108,7 +108,7 @@ namespace Cosmos
 						std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
 						&framebufferCI,
 						nullptr,
-						&Commander::Get().GetEntries()["ImGui"]->framebuffers[i]
+						&VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->frameBuffers[i]
 					),
 					"Failed to create framebuffer"
 				);
@@ -192,7 +192,7 @@ namespace Cosmos
 		poolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
 		poolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolCI.pPoolSizes = poolSizes;
-		VK_ASSERT(vkCreateDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &poolCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->descriptorPool), "Failed to create descriptor pool for the User Interface");
+		VK_ASSERT(vkCreateDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &poolCI, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->descriptorPool), "Failed to create descriptor pool for the User Interface");
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
@@ -203,12 +203,12 @@ namespace Cosmos
 		initInfo.PhysicalDevice = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetPhysicalDevice();
 		initInfo.Device = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice();
 		initInfo.Queue = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetGraphicsQueue();
-		initInfo.DescriptorPool = Commander::Get().GetEntries()["ImGui"]->descriptorPool;
+		initInfo.DescriptorPool = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->descriptorPool;
 		initInfo.MinImageCount = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageCount();
 		initInfo.ImageCount = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageCount();
-		initInfo.MSAASamples = Commander::Get().GetEntries()["ImGui"]->msaa;
+		initInfo.MSAASamples = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->msaa;
 		initInfo.Allocator = nullptr;
-		initInfo.RenderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
+		initInfo.RenderPass = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->renderPass;
 		ImGui_ImplVulkan_Init(&initInfo);
 
 		LOG_TO_TERMINAL(Logger::Severity::Trace, "Check usage of ui render pass");
@@ -256,7 +256,7 @@ namespace Cosmos
 			info.pSubpasses = &subpass;
 			info.dependencyCount = 1;
 			info.pDependencies = &dependency;
-			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &info, nullptr, &Commander::Get().GetEntries()["ImGui"]->renderPass), "Failed to create render pass");
+			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &info, nullptr, &VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->renderPass), "Failed to create render pass");
 		}
 
 		// command pool
@@ -279,7 +279,7 @@ namespace Cosmos
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
 					&cmdPoolInfo,
 					nullptr,
-					&Commander::Get().GetEntries()["ImGui"]->commandPool
+					&VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->commandPool
 				),
 				"Failed to create command pool"
 			);
@@ -287,13 +287,13 @@ namespace Cosmos
 
 		// command buffers
 		{
-			Commander::Get().GetEntries()["ImGui"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->commandBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
 			VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 			cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["ImGui"]->commandPool;
-			cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["ImGui"]->commandBuffers.size();
+			cmdBufferAllocInfo.commandPool = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->commandPool;
+			cmdBufferAllocInfo.commandBufferCount = (uint32_t)VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->commandBuffers.size();
 
 			VK_ASSERT
 			(
@@ -301,7 +301,7 @@ namespace Cosmos
 				(
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
 					&cmdBufferAllocInfo,
-					Commander::Get().GetEntries()["ImGui"]->commandBuffers.data()
+					VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->commandBuffers.data()
 				), 
 				"Failed to allocate command buffers"
 			);
@@ -309,7 +309,7 @@ namespace Cosmos
 
 		// frame buffers
 		{
-			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
+			VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->frameBuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
 
 			for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size(); i++)
 			{
@@ -317,7 +317,7 @@ namespace Cosmos
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
+				framebufferCI.renderPass = VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
 				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
@@ -331,7 +331,7 @@ namespace Cosmos
 						std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), 
 						&framebufferCI, 
 						nullptr, 
-						&Commander::Get().GetEntries()["ImGui"]->framebuffers[i]
+						&VKCommander::GetInstance()->GetEntriesRef()["ImGui"]->frameBuffers[i]
 					), 
 					"Failed to create framebuffer"
 				);

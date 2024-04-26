@@ -46,9 +46,6 @@ namespace Cosmos
 
 	public:
 
-		// called after the main loop is finished
-		virtual void OnTerminate() = 0;
-
 		// updates the renderer
 		virtual void OnUpdate() = 0;
 

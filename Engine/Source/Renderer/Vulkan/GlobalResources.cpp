@@ -1,10 +1,10 @@
 #include "epch.h"
 #include "GlobalResources.h"
 
-#include "Entity/Renderable/Vertex.h"
-
+#include "VKCommander.h"
 #include "VKInitializers.h"
 #include "VKShader.h"
+#include "VKVertex.h"
 
 #include "Util/FileSystem.h"
 
@@ -46,8 +46,8 @@ namespace Cosmos
 
 			// constants
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-			const std::vector<VkVertexInputAttributeDescription> attributeDesc = Vertex::GetAttributeDescriptions();
-			const std::vector<VkVertexInputBindingDescription> bindingDesc = Vertex::GetBindingDescription();
+			const std::vector<VkVertexInputAttributeDescription> attributeDesc = VKVertex::GetAttributeDescriptions();
+			const std::vector<VkVertexInputBindingDescription> bindingDesc = VKVertex::GetBindingDescription();
 			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->GetShaderStageCreateInfoRef(), fShader->GetShaderStageCreateInfoRef()};
 
 			// pipeline objects
@@ -55,7 +55,7 @@ namespace Cosmos
 			VkPipelineInputAssemblyStateCreateInfo IASCI = vulkan::PipelineInputAssemblyStateCrateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
 			VkPipelineViewportStateCreateInfo VSCI = vulkan::PipelineViewportStateCreateInfo(1, 1);
 			VkPipelineRasterizationStateCreateInfo RSCI = vulkan::PipelineRasterizationCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(Commander::Get().GetPrimary()->msaa);
+			VkPipelineMultisampleStateCreateInfo MSCI = vulkan::PipelineMultisampleStateCreateInfo(VKCommander::GetInstance()->GetMainRef()->msaa);
 			VkPipelineDepthStencilStateCreateInfo DSSCI = vulkan::PipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
 			VkPipelineColorBlendAttachmentState CBAS = vulkan::PipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
 			VkPipelineColorBlendStateCreateInfo CBSCI = vulkan::PipelineColorBlendStateCreateInfo(1, &CBAS);
@@ -74,7 +74,7 @@ namespace Cosmos
 			pipelineCI.pColorBlendState = &CBSCI;
 			pipelineCI.pDynamicState = &DSCI;
 			pipelineCI.layout = pipelineLayout;
-			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
+			pipelineCI.renderPass = VKCommander::GetInstance()->GetMainRef()->renderPass;
 			pipelineCI.subpass = 0;
 			VK_ASSERT(vkCreateGraphicsPipelines(device->GetDevice(), cache, 1, &pipelineCI, nullptr, &pipeline), "Failed to create graphics pipeline");
 		}

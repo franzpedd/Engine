@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Entity/Entity.h"
+#include "Renderer/Vulkan/VKCommander.h"
 #include "UI/GUI.h"
 
 #include <iostream>
@@ -41,7 +42,7 @@ namespace Cosmos
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer commandBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
+		VkCommandBuffer commandBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
 
 		// draw models
 		auto modelsGroup = mRegistry.group<ModelComponent>();
