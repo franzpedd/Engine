@@ -19,13 +19,13 @@
 
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture.h"
-#include "Renderer/Shader.h"
 
 #include "Renderer/Vulkan/VKDevice.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
 #include "Renderer/Vulkan/VKImage.h"
 #include "Renderer/Vulkan/VKInitializers.h"
+#include "Renderer/Vulkan/VKRenderer.h"
 
 #include "UI/GUI.h"
 #include "UI/Icons.h"

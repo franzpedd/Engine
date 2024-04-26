@@ -39,7 +39,7 @@ namespace Cosmos
 		~Logger();
 
 		// returns the logger
-		static Logger& Get();
+		static Logger& GetInstance();
 	
 		// logs to a ostringstream object
 		template<class T>
@@ -73,16 +73,16 @@ namespace Cosmos
 // macros to facilitate using logging (only enabled on debug)
 #if defined(ENGINE_DEBUG) || defined(EDITOR_DEBUG) || defined(GAME_DEBUG)
 
-#define LOG_TO_FILE(severity, filepath, ...)										\
-{																					\
-	Cosmos::Logger::Get().ToFile(severity, filepath, __FILE__, __LINE__, __VA_ARGS__);	\
-	if(severity == Cosmos::Logger::Severity::Assert) std::abort();					\
+#define LOG_TO_FILE(severity, filepath, ...)													\
+{																								\
+	Cosmos::Logger::GetInstance().ToFile(severity, filepath, __FILE__, __LINE__, __VA_ARGS__);	\
+	if(severity == Cosmos::Logger::Severity::Assert) std::abort();								\
 }
 
-#define LOG_TO_TERMINAL(severity, ...)										\
-{																			\
-	Cosmos::Logger::Get().ToTerminal(severity, __FILE__, __LINE__, __VA_ARGS__);	\
-	if (severity == Cosmos::Logger::Severity::Assert) std::abort();			\
+#define LOG_TO_TERMINAL(severity, ...)															\
+{																								\
+	Cosmos::Logger::GetInstance().ToTerminal(severity, __FILE__, __LINE__, __VA_ARGS__);		\
+	if (severity == Cosmos::Logger::Severity::Assert) std::abort();								\
 }
 
 #else
@@ -95,46 +95,46 @@ namespace Cosmos
 // always enable vulkan asserts and asserts
 #if defined (ENGINE_RELEASE) || defined(EDITOR_RELEASE)	
 
-#define LOG_ASSERT(x, ...)																						\
-{																												\
-	if(!(x))																									\
-	{																											\
-		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
-		std::abort();																							\
-	}																											\
+#define LOG_ASSERT(x, ...)																								\
+{																														\
+	if(!(x))																											\
+	{																													\
+		Cosmos::Logger::GetInstance().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																									\
+	}																													\
 }
 
-#define VK_ASSERT(fn, ...)																						\
-{																												\
-	VkResult res = (fn);																						\
-																												\
-	if (res != VK_SUCCESS)																						\
-	{																											\
-		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
-		std::abort();																							\
-	}																											\
+#define VK_ASSERT(fn, ...)																								\
+{																														\
+	VkResult res = (fn);																								\
+																														\
+	if (res != VK_SUCCESS)																								\
+	{																													\
+		Cosmos::Logger::GetInstance().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																									\
+	}																													\
 }
 
 #else
 
-#define LOG_ASSERT(x, ...)																						\
-{																												\
-	if(!(x))																									\
-	{																											\
-		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
-		std::abort();																							\
-	}																											\
+#define LOG_ASSERT(x, ...)																								\
+{																														\
+	if(!(x))																											\
+	{																													\
+		Cosmos::Logger::GetInstance().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																									\
+	}																													\
 }
 
-#define VK_ASSERT(fn, ...)																						\
-{																												\
-	VkResult res = (fn);																						\
-																												\
-	if (res != VK_SUCCESS)																						\
-	{																											\
-		Cosmos::Logger::Get().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
-		std::abort();																							\
-	}																											\
+#define VK_ASSERT(fn, ...)																								\
+{																														\
+	VkResult res = (fn);																								\
+																														\
+	if (res != VK_SUCCESS)																								\
+	{																													\
+		Cosmos::Logger::GetInstance().ToTerminal(Cosmos::Logger::Severity::Assert, __FILE__, __LINE__, __VA_ARGS__);	\
+		std::abort();																									\
+	}																													\
 }
 
 #endif

@@ -37,7 +37,7 @@ namespace Cosmos
 		ImGui_ImplSDL2_Shutdown();
 		ImGui::DestroyContext();
 
-		Commander::Get().Erase("ImGui", mRenderer->GetDevice()->GetDevice());
+		Commander::Get().Erase("ImGui", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 	}
 
 	void GUI::OnUpdate()
@@ -78,34 +78,34 @@ namespace Cosmos
 	{
 		if (event->GetType() == EventType::WindowResize)
 		{
-			vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+			vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 
 			// recreate frame buffers
 			for (auto framebuffer : Commander::Get().GetEntries()["ImGui"]->framebuffers)
 			{
-				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
+				vkDestroyFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
 
-			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
+			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
 
-			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
+			for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size(); i++)
 			{
-				VkImageView attachments[] = { mRenderer->GetSwapchain()->GetImageViews()[i] };
+				VkImageView attachments[] = { std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews()[i] };
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
-				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
-				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
+				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
 
 				VK_ASSERT
 				(
 					vkCreateFramebuffer
 					(
-						mRenderer->GetDevice()->GetDevice(),
+						std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
 						&framebufferCI,
 						nullptr,
 						&Commander::Get().GetEntries()["ImGui"]->framebuffers[i]
@@ -159,8 +159,8 @@ namespace Cosmos
 		io.Fonts->Clear();
 		LoadFont(fontSize);
 
-		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/fontawesome-webfont.ttf").c_str(), iconSize, &iconCFG, iconRanges1);
-		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(util::GetAssetSubDir("Fonts/lucide.ttf").c_str(), iconSize, &iconCFG, iconRanges2);
+		mFonts.iconFA = io.Fonts->AddFontFromFileTTF(GetAssetSubDir("Fonts/fontawesome-webfont.ttf").c_str(), iconSize, &iconCFG, iconRanges1);
+		mFonts.iconLC = io.Fonts->AddFontFromFileTTF(GetAssetSubDir("Fonts/lucide.ttf").c_str(), iconSize, &iconCFG, iconRanges2);
 		io.Fonts->Build();
 
 		io.IniFilename = "ui.ini";
@@ -192,7 +192,7 @@ namespace Cosmos
 		poolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
 		poolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolCI.pPoolSizes = poolSizes;
-		VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &poolCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->descriptorPool), "Failed to create descriptor pool for the User Interface");
+		VK_ASSERT(vkCreateDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &poolCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->descriptorPool), "Failed to create descriptor pool for the User Interface");
 
 		// glfw and vulkan initialization
 		ImGui::CreateContext();
@@ -200,12 +200,12 @@ namespace Cosmos
 
 		ImGui_ImplVulkan_InitInfo initInfo = {};
 		initInfo.Instance = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetInstance()->GetInstance();
-		initInfo.PhysicalDevice = mRenderer->GetDevice()->GetPhysicalDevice();
-		initInfo.Device = mRenderer->GetDevice()->GetDevice();
-		initInfo.Queue = mRenderer->GetDevice()->GetGraphicsQueue();
+		initInfo.PhysicalDevice = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetPhysicalDevice();
+		initInfo.Device = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice();
+		initInfo.Queue = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetGraphicsQueue();
 		initInfo.DescriptorPool = Commander::Get().GetEntries()["ImGui"]->descriptorPool;
-		initInfo.MinImageCount = mRenderer->GetSwapchain()->GetImageCount();
-		initInfo.ImageCount = mRenderer->GetSwapchain()->GetImageCount();
+		initInfo.MinImageCount = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageCount();
+		initInfo.ImageCount = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageCount();
 		initInfo.MSAASamples = Commander::Get().GetEntries()["ImGui"]->msaa;
 		initInfo.Allocator = nullptr;
 		initInfo.RenderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
@@ -222,7 +222,7 @@ namespace Cosmos
 		// render pass
 		{
 			VkAttachmentDescription attachment = {};
-			attachment.format = mRenderer->GetSwapchain()->GetSurfaceFormat().format;
+			attachment.format = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetSurfaceFormat().format;
 			attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 			attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -256,18 +256,33 @@ namespace Cosmos
 			info.pSubpasses = &subpass;
 			info.dependencyCount = 1;
 			info.pDependencies = &dependency;
-			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &info, nullptr, &Commander::Get().GetEntries()["ImGui"]->renderPass), "Failed to create render pass");
+			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &info, nullptr, &Commander::Get().GetEntries()["ImGui"]->renderPass), "Failed to create render pass");
 		}
 
 		// command pool
 		{
-			QueueFamilyIndices indices = mRenderer->GetDevice()->FindQueueFamilies(mRenderer->GetDevice()->GetPhysicalDevice(), mRenderer->GetDevice()->GetSurface());
+			VKDevice::QueueFamilyIndices indices = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->FindQueueFamilies
+			(
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetPhysicalDevice(), 
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetSurface()
+			);
 
 			VkCommandPoolCreateInfo cmdPoolInfo = {};
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["ImGui"]->commandPool), "Failed to create command pool");
+
+			VK_ASSERT
+			(
+				vkCreateCommandPool
+				(
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
+					&cmdPoolInfo,
+					nullptr,
+					&Commander::Get().GetEntries()["ImGui"]->commandPool
+				),
+				"Failed to create command pool"
+			);
 		}
 
 		// command buffers
@@ -279,26 +294,47 @@ namespace Cosmos
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["ImGui"]->commandPool;
 			cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["ImGui"]->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["ImGui"]->commandBuffers.data()), "Failed to allocate command buffers");
+
+			VK_ASSERT
+			(
+				vkAllocateCommandBuffers
+				(
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(),
+					&cmdBufferAllocInfo,
+					Commander::Get().GetEntries()["ImGui"]->commandBuffers.data()
+				), 
+				"Failed to allocate command buffers"
+			);
 		}
 
 		// frame buffers
 		{
-			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(mRenderer->GetSwapchain()->GetImageViews().size());
+			Commander::Get().GetEntries()["ImGui"]->framebuffers.resize(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size());
 
-			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImageViews().size(); i++)
+			for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews().size(); i++)
 			{
-				VkImageView attachments[] = { mRenderer->GetSwapchain()->GetImageViews()[i] };
+				VkImageView attachments[] = { std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImageViews()[i] };
 
 				VkFramebufferCreateInfo framebufferCI = {};
 				framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 				framebufferCI.renderPass = Commander::Get().GetEntries()["ImGui"]->renderPass;
 				framebufferCI.attachmentCount = 1;
 				framebufferCI.pAttachments = attachments;
-				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
-				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
+				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["ImGui"]->framebuffers[i]), "Failed to create framebuffer");
+
+				VK_ASSERT
+				(
+					vkCreateFramebuffer
+					(
+						std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), 
+						&framebufferCI, 
+						nullptr, 
+						&Commander::Get().GetEntries()["ImGui"]->framebuffers[i]
+					), 
+					"Failed to create framebuffer"
+				);
 			}
 		}
 	}

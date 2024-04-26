@@ -61,7 +61,7 @@ namespace Cosmos::thread
 	public: // temp
 
 		bool mShutdown = false;
-		util::Queue<std::function<void()>> mQueue;
+		Queue<std::function<void()>> mQueue;
 		std::vector<std::thread> mThreads;
 		std::mutex mMutex;
 		std::condition_variable mCondition;

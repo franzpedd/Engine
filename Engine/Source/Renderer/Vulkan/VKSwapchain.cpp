@@ -9,12 +9,12 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<VKSwapchain> VKSwapchain::Create(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
+	Shared<VKSwapchain> VKSwapchain::Create(Shared<VKInstance> instance, Shared<VKDevice> device)
 	{
-		return std::make_shared<VKSwapchain>(instance, device);
+		return CreateShared<VKSwapchain>(instance, device);
 	}
 
-	VKSwapchain::VKSwapchain(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device)
+	VKSwapchain::VKSwapchain(Shared<VKInstance> instance, Shared<VKDevice> device)
 		: mDevice(device), mInstance(instance)
 	{
 		Logger() << "Creating VKSwapchain";
@@ -188,7 +188,7 @@ namespace Cosmos
 
 		// create the swapchain
 		{
-			QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
+			VKDevice::QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
 			uint32_t queueFamilyIndices[] = { indices.graphics.value(), indices.present.value() };
 
 			VkSwapchainCreateInfoKHR swapchainCI = {};
@@ -381,7 +381,7 @@ namespace Cosmos
 
 	void VKSwapchain::CreateCommandPool()
 	{
-		QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
+		VKDevice::QueueFamilyIndices indices = mDevice->FindQueueFamilies(mDevice->GetPhysicalDevice(), mDevice->GetSurface());
 
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

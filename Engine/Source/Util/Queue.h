@@ -3,7 +3,7 @@
 #include <mutex>
 #include <queue>
 
-namespace Cosmos::util
+namespace Cosmos
 {
     // thread safe implementation of a queue using an std::queue
     template <typename T>

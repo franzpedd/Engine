@@ -5,7 +5,7 @@ namespace Cosmos
 	Project::Project(std::string name)
 		: mName(name)
 	{
-		mPath = util::GetAssetDir();
+		mPath = GetAssetDir();
 	}
 
 	Project::~Project()
@@ -20,7 +20,7 @@ namespace Cosmos
 		//Application::GetInstance()->GetActiveScene()->CleanCurrentScene();
 
 		mName = "Untitled";
-		mPath = util::GetAssetDir();
+		mPath = GetAssetDir();
 
 		LOG_TO_TERMINAL(Logger::Warn, "New project '%s' created", mName);
 	}

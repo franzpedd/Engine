@@ -6,9 +6,9 @@
 
 namespace Cosmos
 {
-	std::shared_ptr<Texture2D> Cosmos::Texture2D::Create(std::shared_ptr<Device> device, const char* path, MSAA msaa, bool ktx)
+	std::shared_ptr<Texture2D> Cosmos::Texture2D::Create(std::shared_ptr<VKDevice> device, const char* path, MSAA msaa)
 	{
-		return std::make_shared<VKTexture2D>(std::dynamic_pointer_cast<VKDevice>(device), path, (VkSampleCountFlagBits)msaa, ktx);
+		return std::make_shared<VKTexture2D>(device, path, (VkSampleCountFlagBits)msaa);
 	}
 
 	TextureSampler::AddressMode TextureSampler::WrapMode(int32_t wrap)

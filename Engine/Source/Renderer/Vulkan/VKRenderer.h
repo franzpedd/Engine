@@ -34,13 +34,13 @@ namespace Cosmos
 	public:
 
 		// returns the backend instance class object
-		Shared<VKInstance> GetInstance();
+		inline Shared<VKInstance> GetInstance() { return mInstance; }
 
 		// returns the backend device class object
-		virtual std::shared_ptr<Device> GetDevice() override;
+		inline Shared<VKDevice> GetDevice() { return mDevice; };
 
 		// returns the backend swapchain class object
-		virtual std::shared_ptr<Swapchain> GetSwapchain() override;
+		inline Shared<VKSwapchain> GetSwapchain() { return mSwapchain; }
 
 	public:
 
@@ -84,8 +84,8 @@ namespace Cosmos
 	private:
 
 		Shared<VKInstance> mInstance;
-		std::shared_ptr<VKDevice> mDevice;
-		std::shared_ptr<VKSwapchain> mSwapchain;
+		Shared<VKDevice> mDevice;
+		Shared<VKSwapchain> mSwapchain;
 
 		Commander* mCommander;
 		VkPipelineCache mPipelineCache;

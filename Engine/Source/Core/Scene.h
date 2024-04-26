@@ -1,19 +1,18 @@
 #pragma once
 
 #include "Camera.h"
-#include "Util/UUID.h"
+#include "Event/Event.h"
+#include "Renderer/Renderer.h"
 #include "Util/DataFile.h"
+#include "Util/Memory.h"
+#include "Util/UUID.h"
 
 #include "wrapper_entt.h"
-#include <memory>
 
 namespace Cosmos
 {
 	// forward declarations
 	class Entity;
-	class Window;
-	class Renderer;
-	class GUI;
 
 	class Scene : public std::enable_shared_from_this<Scene>
 	{
@@ -31,13 +30,21 @@ namespace Cosmos
 		std::shared_ptr<Scene> GetSmartRef() { return shared_from_this(); }
 
 		// returns a reference to the registry
-		inline entt::registry& GetRegistry() { return mRegistry; }
+		inline entt::registry& GetRegistryRef() { return mRegistry; }
 
 		// returns a reference to the entity unordered map
-		inline std::unordered_map<std::string, Entity>& GetEntityMap() { return mEntityMap; }
+		inline std::unordered_map<std::string, Entity>& GetEntityMapRef() { return mEntityMap; }
 
-		// returns a renderer reference
-		inline std::shared_ptr<Renderer>& GetRenderer() { return mRenderer; }
+	public:
+
+		// updates the scene objects
+		void OnUpdate(float timestep);
+
+		// draws the scene drawables
+		void OnRender();
+
+		// event handling
+		void OnEvent(Shared<Event> event);
 
 	public:
 
@@ -55,15 +62,6 @@ namespace Cosmos
 
 	public:
 
-		// updates the scene objects
-		void OnUpdate(float timestep);
-
-		// draws the scene drawables
-		void OnRender();
-
-		// event handling
-		void OnEvent(Shared<Event> event);
-
 		// loads a new scene
 		void Deserialize(DataFile& data);
 
@@ -74,8 +72,6 @@ namespace Cosmos
 
 		Shared<Renderer> mRenderer;
 		entt::registry mRegistry;
-
-		// holds the scene entities
 		std::unordered_map<std::string, Entity> mEntityMap = {};
 	};
 }

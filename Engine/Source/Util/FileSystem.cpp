@@ -5,12 +5,12 @@
 
 #include <filesystem>
 
-namespace Cosmos::util
+namespace Cosmos
 {
 	std::string GetBinDir()
 	{
 		std::string binDir = std::filesystem::current_path().string();
-		util::replace(binDir.begin(), binDir.end(), '\\', '/');
+		Cosmos::replace(binDir.begin(), binDir.end(), '\\', '/');
 
 		return binDir;
 	}

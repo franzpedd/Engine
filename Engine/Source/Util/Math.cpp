@@ -5,7 +5,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/epsilon.hpp>
 
-namespace Cosmos::Math
+namespace Cosmos
 {
     bool Decompose(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
     {

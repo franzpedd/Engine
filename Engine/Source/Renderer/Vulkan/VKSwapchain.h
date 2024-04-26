@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Renderer/Swapchain.h"
-#include <vulkan/vulkan.h>
-#include <memory>
+#include "VKDefines.h"
+#include "Util/Memory.h"
 #include <vector>
 
 namespace Cosmos
@@ -15,70 +14,79 @@ namespace Cosmos
 
 	struct CommandEntry;
 
-	class VKSwapchain : public Swapchain
+	class VKSwapchain
 	{
 	public:
 
+		struct Details
+		{
+			VkSurfaceCapabilitiesKHR capabilities = {};
+			std::vector<VkSurfaceFormatKHR> formats = {};
+			std::vector<VkPresentModeKHR> presentModes = {};
+		};
+
+	public:
+
 		// returns a smart pointer to a new swapchain class
-		static std::shared_ptr<VKSwapchain> Create(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
+		static Shared<VKSwapchain> Create(Shared<VKInstance> instance, Shared<VKDevice> device);
 
 		// constructor
-		VKSwapchain(std::shared_ptr<VKInstance>& instance, std::shared_ptr<VKDevice>& device);
+		VKSwapchain(Shared<VKInstance> instance, Shared<VKDevice> device);
 
 		// destructor
-		virtual ~VKSwapchain();
+		~VKSwapchain();
 
 	public:
 
 		// returns the vulkan swapchain
-		virtual VkSwapchainKHR& GetSwapchain() override;
+		VkSwapchainKHR& GetSwapchain();
 
 		// returns the swapchain images
-		virtual std::vector<VkImage>& GetImages() override;
+		std::vector<VkImage>& GetImages();
 
 		// returns the swapchain image views
-		virtual std::vector<VkImageView> GetImageViews() override;
+		std::vector<VkImageView> GetImageViews();
 
 		// returns the simultaniously rendered images
-		virtual uint32_t GetImageCount() override;
+		uint32_t GetImageCount();
 
 		// returns swapchain's surface format
-		virtual VkSurfaceFormatKHR& GetSurfaceFormat() override;
+		VkSurfaceFormatKHR& GetSurfaceFormat();
 
 		// returns swapchain's presentation mode
-		virtual VkPresentModeKHR& GetPresentMode() override;
+		VkPresentModeKHR& GetPresentMode();
 
 		// returns swapchain's extent
-		virtual VkExtent2D& GetExtent() override;
+		VkExtent2D& GetExtent();
 
 		// returns the swapchain's color view
-		virtual VkImageView& GetColorView() override;
+		VkImageView& GetColorView();
 
 		// returns the swapchain's depth view
-		virtual VkImageView& GetDepthView() override;
+		VkImageView& GetDepthView();
 
 	public:
 
 		// creates the swapchain render pass, a render pass containing the backbuffer
-		virtual void CreateRenderPass() override;
+		void CreateRenderPass();
 
 		// creates the swapchain
-		virtual void CreateSwapchain() override;
+		void CreateSwapchain();
 
 		// creates the swapchain image views
-		virtual void CreateImageViews() override;
+		void CreateImageViews();
 
 		// creates the swapchain framebuffers
-		virtual void CreateFramebuffers() override;
+		void CreateFramebuffers();
 
 		// cleans the current swapchain
-		virtual void Cleanup() override;
+		void Cleanup();
 
 		// recreates the swapchain
-		virtual void Recreate() override;
+		void Recreate();
 
 		// fills all information about the swapchain details
-		virtual Details QueryDetails() override;
+		Details QueryDetails();
 
 	public:
 
@@ -89,7 +97,6 @@ namespace Cosmos
 		void CreateCommandBuffers();
 
 	public:
-
 
 		// returns the optimal surface format
 		VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -102,8 +109,8 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<VKInstance>& mInstance;
-		std::shared_ptr<VKDevice>& mDevice;
+		std::shared_ptr<VKInstance> mInstance;
+		std::shared_ptr<VKDevice> mDevice;
 
 		VkSwapchainKHR mSwapchain = VK_NULL_HANDLE;
 		std::vector<VkImage> mImages = {};

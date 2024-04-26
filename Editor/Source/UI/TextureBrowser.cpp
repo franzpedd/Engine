@@ -5,7 +5,7 @@ namespace Cosmos
 	TextureBrowser::TextureBrowser(std::shared_ptr<Renderer>& renderer)
 		: mRenderer(renderer)
 	{
-		RefreshFilesExplorer(util::GetAssetSubDir("Textures"));
+		RefreshFilesExplorer(GetAssetSubDir("Textures"));
 	}
 
 	TextureBrowser::~TextureBrowser()
@@ -136,7 +136,7 @@ namespace Cosmos
 					TextureProperties tex;
 					tex.path = dirEntry;
 					tex.type = (Extension)i;
-					tex.texture = Texture2D::Create(mRenderer->GetDevice(), dirEntry.path().string().c_str());
+					tex.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), dirEntry.path().string().c_str());
 					tex.descriptor = AddTexture(tex.texture->GetSampler(), tex.texture->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 				
 					mTextures.push_back(tex);

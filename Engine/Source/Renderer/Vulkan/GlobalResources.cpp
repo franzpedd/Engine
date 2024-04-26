@@ -4,14 +4,13 @@
 #include "Entity/Renderable/Vertex.h"
 
 #include "VKInitializers.h"
-#include "Renderer/Device.h"
-#include "Renderer/Shader.h"
+#include "VKShader.h"
 
 #include "Util/FileSystem.h"
 
 namespace Cosmos
 {
-	void ModelGlobalResource::Initialize(std::shared_ptr<Device> device, VkPipelineCache cache)
+	void ModelGlobalResource::Initialize(std::shared_ptr<VKDevice> device, VkPipelineCache cache)
 	{
 		// free used resources if the exists
 		{
@@ -42,14 +41,14 @@ namespace Cosmos
 		// pipeline
 		{
 			// shaders
-			std::shared_ptr<Shader> vShader = Shader::Create(device, Shader::Vertex, "Model.vert", util::GetAssetSubDir("Shaders/model.vert"));
-			std::shared_ptr<Shader> fShader = Shader::Create(device, Shader::Fragment, "Model.frag", util::GetAssetSubDir("Shaders/model.frag"));
+			Unique<VKShader> vShader = CreateUnique<VKShader>(device, VKShader::Type::Vertex, "Model.vert", GetAssetSubDir("Shaders/model.vert"));
+			Unique<VKShader> fShader = CreateUnique<VKShader>(device, VKShader::Type::Fragment, "Model.frag", GetAssetSubDir("Shaders/model.frag"));
 
 			// constants
 			const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			const std::vector<VkVertexInputAttributeDescription> attributeDesc = Vertex::GetAttributeDescriptions();
 			const std::vector<VkVertexInputBindingDescription> bindingDesc = Vertex::GetBindingDescription();
-			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->GetStage(), fShader->GetStage() };
+			const std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vShader->GetShaderStageCreateInfoRef(), fShader->GetShaderStageCreateInfoRef()};
 
 			// pipeline objects
 			VkPipelineVertexInputStateCreateInfo VISCI = vulkan::PipelineVertexInputStateCreateInfo(bindingDesc, attributeDesc);
@@ -78,10 +77,6 @@ namespace Cosmos
 			pipelineCI.renderPass = Commander::Get().GetPrimary()->renderPass;
 			pipelineCI.subpass = 0;
 			VK_ASSERT(vkCreateGraphicsPipelines(device->GetDevice(), cache, 1, &pipelineCI, nullptr, &pipeline), "Failed to create graphics pipeline");
-
-			// free resources
-			vkDestroyShaderModule(device->GetDevice(), vShader->GetModule(), nullptr);
-			vkDestroyShaderModule(device->GetDevice(), fShader->GetModule(), nullptr);
 		}
 	}
 }

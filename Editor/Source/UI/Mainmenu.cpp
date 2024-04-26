@@ -26,8 +26,8 @@ namespace Cosmos
 		ImGui::Begin("Info", nullptr, flags);
 		ImGui::Text(ICON_FA_INFO_CIRCLE " FPS: %d", Application::GetInstance()->GetFPSSystem()->GetFPS());
 		ImGui::Text(ICON_FA_INFO_CIRCLE " Timestep: %f", Application::GetInstance()->GetFPSSystem()->GetTimestep());
-		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
-		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", camera->GetRotation().x, camera->GetRotation().y, camera->GetRotation().z);
+		ImGui::Text(ICON_FA_CAMERA " Camera Pos: %.2f %.2f %.2f", camera->GetPositionRef().x, camera->GetPositionRef().y, camera->GetPositionRef().z);
+		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", camera->GetRotationRef().x, camera->GetRotationRef().y, camera->GetRotationRef().z);
 
 		ImGui::End();
 	}
@@ -80,7 +80,7 @@ namespace Cosmos
 		{
 			case Cosmos::Mainmenu::New:
 			{
-				if (!Application::GetInstance()->GetActiveScene()->GetEntityMap().empty())
+				if (!Application::GetInstance()->GetActiveScene()->GetEntityMapRef().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}
@@ -96,7 +96,7 @@ namespace Cosmos
 			
 			case Cosmos::Mainmenu::Open:
 			{
-				if (!Application::GetInstance()->GetActiveScene()->GetEntityMap().empty())
+				if (!Application::GetInstance()->GetActiveScene()->GetEntityMapRef().empty())
 				{
 					ImGui::OpenPopup("Save current Project?");
 				}

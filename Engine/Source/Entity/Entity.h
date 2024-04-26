@@ -47,28 +47,28 @@ namespace Cosmos
 		template<typename T>
 		bool HasComponent()
 		{
-			return mScene->GetRegistry().all_of<T>(mEntityHandle);
+			return mScene->GetRegistryRef().all_of<T>(mEntityHandle);
 		}
 
 		// adds a component for the entity
 		template<typename T, typename...Args>
 		T& AddComponent(Args&&... args)
 		{
-			return mScene->GetRegistry().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
+			return mScene->GetRegistryRef().emplace_or_replace<T>(mEntityHandle, std::forward<Args>(args)...);
 		}
 
 		// returns the component
 		template<typename T>
 		T& GetComponent()
 		{
-			return mScene->GetRegistry().get<T>(mEntityHandle);
+			return mScene->GetRegistryRef().get<T>(mEntityHandle);
 		}
 
 		// removes the component
 		template<typename T>
 		void RemoveComponent()
 		{
-			mScene->GetRegistry().remove<T>(mEntityHandle);
+			mScene->GetRegistryRef().remove<T>(mEntityHandle);
 		}
 
 	protected:

@@ -1,19 +1,15 @@
 #pragma once
 
+#include "Camera.h"
+#include "Scene.h"
+#include "Event/Event.h"
 #include "Platform/Window.h"
+#include "Renderer/Renderer.h"
 #include "UI/GUI.h"
-#include <chrono>
-#include <filesystem>
-#include <memory>
+#include "Util/Memory.h"
 
 namespace Cosmos
-{
-	// forward declaration
-	class Camera;
-	class Event;
-	class Renderer;
-	class Scene;
-	
+{	
 	class Application
 	{
 	public:

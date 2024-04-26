@@ -1,16 +1,9 @@
 #include "epch.h"
 #include "Application.h"
 
-#include "Camera.h"
-#include "Scene.h"
-
-#include "Event/Event.h"
-#include "Renderer/Renderer.h"
 #include "Sound/Listener.h"
 #include "Thread/Pool.h"
 #include "Util/FileSystem.h"
-
-#include "Entity/Entity.h"
 
 namespace Cosmos
 {
@@ -23,10 +16,11 @@ namespace Cosmos
 		LOG_ASSERT(sApplication == nullptr, "Application already created");
 		sApplication = this;
 
-		// create objects
+		// create singleton objects
 		sound::Listener::GetInstance();
 		thread::PoolManager::GetInstance();
 
+		// create shared objects
 		mFpsSystem = CreateShared<FramesPerSecond>();
 		mWindow = CreateShared<Window>("Cosmos Application", 1280, 720);
 		mCamera = CreateShared<Camera>();

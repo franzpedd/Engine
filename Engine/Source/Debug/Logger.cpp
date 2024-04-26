@@ -8,7 +8,7 @@ namespace Cosmos
 		printf("%s", mOutput.str().c_str());
 	}
 
-	Logger& Logger::Get()
+	Logger& Logger::GetInstance()
 	{
 		static Logger instance;
 		return instance;

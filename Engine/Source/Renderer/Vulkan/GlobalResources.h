@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "VKDefines.h"
+#include "VKDevice.h"
 #include <vector>
 
 namespace Cosmos
 {
-	// forward declarations
-	class Device;
-
 	// this structure holds all objects shared across all models
 	// there should be only one object of this structure, it belongs to the Vulkan renderer
 	struct ModelGlobalResource
@@ -21,6 +19,6 @@ namespace Cosmos
 	public:
 
 		// creates and populates the objects
-		void Initialize(std::shared_ptr<Device> device, VkPipelineCache cache);
+		void Initialize(std::shared_ptr<VKDevice> device, VkPipelineCache cache);
 	};
 }

@@ -3,7 +3,6 @@
 
 #include "VKInitializers.h"
 #include "VKShader.h"
-#include "Entity/Renderable/Vertex.h"
 
 #include "Core/Application.h"
 #include "Core/Scene.h"
@@ -45,21 +44,6 @@ namespace Cosmos
 
 		for (auto& descriptorSetLayout : mDescriptorSetLayouts)
 			vkDestroyDescriptorSetLayout(mDevice->GetDevice(), descriptorSetLayout.second, nullptr);
-	}
-
-	Shared<VKInstance> VKRenderer::GetInstance()
-	{
-		return mInstance;
-	}
-
-	std::shared_ptr<Device> VKRenderer::GetDevice()
-	{
-		return std::static_pointer_cast<Device>(mDevice);
-	}
-
-	std::shared_ptr<Swapchain> VKRenderer::GetSwapchain()
-	{
-		return std::static_pointer_cast<Swapchain>(mSwapchain);
 	}
 
 	VkPipelineCache& VKRenderer::PipelineCache()

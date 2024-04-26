@@ -17,7 +17,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Severity::Warn, "Rework Commander class and main RenderPass usage");
 
 		mSurfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
-		mDepthFormat = FindDepthFormat(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()));
+		mDepthFormat = FindDepthFormat(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice());
 
 		// render pass
 		{
@@ -88,18 +88,22 @@ namespace Cosmos
 			renderPassCI.pSubpasses = &subpassDescription;
 			renderPassCI.dependencyCount = (uint32_t)dependencies.size();
 			renderPassCI.pDependencies = dependencies.data();
-			VK_ASSERT(vkCreateRenderPass(mRenderer->GetDevice()->GetDevice(), &renderPassCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->renderPass), "Failed to create renderpass");
+			VK_ASSERT(vkCreateRenderPass(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &renderPassCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->renderPass), "Failed to create renderpass");
 		}
 
 		// command pool
 		{
-			QueueFamilyIndices indices = mRenderer->GetDevice()->FindQueueFamilies(mRenderer->GetDevice()->GetPhysicalDevice(), mRenderer->GetDevice()->GetSurface());
+			VKDevice::QueueFamilyIndices indices = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->FindQueueFamilies
+			(
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetPhysicalDevice(), 
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetSurface()
+			);
 
 			VkCommandPoolCreateInfo cmdPoolInfo = {};
 			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmdPoolInfo.queueFamilyIndex = indices.graphics.value();
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_ASSERT(vkCreateCommandPool(mRenderer->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Viewport"]->commandPool), "Failed to create command pool");
+			VK_ASSERT(vkCreateCommandPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdPoolInfo, nullptr, &Commander::Get().GetEntries()["Viewport"]->commandPool), "Failed to create command pool");
 		}
 
 		// command buffers
@@ -111,7 +115,7 @@ namespace Cosmos
 			cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocInfo.commandPool = Commander::Get().GetEntries()["Viewport"]->commandPool;
 			cmdBufferAllocInfo.commandBufferCount = (uint32_t)Commander::Get().GetEntries()["Viewport"]->commandBuffers.size();
-			VK_ASSERT(vkAllocateCommandBuffers(mRenderer->GetDevice()->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["Viewport"]->commandBuffers.data()), "Failed to allocate command buffers");
+			VK_ASSERT(vkAllocateCommandBuffers(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &cmdBufferAllocInfo, Commander::Get().GetEntries()["Viewport"]->commandBuffers.data()), "Failed to allocate command buffers");
 		}
 
 		// sampler
@@ -124,13 +128,13 @@ namespace Cosmos
 			samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerCI.anisotropyEnable = VK_TRUE;
-			samplerCI.maxAnisotropy = mRenderer->GetDevice()->GetProperties().limits.maxSamplerAnisotropy;
+			samplerCI.maxAnisotropy = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetProperties().limits.maxSamplerAnisotropy;
 			samplerCI.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 			samplerCI.unnormalizedCoordinates = VK_FALSE;
 			samplerCI.compareEnable = VK_FALSE;
 			samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
 			samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			VK_ASSERT(vkCreateSampler(mRenderer->GetDevice()->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
+			VK_ASSERT(vkCreateSampler(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &samplerCI, nullptr, &mSampler), "Failed to create sampler");
 		}
 
 		CreateResources();
@@ -141,22 +145,22 @@ namespace Cosmos
 
 	Viewport::~Viewport()
 	{
-		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+		vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 		
-		vkDestroySampler(mRenderer->GetDevice()->GetDevice(), mSampler, nullptr);
+		vkDestroySampler(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mSampler, nullptr);
 		
-		vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
-		vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
-		vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
+		vkDestroyImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthView, nullptr);
+		vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+		vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthImage, nullptr);
 		
-		for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
+		for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImages().size(); i++)
 		{
-			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
-			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
+			vkDestroyImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+			vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImages[i], nullptr);
 		}
 		
-		Commander::Get().Erase("Viewport", mRenderer->GetDevice()->GetDevice());
+		Commander::Get().Erase("Viewport", std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 	}
 
 	void Viewport::OnUpdate()
@@ -215,20 +219,20 @@ namespace Cosmos
 
 		if (event->GetType() == EventType::WindowResize)
 		{
-			vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mDepthView, nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mDepthMemory, nullptr);
-			vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mDepthImage, nullptr);
+			vkDestroyImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthView, nullptr);
+			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthMemory, nullptr);
+			vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDepthImage, nullptr);
 
-			for (size_t i = 0; i < mRenderer->GetSwapchain()->GetImages().size(); i++)
+			for (size_t i = 0; i < std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImages().size(); i++)
 			{
-				vkDestroyImageView(mRenderer->GetDevice()->GetDevice(), mImageViews[i], nullptr);
-				vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
-				vkDestroyImage(mRenderer->GetDevice()->GetDevice(), mImages[i], nullptr);
+				vkDestroyImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImageViews[i], nullptr);
+				vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImageMemories[i], nullptr);
+				vkDestroyImage(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mImages[i], nullptr);
 			}
 
 			for (auto& framebuffer : Commander::Get().GetEntries()["Viewport"]->framebuffers)
 			{
-				vkDestroyFramebuffer(mRenderer->GetDevice()->GetDevice(), framebuffer, nullptr);
+				vkDestroyFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), framebuffer, nullptr);
 			}
 
 			CreateResources();
@@ -237,15 +241,15 @@ namespace Cosmos
 
 	void Viewport::CreateResources()
 	{
-		size_t size = mRenderer->GetSwapchain()->GetImages().size();
+		size_t size = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetImages().size();
 
 		// depth buffer
 		{
 			CreateImage
 			(
-				std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
-				mRenderer->GetSwapchain()->GetExtent().width,
-				mRenderer->GetSwapchain()->GetExtent().height,
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width,
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height,
 				1,
 				Commander::Get().GetEntries()["Viewport"]->msaa,
 				mDepthFormat,
@@ -256,7 +260,7 @@ namespace Cosmos
 				mDepthMemory
 			);
 
-			mDepthView = CreateImageView(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mDepthImage, mDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+			mDepthView = CreateImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mDepthImage, mDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
 
 		// images
@@ -271,9 +275,9 @@ namespace Cosmos
 			{
 				CreateImage
 				(
-					std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()),
-					mRenderer->GetSwapchain()->GetExtent().width,
-					mRenderer->GetSwapchain()->GetExtent().height,
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width,
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height,
 					1,
 					Commander::Get().GetEntries()["Viewport"]->msaa,
 					mSurfaceFormat,
@@ -284,7 +288,7 @@ namespace Cosmos
 					mImageMemories[i]
 				);
 
-				VkCommandBuffer command = BeginSingleTimeCommand(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), Commander::Get().GetEntries()["Viewport"]->commandPool);
+				VkCommandBuffer command = BeginSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), Commander::Get().GetEntries()["Viewport"]->commandPool);
 
 				InsertImageMemoryBarrier
 				(
@@ -299,9 +303,9 @@ namespace Cosmos
 					VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 				);
 
-				EndSingleTimeCommand(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), Commander::Get().GetEntries()["Viewport"]->commandPool, command);
+				EndSingleTimeCommand(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), Commander::Get().GetEntries()["Viewport"]->commandPool, command);
 
-				mImageViews[i] = CreateImageView(std::dynamic_pointer_cast<VKDevice>(mRenderer->GetDevice()), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+				mImageViews[i] = CreateImageView(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mImages[i], mSurfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 				mDescriptorSets[i] = AddTexture(mSampler, mImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 				std::array<VkImageView, 2> attachments = { mImageViews[i], mDepthView };
@@ -311,10 +315,10 @@ namespace Cosmos
 				framebufferCI.renderPass = Commander::Get().GetEntries()["Viewport"]->renderPass;
 				framebufferCI.attachmentCount = (uint32_t)attachments.size();
 				framebufferCI.pAttachments = attachments.data();
-				framebufferCI.width = mRenderer->GetSwapchain()->GetExtent().width;
-				framebufferCI.height = mRenderer->GetSwapchain()->GetExtent().height;
+				framebufferCI.width = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().width;
+				framebufferCI.height = std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetSwapchain()->GetExtent().height;
 				framebufferCI.layers = 1;
-				VK_ASSERT(vkCreateFramebuffer(mRenderer->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->framebuffers[i]), "Failed to create framebuffer");
+				VK_ASSERT(vkCreateFramebuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &framebufferCI, nullptr, &Commander::Get().GetEntries()["Viewport"]->framebuffers[i]), "Failed to create framebuffer");
 			}
 		}
 	}
@@ -378,14 +382,14 @@ namespace Cosmos
 		ImGuizmo::SetOrthographic(false); // 3D engine dont have orthographic but perspective
 		ImGuizmo::SetDrawlist();
 
-		//viewport rect
+		// viewport rect
 		float windowWidth = (float)ImGui::GetWindowWidth();
 		float windowHeight = (float)ImGui::GetWindowHeight();
 		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 		
 		// camera
 		auto camera = Application::GetInstance()->GetCamera();
-		glm::mat4 view = camera->GetView();
+		glm::mat4 view = camera->GetViewRef();
 		glm::mat4 proj = glm::perspectiveRH(glm::radians(camera->GetFov()), mCurrentSize.x / mCurrentSize.y, camera->GetNear(), camera->GetFar());
 
 		// entity
@@ -412,7 +416,7 @@ namespace Cosmos
 		if (ImGuizmo::IsUsing())
 		{
 			glm::vec3 translation, rotation, scale;
-			Math::Decompose(transform, translation, rotation, scale);
+			Decompose(transform, translation, rotation, scale);
 		
 			glm::vec3 deltaRotation = rotation - tc.rotation;
 			tc.translation = translation;

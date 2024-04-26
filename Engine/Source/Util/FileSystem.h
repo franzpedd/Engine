@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace Cosmos::util
+namespace Cosmos
 {
 	// returns the binary directory path
 	std::string GetBinDir();

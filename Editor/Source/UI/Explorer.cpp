@@ -5,28 +5,28 @@ namespace Cosmos
 	Explorer::Explorer(std::shared_ptr<Renderer>& renderer)
 		: Widget("UI:Explorer"), mRenderer(renderer)
 	{
-		mCurrentDir = util::GetAssetDir();
+		mCurrentDir = GetAssetDir();
 
 		// create default resources
-		mUndefinedResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/undefined.png").c_str());
+		mUndefinedResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/undefined.png").c_str());
 		mUndefinedResource.descriptor = AddTexture(mUndefinedResource.texture->GetSampler(), mUndefinedResource.texture->GetView());
 
-		mFolderResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/folder.png").c_str());
+		mFolderResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/folder.png").c_str());
 		mFolderResource.descriptor = AddTexture(mFolderResource.texture->GetSampler(), mFolderResource.texture->GetView());
 
-		mTextResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/txt.png").c_str());
+		mTextResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/txt.png").c_str());
 		mTextResource.descriptor = AddTexture(mTextResource.texture->GetSampler(), mTextResource.texture->GetView());
 
-		mModelResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/mdl.png").c_str());
+		mModelResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/mdl.png").c_str());
 		mModelResource.descriptor = AddTexture(mModelResource.texture->GetSampler(), mModelResource.texture->GetView());
 
-		mVertexResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/vert.png").c_str());
+		mVertexResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/vert.png").c_str());
 		mVertexResource.descriptor = AddTexture(mVertexResource.texture->GetSampler(), mVertexResource.texture->GetView());
 
-		mFragmentResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/frag.png").c_str());
+		mFragmentResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/frag.png").c_str());
 		mFragmentResource.descriptor = AddTexture(mFragmentResource.texture->GetSampler(), mFragmentResource.texture->GetView());
 
-		mSpirvResource.texture = Texture2D::Create(mRenderer->GetDevice(), util::GetAssetSubDir("Textures/editor/spv.png").c_str());
+		mSpirvResource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), GetAssetSubDir("Textures/editor/spv.png").c_str());
 		mSpirvResource.descriptor = AddTexture(mSpirvResource.texture->GetSampler(), mSpirvResource.texture->GetView());
 	}
 
@@ -168,7 +168,7 @@ namespace Cosmos
 		{
 			// default asset configs
 			std::string path = dirEntry.path().string();
-			Cosmos::util::replace(path.begin(), path.end(), char('\\'), char('/'));
+			Cosmos::replace(path.begin(), path.end(), char('\\'), char('/'));
 			
 			Asset asset = {};
 			asset.type = AssetType::Undefined;
@@ -233,7 +233,7 @@ namespace Cosmos
 						case 7: // jpg
 						{
 							asset.type = AssetType::Image;
-							asset.resource.texture = Texture2D::Create(mRenderer->GetDevice(), asset.path.c_str());
+							asset.resource.texture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), asset.path.c_str());
 							asset.resource.descriptor = AddTexture(asset.resource.texture->GetSampler(), asset.resource.texture->GetView());
 							break;
 						}

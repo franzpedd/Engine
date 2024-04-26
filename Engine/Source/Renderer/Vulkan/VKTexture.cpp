@@ -10,11 +10,9 @@
 
 namespace Cosmos
 {
-	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa, bool ktx)
-		: mDevice(device), mPath(path), mMSAA(msaa), mKTX(ktx)
+	VKTexture2D::VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa)
+		: mDevice(device), mPath(path), mMSAA(msaa)
 	{
-		LOG_ASSERT(!ktx, "Khronos Texture format not yet implemented");
-
 		LoadTexture();
 
 		// image view
@@ -90,7 +88,7 @@ namespace Cosmos
 
 		BufferCreate
 		(
-			std::static_pointer_cast<Device>(mDevice),
+			mDevice,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			imgSize,

@@ -3,11 +3,11 @@
 
 #include "Core/Camera.h"
 #include "Renderer/Renderer.h"
-#include "Renderer/Device.h"
 #include "Renderer/Texture.h"
 #include "Renderer/Vulkan/VKInitializers.h"
 #include "Renderer/Vulkan/VKBuffer.h"
 #include "Renderer/Vulkan/VKShader.h"
+#include "Renderer/Vulkan/VKRenderer.h"
 #include "Util/FileSystem.h"
 
 #include <assimp/Importer.hpp>
@@ -20,7 +20,7 @@ namespace Cosmos
 	Model::Model(std::shared_ptr<Renderer> renderer, std::shared_ptr<Camera> camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
-		mAlbedoPath = util::GetAssetSubDir("Textures/dev/colors/orange.png");
+		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
 	}
 
 	void Model::Draw(VkCommandBuffer commandBuffer)
@@ -39,8 +39,8 @@ namespace Cosmos
 
 		UniformBufferObject ubo = {};
 		ubo.model = transform;
-		ubo.view = mCamera->GetView();
-		ubo.proj = mCamera->GetProjection();
+		ubo.view = mCamera->GetViewRef();
+		ubo.proj = mCamera->GetProjectionRef();
 
 		uint32_t currentFrame = mRenderer->CurrentFrame();
 
@@ -49,15 +49,15 @@ namespace Cosmos
 
 	void Model::Destroy()
 	{
-		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+		vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 		
 		for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			vkDestroyBuffer(mRenderer->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
-			vkFreeMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
+			vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
+			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
 		}
 		
-		vkDestroyDescriptorPool(mRenderer->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
 
 		for (auto& mesh : mMeshes)
 		{
@@ -104,12 +104,12 @@ namespace Cosmos
 			return;
 		}
 
-		vkDeviceWaitIdle(mRenderer->GetDevice()->GetDevice());
+		vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
 
 		if(mAlbedoTexture)
 			mAlbedoTexture->Destroy();
 
-		mAlbedoTexture = Texture2D::Create(mRenderer->GetDevice(), path.c_str());
+		mAlbedoTexture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), path.c_str());
 
 		UpdateDescriptorSets();
 
@@ -132,12 +132,12 @@ namespace Cosmos
 
 	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	{
-		std::vector<Vertex> vertices;
+		std::vector<VKVertex> vertices;
 		std::vector<uint32_t> indices;
 
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
-			Vertex vertex;
+			VKVertex vertex;
 
 			// position
 			vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
@@ -184,7 +184,7 @@ namespace Cosmos
 			{
 				BufferCreate
 				(
-					mRenderer->GetDevice(),
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					sizeof(UniformBufferObject),
@@ -192,13 +192,13 @@ namespace Cosmos
 					&mUniformBuffersMemory[i]
 				);
 
-				vkMapMemory(mRenderer->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
 			}
 		}
 
 		// textures
 		{
-			mAlbedoTexture = Texture2D::Create(mRenderer->GetDevice(), mAlbedoPath.c_str());
+			mAlbedoTexture = Texture2D::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mAlbedoPath.c_str());
 		}
 
 		// create descriptor pool and descriptor sets
@@ -214,7 +214,7 @@ namespace Cosmos
 			descPoolCI.poolSizeCount = (uint32_t)poolSizes.size();
 			descPoolCI.pPoolSizes = poolSizes.data();
 			descPoolCI.maxSets = 2;
-			VK_ASSERT(vkCreateDescriptorPool(mRenderer->GetDevice()->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
+			VK_ASSERT(vkCreateDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
 			std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mRenderer->GetDescriptorSetLayout("Model"));
 
@@ -225,7 +225,7 @@ namespace Cosmos
 			descSetAllocInfo.pSetLayouts = layouts.data();
 
 			mDescriptorSets.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
-			VK_ASSERT(vkAllocateDescriptorSets(mRenderer->GetDevice()->GetDevice(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
+			VK_ASSERT(vkAllocateDescriptorSets(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &descSetAllocInfo, mDescriptorSets.data()), "Failed to allocate descriptor sets");
 
 			UpdateDescriptorSets();
 		}
@@ -269,7 +269,7 @@ namespace Cosmos
 
 			descriptorWrites.push_back(albedoDesc);
 
-			vkUpdateDescriptorSets(mRenderer->GetDevice()->GetDevice(), (uint32_t)descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+			vkUpdateDescriptorSets(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), (uint32_t)descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 		}
 	}
 }

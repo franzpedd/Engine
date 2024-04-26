@@ -1,5 +1,7 @@
 #include "SceneHierarchy.h"
 
+#include <filesystem>
+
 namespace Cosmos
 {
 	SceneHierarchy::SceneHierarchy(Shared<Renderer> renderer, Shared<Camera> camera)
@@ -51,7 +53,7 @@ namespace Cosmos
 		ImGui::EndMenuBar();
 		
 		// draws all existing entity nodes
-		for (auto& ent : Application::GetInstance()->GetActiveScene()->GetEntityMap())
+		for (auto& ent : Application::GetInstance()->GetActiveScene()->GetEntityMapRef())
 		{
 			bool redraw = false;
 			DrawEntityNode(&ent.second, &redraw);

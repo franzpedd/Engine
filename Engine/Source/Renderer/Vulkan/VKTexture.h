@@ -14,7 +14,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT, bool ktx = false);
+		VKTexture2D(std::shared_ptr<VKDevice> device, const char* path, VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT);
 
 		// destructor
 		~VKTexture2D() = default;
@@ -43,7 +43,6 @@ namespace Cosmos
 		std::shared_ptr<VKDevice> mDevice;
 		const char* mPath = nullptr;
 		VkSampleCountFlagBits mMSAA = VK_SAMPLE_COUNT_1_BIT;
-		bool mKTX = false;
 
 		VkImage mImage = VK_NULL_HANDLE;
 		VkDeviceMemory mMemory = VK_NULL_HANDLE;

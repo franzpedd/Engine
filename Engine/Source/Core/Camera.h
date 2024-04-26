@@ -40,36 +40,37 @@ namespace Cosmos
 		// sets a new camera's mode
 		inline void SetType(Type type) { mType = type; }
 
-	public:
+		// sets a new aspect ratio for the camera
+		inline void SetAspectRatio(float aspect) { mAspectRatio = aspect; }
 
-		// returns the perspective/projection matrix, using defaults aspect ratio
-		glm::mat4& GetProjection();
-
-		// returns the view matrix
-		glm::mat4& GetView();
-
-	public:
+		// returns the camera's aspect ratio
+		inline float GetAspectRatio() const { return mAspectRatio; }
 
 		// returns the camera field of view
-		float GetFov() const { return mFov; }
+		inline float GetFov() const { return mFov; }
 
 		// returns near value
-		float GetNear() const { return mZnear; }
+		inline float GetNear() const { return mZnear; }
 
 		// returns far value
-		float GetFar() const { return mZfar; }
+		inline float GetFar() const { return mZfar; }
 
 		// returns the camera eyes
-		glm::vec3& GetFront() { return mFront; }
+		inline glm::vec3& GetFrontRef() { return mFront; }
 
 		// returns the current camera position
-		glm::vec3& GetPosition() { return mPosition; }
+		inline glm::vec3& GetPositionRef() { return mPosition; }
 
 		// returns the current camera rotation
-		glm::vec3& GetRotation() { return mRotation; }
+		inline glm::vec3& GetRotationRef() { return mRotation; }
 
-		// sets a new aspect ratio for the camera
-		void SetAspectRatio(float aspect);
+	public:
+
+		// returns a reference to the perspective/projection matrix, using defaults aspect ratio
+		glm::mat4& GetProjectionRef();
+
+		// returns a reference to the view matrix
+		glm::mat4& GetViewRef();
 
 	public:
 

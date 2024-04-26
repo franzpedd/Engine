@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace Cosmos::util
+namespace Cosmos
 {
     // replace implementation, changes any old value with the newer one 
     template<class ForwardIt, class T>

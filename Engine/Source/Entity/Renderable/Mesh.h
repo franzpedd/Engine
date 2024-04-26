@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Vertex.h"
+#include "Renderer/Vulkan/VKVertex.h"
+#include "Util/Memory.h"
 
-#include <vulkan/vulkan.h>
-#include <memory>
 #include <vector>
 
 namespace Cosmos
@@ -16,7 +15,7 @@ namespace Cosmos
 	public:
 
 		// constructor
-		Mesh(std::shared_ptr<Renderer> renderer, std::vector<Vertex> vertices, std::vector<uint32_t> indices);
+		Mesh(Shared<Renderer> renderer, std::vector<VKVertex> vertices, std::vector<uint32_t> indices);
 
 		// destructor
 		~Mesh() = default;
@@ -24,7 +23,7 @@ namespace Cosmos
 	public:
 
 		// returns a reference to the vertices vector
-		inline std::vector<Vertex>& GetVerticesRef() { return mVertices; }
+		inline std::vector<VKVertex>& GetVerticesRef() { return mVertices; }
 
 		// returns a reference to the indices vector
 		inline std::vector<uint32_t>& GetIndicesRef() { return mIndices; }
@@ -54,8 +53,8 @@ namespace Cosmos
 
 	private:
 
-		std::shared_ptr<Renderer> mRenderer;
-		std::vector<Vertex> mVertices;
+		Shared<Renderer> mRenderer;
+		std::vector<VKVertex> mVertices;
 		std::vector<uint32_t> mIndices;
 
 		VkBuffer mVertexBuffer = VK_NULL_HANDLE;

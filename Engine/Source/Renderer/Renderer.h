@@ -1,9 +1,7 @@
 #pragma once
+
 #include "Defines.h"
-
-#include "Device.h"
-#include "Swapchain.h"
-
+#include "Vulkan/VKDefines.h"
 #include "Util/Memory.h"
 
 namespace Cosmos
@@ -25,14 +23,6 @@ namespace Cosmos
 
 		// destructor
 		virtual ~Renderer() = default;
-
-	public:
-
-		// returns the backend device class object
-		virtual std::shared_ptr<Device> GetDevice() = 0;
-
-		// returns the backend swapchain class object
-		virtual std::shared_ptr<Swapchain> GetSwapchain() = 0;
 
 	public:
 

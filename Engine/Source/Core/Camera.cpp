@@ -16,7 +16,7 @@ namespace Cosmos
 		UpdateViewMatrix();
 	}
 
-	glm::mat4& Camera::GetProjection()
+	glm::mat4& Camera::GetProjectionRef()
 	{
 		mPerspective = glm::perspectiveRH(glm::radians(mFov), mAspectRatio, mZnear, mZfar);
 
@@ -28,14 +28,9 @@ namespace Cosmos
 		return mPerspective;
 	}
 
-	glm::mat4& Camera::GetView()
+	glm::mat4& Camera::GetViewRef()
 	{
 		return mView;
-	}
-
-	void Camera::SetAspectRatio(float aspect)
-	{
-		mAspectRatio = aspect;
 	}
 
 	void Camera::OnUpdate(float timestep)

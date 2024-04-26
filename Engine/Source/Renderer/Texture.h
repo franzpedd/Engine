@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "Vulkan/VKDefines.h"
 #include <memory>
 
 namespace Cosmos
 {
 	// forward declarations
-	class Device;
+	class VKDevice;
 	struct TextureSampler;
 
 	class Texture2D
@@ -27,7 +27,7 @@ namespace Cosmos
 	public:
 
 		// creates a texture from an input file
-		static std::shared_ptr<Texture2D> Create(std::shared_ptr<Device> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT, bool ktx = false);
+		static std::shared_ptr<Texture2D> Create(std::shared_ptr<VKDevice> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT);
 
 		// constructor
 		Texture2D() = default;

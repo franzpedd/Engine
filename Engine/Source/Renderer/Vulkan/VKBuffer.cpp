@@ -5,7 +5,7 @@
 
 namespace Cosmos
 {
-	VkResult BufferCreate(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
+	VkResult BufferCreate(std::shared_ptr<VKDevice> device, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
 	{
 		// specify buffer
 		VkBufferCreateInfo bufferCI = {};
@@ -88,7 +88,7 @@ namespace Cosmos
 		vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 	}
 
-	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<Device> device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
+	VkCommandBuffer CreateCommandBuffer(std::shared_ptr<VKDevice> device, VkCommandPool& cmdPool, VkCommandBufferLevel level, bool begin)
 	{
 		VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
 		cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -121,7 +121,7 @@ namespace Cosmos
 		VK_ASSERT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBI), "Failed to initialize command buffer");
 	}
 
-	void FlushCommandBuffer(std::shared_ptr<Device> device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free)
+	void FlushCommandBuffer(std::shared_ptr<VKDevice> device, VkCommandPool& cmdPool, VkCommandBuffer cmdBuffer, VkQueue queue, bool free)
 	{
 		VK_ASSERT(vkEndCommandBuffer(cmdBuffer), "Failed to end the recording of the command buffer");
 

@@ -86,7 +86,7 @@ namespace Cosmos
 		return mMSAACount;
 	}
 
-	QueueFamilyIndices VKDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+	VKDevice::QueueFamilyIndices VKDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 	{
 		QueueFamilyIndices indices;
 

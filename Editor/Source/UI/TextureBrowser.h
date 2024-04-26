@@ -2,6 +2,8 @@
 
 #include <Engine.h>
 
+#include <filesystem>
+
 namespace Cosmos
 {
 	class TextureBrowser : public Widget

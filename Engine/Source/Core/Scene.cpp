@@ -2,8 +2,6 @@
 #include "Scene.h"
 
 #include "Entity/Entity.h"
-#include "Renderer/Renderer.h"
-#include "Platform/Window.h"
 #include "UI/GUI.h"
 
 #include <iostream>
@@ -20,6 +18,46 @@ namespace Cosmos
 	{
 		mEntityMap.clear();
 		mRegistry.clear();
+	}
+
+	void Scene::OnUpdate(float timestep)
+	{
+		// update models
+		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
+		for (auto ent : modelsGroup)
+		{
+			auto [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
+
+			if (modelComponent.model == nullptr || !modelComponent.model->IsLoaded())
+				continue;
+
+			modelComponent.model->Update(timestep, transformComponent.GetTransform());
+		}
+	}
+
+	void Scene::OnRender()
+	{
+		Application::GetInstance()->GetGUI()->OnRender();
+
+		uint32_t currentFrame = mRenderer->CurrentFrame();
+		VkDeviceSize offsets[] = { 0 };
+		VkCommandBuffer commandBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
+
+		// draw models
+		auto modelsGroup = mRegistry.group<ModelComponent>();
+		for (auto ent : modelsGroup)
+		{
+			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+
+			if (model == nullptr || !model->IsLoaded())
+				continue;
+
+			model->Draw(commandBuffer);
+		}
+	}
+
+	void Scene::OnEvent(Shared<Event> event)
+	{
 	}
 
 	Entity* Scene::CreateEntity(const char* name)
@@ -73,46 +111,6 @@ namespace Cosmos
 		}
 
 		return found;
-	}
-
-	void Scene::OnUpdate(float timestep)
-	{
-		// update models
-		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
-		for (auto ent : modelsGroup)
-		{
-			auto [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
-
-			if (modelComponent.model == nullptr || !modelComponent.model->IsLoaded())
-				continue;
-
-			modelComponent.model->Update(timestep, transformComponent.GetTransform());
-		}
-	}
-
-	void Scene::OnRender()
-	{
-		Application::GetInstance()->GetGUI()->OnRender();
-
-		uint32_t currentFrame = mRenderer->CurrentFrame();
-		VkDeviceSize offsets[] = { 0 };
-		VkCommandBuffer commandBuffer = Commander::Get().GetPrimary()->commandBuffers[currentFrame];
-
-		// draw models
-		auto modelsGroup = mRegistry.group<ModelComponent>();
-		for (auto ent : modelsGroup)
-		{
-			auto& [model] = modelsGroup.get<ModelComponent>(ent);
-		
-			if (model == nullptr|| !model->IsLoaded())
-				continue;
-		
-			model->Draw(commandBuffer);
-		}
-	}
-
-	void Scene::OnEvent(Shared<Event> event)
-	{
 	}
 
 	void Scene::Deserialize(DataFile& data)
