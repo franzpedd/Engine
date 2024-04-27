@@ -29,7 +29,7 @@ namespace Cosmos
 	void SceneHierarchy::DisplaySceneHierarchy()
 	{
 		ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar | ImGuiTreeNodeFlags_OpenOnArrow;
-		
+
 		ImGui::Begin("Objects", 0, flags);
 
 		// displays edit menu
@@ -41,7 +41,7 @@ namespace Cosmos
 
 				float itemSize = 35.0f;
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize);
-				
+
 				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
 				{
 					Entity* ent = Application::GetInstance()->GetActiveScene()->CreateEntity();
@@ -51,7 +51,7 @@ namespace Cosmos
 		}
 
 		ImGui::EndMenuBar();
-		
+
 		// draws all existing entity nodes
 		for (auto& ent : Application::GetInstance()->GetActiveScene()->GetEntityMapRef())
 		{
@@ -61,7 +61,7 @@ namespace Cosmos
 			if (redraw)
 				break;
 		}
-		
+
 		ImGui::End();
 	}
 
@@ -70,7 +70,7 @@ namespace Cosmos
 		ImGuiWindowFlags flags = {};
 		flags |= ImGuiWindowFlags_HorizontalScrollbar;
 		flags |= ImGuiWindowFlags_MenuBar;
-		
+
 		ImGui::Begin("Components", 0, flags);
 
 		if (!mSelectedEntity)
@@ -78,7 +78,7 @@ namespace Cosmos
 			ImGui::End();
 			return;
 		}
-		
+
 		// dispaly edit menu
 		if (ImGui::BeginMenuBar())
 		{
@@ -101,9 +101,9 @@ namespace Cosmos
 
 			ImGui::EndMenuBar();
 		}
-		
+
 		DrawComponents(mSelectedEntity);
-		
+
 		ImGui::End();
 	}
 
@@ -112,35 +112,44 @@ namespace Cosmos
 		if (entity == nullptr)
 			return;
 
-		std::string name = entity->GetComponent<NameComponent>().name;
+		// creating unique context
+		ImGui::PushID((void*)(uint64_t)entity);
 
-		ImGuiTreeNodeFlags windowFlags = {};
-		windowFlags |= ((mSelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_SpanAvailWidth;
-
-		if (ImGui::TreeNodeEx((void*)(uint64_t)entity, windowFlags, name.c_str()))
 		{
-			mSelectedEntity = entity;
+			bool selected = (mSelectedEntity == entity) ? true : false;
+			std::string name = entity->GetComponent<NameComponent>().name;
 
-			if (ImGui::BeginPopupContextItem("##RightClickEntity"))
+			// selects the entity
+			if (ImGui::Selectable(name.c_str(), selected, ImGuiSelectableFlags_DontClosePopups))
 			{
-				if (ImGui::MenuItem("Duplicar"))
-				{
-					Application::GetInstance()->GetActiveScene()->DuplicateEntity(mSelectedEntity);
-				}
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Remove Entity"))
-				{
-					Application::GetInstance()->GetActiveScene()->DestroyEntity(mSelectedEntity);
-					mSelectedEntity = nullptr;
-					*redraw = true;
-				}
-
-				ImGui::EndPopup();
+				mSelectedEntity = entity;
 			}
-			ImGui::TreePop();
+
+			// right click menu
+			if (selected)
+			{
+				if (ImGui::BeginPopupContextItem("##RightClickPopup", ImGuiPopupFlags_MouseButtonRight))
+				{
+					if (ImGui::MenuItem("Dupplicate"))
+					{
+						Application::GetInstance()->GetActiveScene()->DuplicateEntity(mSelectedEntity);
+					}
+				
+					ImGui::Separator();
+				
+					if (ImGui::MenuItem("Remove Entity"))
+					{
+						Application::GetInstance()->GetActiveScene()->DestroyEntity(mSelectedEntity);
+						mSelectedEntity = nullptr;
+						*redraw = true;
+					}
+				
+					ImGui::EndPopup();
+				}
+			}
 		}
+			
+		ImGui::PopID();
 	}
 
 	void SceneHierarchy::DrawComponents(Entity* entity)

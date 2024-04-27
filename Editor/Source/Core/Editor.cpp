@@ -10,6 +10,8 @@
 #include "UI/TextureBrowser.h"
 #include "UI/Viewport.h"
 
+#include "Debug/ImDemo.h"
+
 namespace Cosmos
 {
 	// defined on engine Platform/Main.h
@@ -30,9 +32,11 @@ namespace Cosmos
 		mGrid = new Grid(mRenderer);
 		mMainmenu = new Mainmenu(mProject, mGrid, mSceneHierarchy);
 		mDockspace = new Dockspace();
+		mImDemo = new ImDemo();
 
 		// widgets
-		mUI->Widgets().Push(mDockspace);
+		mUI->Widgets().Push(mDockspace); // docking first widget on the list
+		mUI->Widgets().Push(mImDemo);
 		mUI->Widgets().Push(mConsole);
 		mUI->Widgets().Push(mExplorer);
 		mUI->Widgets().Push(mMainmenu);
@@ -46,6 +50,7 @@ namespace Cosmos
 
 	Editor::~Editor()
 	{
+		delete mImDemo;
 		delete mDockspace;
 		delete mMainmenu;
 		delete mGrid;

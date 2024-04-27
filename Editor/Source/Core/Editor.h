@@ -12,6 +12,7 @@ namespace Cosmos
 	class Dockspace;
 	class Explorer;
 	class Grid;
+	class ImDemo;
 	class Mainmenu;
 	class SceneHierarchy;
 	class TextureBrowser;
@@ -47,5 +48,6 @@ namespace Cosmos
 		SceneHierarchy* mSceneHierarchy= nullptr;
 		TextureBrowser* mTextureBrowser= nullptr;
 		Grid* mGrid = nullptr;
+		ImDemo* mImDemo = nullptr;
 	};
 }

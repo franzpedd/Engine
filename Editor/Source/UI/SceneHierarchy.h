@@ -11,6 +11,14 @@ namespace Cosmos
 	{
 	public:
 
+		struct EntityNode
+		{
+			uint32_t id;
+			bool* selected;
+		};
+
+	public:
+
 		// constructor
 		SceneHierarchy(Shared<Renderer> renderer, Shared<Camera> camera);
 
@@ -57,5 +65,6 @@ namespace Cosmos
 		Shared<Renderer> mRenderer;
 		Shared<Camera> mCamera;
 		Entity* mSelectedEntity = nullptr;
+		std::vector<EntityNode> mEntityNodes;
 	};
 }
