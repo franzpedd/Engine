@@ -5,7 +5,7 @@ Entities
 	12429939312781067553
 	{
 		Id = 12429939312781067553
-		Name = wall_0
+		Name = Wall 0
 
 		Transform
 		{
@@ -48,7 +48,7 @@ Entities
 	17485703036200039611
 	{
 		Id = 17485703036200039611
-		Name = floor_0
+		Name = Floor 0
 
 		Transform
 		{
@@ -91,7 +91,7 @@ Entities
 	15113583312486786614
 	{
 		Id = 15113583312486786614
-		Name = wall_0
+		Name = Wall 0
 
 		Transform
 		{
@@ -126,6 +126,49 @@ Entities
 		{
 			Path = Data/Models/Primitive/cube.gltf
 			Albedo = Data/Textures/wall_bricks.jpg
+		}
+
+	}
+
+
+	17055252794306031636
+	{
+		Id = 17055252794306031636
+		Name = Player
+
+		Transform
+		{
+
+			Translation
+			{
+				X = -0.009999
+				Y = 0.612230
+				Z = -0.299954
+			}
+
+
+			Rotation
+			{
+				X = -1.570809
+				Y = 1.029742
+				Z = -3.141592
+			}
+
+
+			Scale
+			{
+				X = 0.006211
+				Y = 0.003068
+				Z = 0.003664
+			}
+
+		}
+
+
+		Model
+		{
+			Path = Data/Models/Primitive/fox.gltf
+			Albedo = Data/Textures/fox.jpg
 		}
 
 	}
