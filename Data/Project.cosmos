@@ -48,7 +48,7 @@ Entities
 	17485703036200039611
 	{
 		Id = 17485703036200039611
-		Name = floor
+		Name = floor_0
 
 		Transform
 		{

@@ -396,8 +396,8 @@ namespace Cosmos
 
 		// snapping
 		bool snap = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-		float snapValue = mGizmoType == GizmoType::ROTATE ? 45.0f : 0.5f;
-		float snapValues[3] = { snapValue, snapValue,snapValue };
+		float snapValue = mGizmoType == GizmoType::ROTATE ? 5.0f : 0.1f;
+		float snapValues[3] = { snapValue, snapValue, snapValue };
 
 		// gizmos drawing
 		ImGuizmo::Manipulate
@@ -408,7 +408,7 @@ namespace Cosmos
 			ImGuizmo::MODE::LOCAL,
 			glm::value_ptr(transform),
 			nullptr,
-			snap ? snapValues : nullptr
+			!snap ? snapValues : nullptr
 		);
 		
 		if (ImGuizmo::IsUsing())

@@ -24,7 +24,7 @@ namespace Cosmos
 
 	public:
 
-		// creates a new project
+		// creates an empty project
 		void New();
 
 		// opens a project

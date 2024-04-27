@@ -25,13 +25,15 @@ namespace Cosmos
 		mWindow = CreateShared<Window>("Cosmos Application", 1280, 720);
 		mCamera = CreateShared<Camera>();
 		mRenderer = Renderer::Create();
-		mScene = CreateShared<Scene>(mRenderer, mCamera);
 		mUI = CreateShared<GUI>(mRenderer);
+
+		// create main scene
+		mScene = new Scene(mRenderer, mCamera);
 	}
 
 	Application::~Application()
 	{
-
+		if (mScene) delete mScene;
 	}
 
 	void Application::Run()
@@ -62,5 +64,14 @@ namespace Cosmos
 		mCamera->OnEvent(event);
 		mScene->OnEvent(event);
 		mUI->OnEvent(event);
+	}
+
+	void Application::CreateNewScene()
+	{
+		if (mScene)
+			delete mScene;
+
+		// create main scene
+		mScene = new Scene(mRenderer, mCamera);
 	}
 }

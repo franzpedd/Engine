@@ -15,14 +15,14 @@ namespace Cosmos
 	void Project::New()
 	{
 		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
-		
+
 		// clean current project
-		//Application::GetInstance()->GetActiveScene()->CleanCurrentScene();
+		Application::GetInstance()->CreateNewScene();
 
 		mName = "Untitled";
-		mPath = GetAssetDir();
+		mPath = std::filesystem::current_path().string();
 
-		LOG_TO_TERMINAL(Logger::Warn, "New project '%s' created", mName);
+		LOG_TO_TERMINAL(Logger::Warn, "New project '%s' created", mName.c_str());
 	}
 
 	void Project::Open()
@@ -30,7 +30,7 @@ namespace Cosmos
 		LOG_TO_TERMINAL(Logger::Warn, "Save current Project must be implemented");
 		
 		// clean current project
-		//Application::GetInstance()->GetActiveScene()->CleanCurrentScene();
+		Application::GetInstance()->CreateNewScene();
 
 		OpenFileDialog dialog;
 		dialog.Show();

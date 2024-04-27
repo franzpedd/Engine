@@ -3,7 +3,7 @@
 
 namespace Cosmos
 {
-    Entity::Entity(Shared<Scene> scene, entt::entity enttHandle, UUID id)
+    Entity::Entity(Scene* scene, entt::entity enttHandle, UUID id)
         : mScene(scene), mEntityHandle(enttHandle), mUUID(id)
     {
 

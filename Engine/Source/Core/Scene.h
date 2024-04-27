@@ -14,7 +14,7 @@ namespace Cosmos
 	// forward declarations
 	class Entity;
 
-	class Scene : public std::enable_shared_from_this<Scene>
+	class Scene
 	{
 	public:
 
@@ -25,9 +25,6 @@ namespace Cosmos
 		~Scene();
 
 	public:
-
-		// returns a smart reference to the scene object
-		std::shared_ptr<Scene> GetSmartRef() { return shared_from_this(); }
 
 		// returns a reference to the registry
 		inline entt::registry& GetRegistryRef() { return mRegistry; }
@@ -46,6 +43,9 @@ namespace Cosmos
 		// event handling
 		void OnEvent(Shared<Event> event);
 
+		// clears the scene
+		void Clear();
+
 	public:
 
 		// creates a new entt entity
@@ -55,7 +55,7 @@ namespace Cosmos
 		void DuplicateEntity(Entity* entity);
 
 		// deleste an entity and free it's resources
-		void DestroyEntity(Entity* entity);
+		void DestroyEntity(Entity* entity, bool eraseFromEntitymap = true);
 
 		// finds an entity given it's id (wich is unique)
 		Entity* FindEntityById(UUID id);

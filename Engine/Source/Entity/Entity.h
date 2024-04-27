@@ -22,7 +22,7 @@ namespace Cosmos
 		Entity() = default;
 
 		// constructor with an id already assigned
-		Entity(Shared<Scene> scene, entt::entity enttHandle, UUID id);
+		Entity(Scene* scene, entt::entity enttHandle, UUID id);
 
 		// destructor
 		~Entity() = default;
@@ -32,6 +32,7 @@ namespace Cosmos
 
 		// returns the entity uuid
 		inline UUID GetUUID() { return mUUID; }
+
 
 	public:
 
@@ -73,7 +74,7 @@ namespace Cosmos
 
 	protected:
 
-		Shared<Scene> mScene;
+		Scene* mScene;
 		entt::entity mEntityHandle = entt::null;
 		UUID mUUID = 0;
 	};

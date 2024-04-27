@@ -68,6 +68,7 @@ namespace Cosmos
 			mAlbedoTexture.reset();
 
 		mMeshes.clear();
+		mLoaded = false;
 	}
 
 	void Model::LoadFromFile(std::string path)

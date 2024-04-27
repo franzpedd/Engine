@@ -17,7 +17,10 @@ namespace Cosmos
 		enum Action
 		{
 			None = 0,
-			New, Open, Save, SaveAs, Undo, Redo
+			New,
+			Open,
+			Save,
+			SaveAs
 		};
 
 	public:

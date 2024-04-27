@@ -18,6 +18,11 @@ namespace Cosmos
 		// destructor
 		virtual ~Game();
 
+	public:
+
+		// event handling
+		virtual void OnEvent(Shared<Event> event);
+
 	private:
     
 		std::string mPath;

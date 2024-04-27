@@ -41,14 +41,13 @@ namespace Cosmos
 			if (ImGui::MenuItem("New")) mMenuAction = Action::New;
 			if (ImGui::MenuItem("Open")) mMenuAction = Action::Open;
 			if (ImGui::MenuItem("Save")) mMenuAction = Action::Save;
-			if (ImGui::MenuItem("Save As")) mMenuAction = Action::SaveAs;
 		
 			ImGui::Separator();
 		
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu(ICON_FA_BOOKMARK "View"))
+		if (ImGui::BeginMenu(ICON_FA_BOOKMARK " View"))
 		{
 			if (CheckboxSliderEx("Draw Grid", &mCheckboxGrid))
 			{
@@ -57,57 +56,23 @@ namespace Cosmos
 
 			ImGui::EndMenu();
 		}
-
-		if (ImGui::BeginMenu(ICON_FA_QUESTION_CIRCLE " Help"))
-		{
-			if (ImGui::MenuItem(ICON_FA_COG " Engine Settings"))
-			{
-
-			}
-
-			if (ImGui::MenuItem(ICON_FA_COG " Editor Settings"))
-			{
-
-			}
-			
-			ImGui::EndMenu();
-		}
 	}
 
 	void Mainmenu::HandleMenuAction()
 	{
 		switch (mMenuAction)
-		{
+		{			
 			case Cosmos::Mainmenu::New:
 			{
-				if (!Application::GetInstance()->GetActiveScene()->GetEntityMapRef().empty())
-				{
-					ImGui::OpenPopup("Save current Project?");
-				}
-
-				if (!mCancelAction)
-				{
-					mProject->New();
-					mCancelAction = false;
-				}
-
+				mProject->New();
+				mSceneHierarchy->UnselectEntity();
 				break;
 			}
-			
+
 			case Cosmos::Mainmenu::Open:
 			{
-				if (!Application::GetInstance()->GetActiveScene()->GetEntityMapRef().empty())
-				{
-					ImGui::OpenPopup("Save current Project?");
-				}
-
-				if (!mCancelAction)
-				{
-					mProject->Open();
-					mSceneHierarchy->UnselectEntity();
-					mCancelAction = false;
-				}
-				
+				mProject->Open();
+				mSceneHierarchy->UnselectEntity();
 				break;
 			}
 
@@ -122,35 +87,6 @@ namespace Cosmos
 				mProject->SaveAs();
 				break;
 			}
-		}
-
-		if (ImGui::BeginPopupModal("Save current Project?"))
-		{
-			ImGui::Text("Do you want to save changes to '%s'", mProject->GetName().c_str());
-
-			if (ImGui::Button("Save"))
-			{
-				mProject->Save();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-			
-			if (ImGui::Button("Save As"))
-			{
-				mProject->SaveAs();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-			
-			if (ImGui::Button("Cancel"))
-			{
-				ImGui::CloseCurrentPopup();
-				mCancelAction = true;
-			}
-		
-			ImGui::EndPopup();
 		}
 	}
 }

@@ -17,6 +17,14 @@ namespace Cosmos
 
 	Scene::~Scene()
 	{
+		for (auto& ent : mEntityMap)
+		{
+			if (mEntityMap.size() == 0)
+				break;
+
+			DestroyEntity(&ent.second, false);
+		}
+
 		mEntityMap.clear();
 		mRegistry.clear();
 	}
@@ -66,7 +74,7 @@ namespace Cosmos
 		UUID id = UUID();
 		entt::entity entt = mRegistry.create();
 
-		Entity entity{ shared_from_this(), mRegistry.create(), id };
+		Entity entity{ this, mRegistry.create(), id };
 		entity.AddComponent<NameComponent>(name);
 		
 		mEntityMap[id] = entity;
@@ -111,7 +119,7 @@ namespace Cosmos
 		}
 	}
 
-	void Scene::DestroyEntity(Entity* entity)
+	void Scene::DestroyEntity(Entity* entity, bool eraseFromEntitymap)
 	{
 		if (entity == nullptr)
 			return;
@@ -121,11 +129,11 @@ namespace Cosmos
 			if (entity->GetComponent<ModelComponent>().model != nullptr)
 			{
 				entity->GetComponent<ModelComponent>().model->Destroy();
-				entity->GetComponent<ModelComponent>().model->SetLoaded(false);
 			}
 		}
 
-		mEntityMap.erase(entity->GetUUID());
+		if(eraseFromEntitymap)
+			mEntityMap.erase(entity->GetUUID());
 	}
 
 	Entity* Scene::FindEntityById(UUID id)
@@ -166,7 +174,7 @@ namespace Cosmos
 
 			// create blank entity
 			entt::entity entt = mRegistry.create();
-			Entity entity = { shared_from_this(), entt, id };
+			Entity entity = { this, entt, id };
 			
 			// add entity name
 			std::string name = entityData["Name"].GetString();

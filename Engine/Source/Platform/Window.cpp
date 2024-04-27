@@ -137,7 +137,8 @@ namespace Cosmos
             return 1.0f;
         }
 
-        return (float)(width / height);
+        float aspect = ((float)width / (float)height);
+        return aspect;
     }
 
     bool Window::IsKeyPressed(Keycode key)

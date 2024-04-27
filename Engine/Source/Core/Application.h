@@ -26,6 +26,9 @@ namespace Cosmos
 		// returns the main window
 		inline Shared<Window> GetWindow() { return mWindow; }
 
+		// returns the renderer
+		inline Shared<Renderer> GetRenderer() { return mRenderer; }
+
 		// returns the main camera
 		inline Shared<Camera> GetCamera() { return mCamera; }
 
@@ -36,7 +39,7 @@ namespace Cosmos
 		inline Shared<GUI> GetGUI() { return mUI; }
 
 		// returns the active scene
-		inline Shared<Scene> GetActiveScene() { return mScene; }
+		inline Scene* GetActiveScene() { return mScene; }
 
 	public:
 
@@ -44,17 +47,21 @@ namespace Cosmos
 		void Run();
 
 		// event handling
-		void OnEvent(Shared<Event> event);
+		virtual void OnEvent(Shared<Event> event);
+
+		// creates a new emtpy scene
+		void CreateNewScene();
 
 	protected:
 
 		static Application* sApplication;
 		Shared<Window> mWindow;
-		Shared<Scene> mScene;
 		Shared<Renderer> mRenderer;
 		Shared<GUI> mUI;
 		Shared<FramesPerSecond> mFpsSystem;
 		Shared<Camera> mCamera;
+
+		Scene* mScene;
 	};
 
 	// creates an application object
