@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Core/Scene.h"
-
-namespace Cosmos::entity
+namespace Cosmos
 {
+	// forward declarations
+	class Entity;
+
 	class NativeScript
 	{
 	public:
 
 		// constructor
-		NativeScript(const char* name = "Script", Entity * entity = nullptr);
+		NativeScript(Entity* entity, const char* name = "Script");
 
 		// destructor
 		virtual ~NativeScript();

@@ -4,7 +4,7 @@
 
 namespace Cosmos
 {
-	class Player : public entity::NativeScript
+	class Player : public NativeScript
 	{
 	public:
 
@@ -18,6 +18,6 @@ namespace Cosmos
 
 		// called on every game loop iteration
 		virtual void OnUpdate(float timestep) override;
-
+	
 	};
 }

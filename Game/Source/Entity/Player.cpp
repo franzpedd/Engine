@@ -3,7 +3,7 @@
 namespace Cosmos
 {
 	Player::Player(Entity* entity)
-		: NativeScript("Player", entity)
+		: NativeScript(entity, "Player")
 	{
 		LOG_TO_TERMINAL(Logger::Trace, "Constructing Player");
 	}

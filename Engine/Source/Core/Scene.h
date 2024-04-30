@@ -76,6 +76,6 @@ namespace Cosmos
 		Shared<Renderer> mRenderer;
 		Shared<Camera> mCamera;
 		entt::registry mRegistry;
-		std::unordered_map<std::string, Entity> mEntityMap = {};
+		std::unordered_map<std::string, Entity> mEntityMap;
 	};
 }

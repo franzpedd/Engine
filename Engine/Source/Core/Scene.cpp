@@ -13,6 +13,8 @@ namespace Cosmos
 		: mRenderer(renderer), mCamera(camera)
 	{
 		Logger() << "Creating Scene";
+
+		mEntityMap = {};
 	}
 
 	Scene::~Scene()

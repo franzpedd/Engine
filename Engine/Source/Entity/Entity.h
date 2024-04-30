@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENTITY_HEADER
+#define ENTITY_HEADER
 
 #include "Components/Base.h"
 #include "Components/Renderable.h"
@@ -79,3 +80,5 @@ namespace Cosmos
 		UUID mUUID = 0;
 	};
 }
+
+#endif // ENTITY_HEADER

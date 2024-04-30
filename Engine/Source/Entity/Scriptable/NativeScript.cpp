@@ -3,10 +3,10 @@
 
 #include "Entity/Entity.h"
 
-namespace Cosmos::entity
+namespace Cosmos
 {
-	NativeScript::NativeScript(const char* name, Entity* entity)
-		: mName(name), mEntity(entity)
+	NativeScript::NativeScript(Entity* entity, const char* name)
+		: mEntity(entity), mName(name)
 	{
 		//// create a new entity on the scene if entity is nullptr
 		//if (!mEntity)

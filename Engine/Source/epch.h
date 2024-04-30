@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENGINE_HEADER
+#define ENGINE_HEADER
 
 #include "Debug/Logger.h"
 #include "Debug/Profiler.h"
@@ -19,3 +20,4 @@
 #include <vector>
 
 
+#endif // ENGINE_HEADER

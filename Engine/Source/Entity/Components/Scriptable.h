@@ -9,7 +9,7 @@ namespace Cosmos
 	{
 	public:
 
-		entity::NativeScript* script;
+		NativeScript* script;
 
 		// constructor
 		NativeScriptComponent() = default;
