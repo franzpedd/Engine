@@ -35,57 +35,6 @@ namespace Cosmos
 			vkDestroySemaphore(mDevice->GetDevice(), mRenderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(mDevice->GetDevice(), mImageAvailableSemaphores[i], nullptr);
 		}
-
-		for (auto& pipeline : mPipelines)
-			vkDestroyPipeline(mDevice->GetDevice(), pipeline.second, nullptr);
-
-		for (auto& layout : mPipelineLayouts)
-			vkDestroyPipelineLayout(mDevice->GetDevice(), layout.second, nullptr);
-
-		for (auto& descriptorSetLayout : mDescriptorSetLayouts)
-			vkDestroyDescriptorSetLayout(mDevice->GetDevice(), descriptorSetLayout.second, nullptr);
-	}
-
-	VkPipelineCache& VKRenderer::PipelineCache()
-	{
-		return mPipelineCache;
-	}
-
-	VkPipeline VKRenderer::GetPipeline(std::string nameid)
-	{
-		if (mPipelines[nameid])
-			return mPipelines[nameid];
-
-		LOG_TO_TERMINAL(Logger::Error, "No pipeline with nameid %s exists", nameid.c_str());
-		return nullptr;
-	}
-
-	VkDescriptorSetLayout VKRenderer::GetDescriptorSetLayout(std::string nameid)
-	{
-		if (mDescriptorSetLayouts[nameid])
-			return mDescriptorSetLayouts[nameid];
-
-		LOG_TO_TERMINAL(Logger::Error, "No descriptor set layout with nameid %s exists", nameid.c_str());
-		return nullptr;
-	}
-
-	VkPipelineLayout VKRenderer::GetPipelineLayout(std::string nameid)
-	{
-		if (mPipelineLayouts[nameid])
-			return mPipelineLayouts[nameid];
-
-		LOG_TO_TERMINAL(Logger::Error, "No pipeline layout with nameid %s exists", nameid.c_str());
-		return nullptr;
-	}
-
-	uint32_t VKRenderer::CurrentFrame()
-	{
-		return mCurrentFrame;
-	}
-
-	uint32_t VKRenderer::ImageIndex()
-	{
-		return mImageIndex;
 	}
 
 	void VKRenderer::OnUpdate()
@@ -370,12 +319,35 @@ namespace Cosmos
 
 	void VKRenderer::CreateGlobalStates()
 	{
-		// model global resources
-		{
-			mModelGlobalResource.Initialize(mDevice, mPipelineCache);
-			mPipelines["Model"] = mModelGlobalResource.pipeline;
-			mDescriptorSetLayouts["Model"] = mModelGlobalResource.descriptorSetLayout;
-			mPipelineLayouts["Model"] = mModelGlobalResource.pipelineLayout;
-		}
+		// model pipeline
+        VKPipelineSpecification modelSpecification = {};
+		modelSpecification.cache = mPipelineCache;
+		modelSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Model.vert", GetAssetSubDir("Shaders/model.vert"));
+		modelSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Model.frag", GetAssetSubDir("Shaders/model.frag"));
+        modelSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
+		modelSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
+		modelSpecification.bindings.resize(2);
+
+		// ubo
+        modelSpecification.bindings[0].binding = 0;
+        modelSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        modelSpecification.bindings[0].descriptorCount = 1;
+        modelSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        modelSpecification.bindings[0].pImmutableSamplers = nullptr;
+		// albedo
+        modelSpecification.bindings[1].binding = 1;
+        modelSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        modelSpecification.bindings[1].descriptorCount = 1;
+        modelSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        modelSpecification.bindings[1].pImmutableSamplers = nullptr;
+		
+		// create
+		mPipelines["Model"] = CreateShared<VKPipeline>(mDevice, modelSpecification);
+
+		// modify parameters after initial creation
+		mPipelines["Model"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
+		
+		// build the pipeline
+		mPipelines["Model"]->Build();
 	}
 }

@@ -27,22 +27,13 @@ namespace Cosmos
 	public:
 
 		// returns the vulkan pipeline cache
-		virtual VkPipelineCache& PipelineCache() = 0;
-
-		// returns the pipeline with a given id(name) or nullptr if invalid
-		virtual VkPipeline GetPipeline(std::string nameid) = 0;
-
-		// returns the descriptor set layout with a given id(name) or nullptr if invalid
-		virtual VkDescriptorSetLayout GetDescriptorSetLayout(std::string nameid) = 0;
-
-		// returns the pipeline layout with a given id(name) or nullptr if invalid
-		virtual VkPipelineLayout GetPipelineLayout(std::string nameid) = 0;
+		virtual VkPipelineCache GetPipelineCache() = 0;
 
 		// returns the current in-process frame
-		virtual uint32_t CurrentFrame() = 0;
+		virtual uint32_t GetCurrentFrame() = 0;
 
 		// returns the current image index
-		virtual uint32_t ImageIndex() = 0;
+		virtual uint32_t GetImageIndex() = 0;
 
 	public:
 

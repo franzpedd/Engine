@@ -34,7 +34,7 @@ namespace Cosmos
 	{
 		if (!mVisible) return;
 
-		uint32_t currentFrame = mRenderer->CurrentFrame();
+		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer cmdBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
 
@@ -50,7 +50,7 @@ namespace Cosmos
 		ubo.view = Application::GetInstance()->GetCamera()->GetViewRef();
 		ubo.proj = Application::GetInstance()->GetCamera()->GetProjectionRef();
 		
-		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
+		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
 	}
 
 	void Grid::ToogleOnOff()
@@ -112,7 +112,7 @@ namespace Cosmos
 			pipelineCI.layout = mPipelineLayout;
 			pipelineCI.renderPass = VKCommander::GetInstance()->GetMainRef()->renderPass;
 			pipelineCI.subpass = 0;
-			VK_ASSERT(vkCreateGraphicsPipelines(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mRenderer->PipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
+			VK_ASSERT(vkCreateGraphicsPipelines(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mRenderer->GetPipelineCache(), 1, &pipelineCI, nullptr, &mGraphicsPipeline), "Failed to create graphics pipeline");
 		}
 
 		// matrix ubo

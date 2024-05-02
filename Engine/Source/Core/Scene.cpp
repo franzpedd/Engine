@@ -50,7 +50,7 @@ namespace Cosmos
 	{
 		Application::GetInstance()->GetGUI()->OnRender();
 
-		uint32_t currentFrame = mRenderer->CurrentFrame();
+		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer commandBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
 

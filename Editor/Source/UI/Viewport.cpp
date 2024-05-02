@@ -167,7 +167,7 @@ namespace Cosmos
 		{
 			DrawMenubar();
 
-			ImGui::Image(mDescriptorSets[mRenderer->CurrentFrame()], ImGui::GetContentRegionAvail());
+			ImGui::Image(mDescriptorSets[mRenderer->GetCurrentFrame()], ImGui::GetContentRegionAvail());
 			
 			// updating aspect ratio for the docking
 			mCurrentSize = ImGui::GetWindowSize();

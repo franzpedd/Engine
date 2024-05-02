@@ -6,11 +6,11 @@
 #include "Renderer/Renderer.h"
 #include "Entity/Entity.h"
 
-#include "GlobalResources.h"
 #include "VKBuffer.h"
 #include "VKCommander.h"
 #include "VKInstance.h"
 #include "VKDevice.h"
+#include "VKPipeline.h"
 #include "VKSwapchain.h"
 
 #include "Util/Memory.h"
@@ -43,25 +43,19 @@ namespace Cosmos
 		// returns the backend swapchain class object
 		inline Shared<VKSwapchain> GetSwapchain() { return mSwapchain; }
 
+		// returns a reference to the pipelines
+        inline std::unordered_map<std::string, Shared<VKPipeline>>& GetPipelinesRef() { return mPipelines; }
+
 	public:
 
 		// returns the vulkan pipeline cache
-		virtual VkPipelineCache& PipelineCache() override;
-
-		// returns the pipeline with a given id(name) or nullptr if invalid
-		virtual VkPipeline GetPipeline(std::string nameid) override;
-
-		// returns the descriptor set layout with a given id(name) or nullptr if invalid
-		virtual VkDescriptorSetLayout GetDescriptorSetLayout(std::string nameid) override;
-
-		// returns the pipeline layout with a given id(name) or nullptr if invalid
-		virtual VkPipelineLayout GetPipelineLayout(std::string nameid) override;
+		inline virtual VkPipelineCache GetPipelineCache() override { return mPipelineCache; }
 
 		// returns the current in-process frame
-		virtual uint32_t CurrentFrame() override;
+		inline virtual uint32_t GetCurrentFrame() override { return mCurrentFrame; }
 
 		// returns the current image index
-		virtual uint32_t ImageIndex() override;
+		inline virtual uint32_t GetImageIndex() override { return mImageIndex; }
 
 	public:
 
@@ -87,19 +81,12 @@ namespace Cosmos
 
 		Shared<VKCommander> mCommander;
 		VkPipelineCache mPipelineCache;
+		std::unordered_map<std::string, Shared<VKPipeline>> mPipelines = {};
 
 		std::vector<VkSemaphore> mImageAvailableSemaphores;
 		std::vector<VkSemaphore> mRenderFinishedSemaphores;
 		std::vector<VkFence> mInFlightFences;
 		uint32_t mCurrentFrame = 0;
 		uint32_t mImageIndex = 0;
-
-		// pipeline objects 
-		std::unordered_map<std::string, VkPipeline> mPipelines = {};
-		std::unordered_map<std::string, VkDescriptorSetLayout> mDescriptorSetLayouts = {};
-		std::unordered_map<std::string, VkPipelineLayout> mPipelineLayouts = {};
-
-		// model global resource
-		ModelGlobalResource mModelGlobalResource;
 	};
 }

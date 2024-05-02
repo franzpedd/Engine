@@ -13,8 +13,8 @@ struct aiScene;
 namespace Cosmos
 {
 	// forward declarations
-	class Device;
 	class Camera;
+	class Material;
 	class Renderer;
 
 	class Model
@@ -93,6 +93,7 @@ namespace Cosmos
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 		std::vector<void*> mUniformBuffersMapped;
 
+		Shared<Material> mMaterial;
 		std::string mAlbedoPath;
 		Shared<Texture2D> mAlbedoTexture;
 		bool mLoadedAlbedo = false;

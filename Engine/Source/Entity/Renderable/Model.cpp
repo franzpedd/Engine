@@ -1,6 +1,7 @@
 #include "epch.h"
 #include "Model.h"
 
+#include "Material.h"
 #include "Core/Camera.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture.h"
@@ -20,16 +21,18 @@ namespace Cosmos
 	Model::Model(Shared<Renderer> renderer, Shared<Camera> camera)
 		: mRenderer(renderer), mCamera(camera)
 	{
+		mMaterial = CreateShared<Material>();
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
+		
 	}
 
 	void Model::Draw(VkCommandBuffer commandBuffer)
 	{
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderer->GetPipeline("Model"));
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
 
 		for (auto& mesh : mMeshes)
 		{
-			mesh.Draw(commandBuffer, mRenderer->GetPipelineLayout("Model"), mDescriptorSets[mRenderer->CurrentFrame()]);
+			mesh.Draw(commandBuffer, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipelineLayout(), mDescriptorSets[mRenderer->GetCurrentFrame()]);
 		}
 	}
 
@@ -42,9 +45,9 @@ namespace Cosmos
 		ubo.view = mCamera->GetViewRef();
 		ubo.proj = mCamera->GetProjectionRef();
 
-		uint32_t currentFrame = mRenderer->CurrentFrame();
+		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 
-		memcpy(mUniformBuffersMapped[mRenderer->CurrentFrame()], &ubo, sizeof(ubo));
+		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
 	}
 
 	void Model::Destroy()
@@ -217,7 +220,11 @@ namespace Cosmos
 			descPoolCI.maxSets = 2;
 			VK_ASSERT(vkCreateDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), &descPoolCI, nullptr, &mDescriptorPool), "Failed to create descriptor pool");
 
-			std::vector<VkDescriptorSetLayout> layouts(RENDERER_MAX_FRAMES_IN_FLIGHT, mRenderer->GetDescriptorSetLayout("Model"));
+			std::vector<VkDescriptorSetLayout> layouts
+			(
+				RENDERER_MAX_FRAMES_IN_FLIGHT, 
+				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetDescriptorSetLayout()
+			);
 
 			VkDescriptorSetAllocateInfo descSetAllocInfo = {};
 			descSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
