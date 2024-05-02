@@ -46,11 +46,11 @@ namespace Cosmos
 
 	public:
 
-		// draws the model
-		void Draw(VkCommandBuffer commandBuffer);
-
 		// updates model's logic
-		void Update(float deltaTime, glm::mat4 transform);
+		void OnUpdate(float deltaTime, glm::mat4 transform);
+		
+		// draws the model
+		void OnRender(VkCommandBuffer commandBuffer);
 
 		// free used resources
 		void Destroy();

@@ -7,6 +7,10 @@
 #include "Core/Scene.h"
 
 #include "Entity/Entity.h"
+#include "Entity/Components/Base.h"
+#include "Entity/Components/Renderable.h"
+#include "Entity/Components/Scriptable.h"
+#include "Entity/Components/Sound.h"
 
 #include "Event/Event.h"
 #include "Event/InputEvent.h"

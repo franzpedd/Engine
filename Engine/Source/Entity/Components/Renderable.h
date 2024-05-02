@@ -1,14 +1,23 @@
 #pragma once
 
 #include "Entity/Renderable/Model.h"
+#include "Entity/Renderable/Primitive.h"
 
 namespace Cosmos
 {
 	struct ModelComponent
 	{
-		std::shared_ptr<Model> model;
+		Shared<Model> model;
 
 		// constructor
 		ModelComponent() = default;
+	};
+
+	struct QuadComponent
+	{
+		Shared<Quad> quad;
+
+		// constructor
+		QuadComponent() = default;
 	};
 }

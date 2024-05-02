@@ -3,6 +3,7 @@
 
 #include "VKInitializers.h"
 #include "VKShader.h"
+#include "VKVertex.h"
 
 #include "Core/Application.h"
 #include "Core/Scene.h"
@@ -320,34 +321,74 @@ namespace Cosmos
 	void VKRenderer::CreateGlobalStates()
 	{
 		// model pipeline
-        VKPipelineSpecification modelSpecification = {};
-		modelSpecification.cache = mPipelineCache;
-		modelSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Model.vert", GetAssetSubDir("Shaders/model.vert"));
-		modelSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Model.frag", GetAssetSubDir("Shaders/model.frag"));
-        modelSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
-		modelSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
-		modelSpecification.bindings.resize(2);
+		{
+			VKPipelineSpecification modelSpecification = {};
+			modelSpecification.cache = mPipelineCache;
+			modelSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Model.vert", GetAssetSubDir("Shaders/model.vert"));
+			modelSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Model.frag", GetAssetSubDir("Shaders/model.frag"));
+        	modelSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
+			modelSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
+			modelSpecification.bindings.resize(2);
 
-		// ubo
-        modelSpecification.bindings[0].binding = 0;
-        modelSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        modelSpecification.bindings[0].descriptorCount = 1;
-        modelSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        modelSpecification.bindings[0].pImmutableSamplers = nullptr;
-		// albedo
-        modelSpecification.bindings[1].binding = 1;
-        modelSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        modelSpecification.bindings[1].descriptorCount = 1;
-        modelSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        modelSpecification.bindings[1].pImmutableSamplers = nullptr;
-		
-		// create
-		mPipelines["Model"] = CreateShared<VKPipeline>(mDevice, modelSpecification);
+			// ubo
+        	modelSpecification.bindings[0].binding = 0;
+        	modelSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        	modelSpecification.bindings[0].descriptorCount = 1;
+        	modelSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        	modelSpecification.bindings[0].pImmutableSamplers = nullptr;
+			
+			// albedo
+        	modelSpecification.bindings[1].binding = 1;
+        	modelSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        	modelSpecification.bindings[1].descriptorCount = 1;
+        	modelSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        	modelSpecification.bindings[1].pImmutableSamplers = nullptr;
 
-		// modify parameters after initial creation
-		mPipelines["Model"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
+			// create
+			mPipelines["Model"] = CreateShared<VKPipeline>(mDevice, modelSpecification);
+			
+			// modify parameters after initial creation
+			mPipelines["Model"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
+
+			// build the pipeline
+			mPipelines["Model"]->Build();
+		}
+        
+
+		// primitive pipeline
+		{
+			VKPipelineSpecification primitiveSpecification = {};
+			primitiveSpecification.cache = mPipelineCache;
+			primitiveSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Primitive.vert", GetAssetSubDir("Shaders/primitive.vert"));
+			primitiveSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Primitive.frag", GetAssetSubDir("Shaders/primitive.frag"));
+			primitiveSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
+			primitiveSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
+			primitiveSpecification.bindings.resize(2);
+
+			// ubo
+			primitiveSpecification.bindings[0].binding = 0;
+			primitiveSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			primitiveSpecification.bindings[0].descriptorCount = 1;
+			primitiveSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			primitiveSpecification.bindings[0].pImmutableSamplers = nullptr;
+
+			// albedo
+			primitiveSpecification.bindings[1].binding = 1;
+			primitiveSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			primitiveSpecification.bindings[1].descriptorCount = 1;
+			primitiveSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			primitiveSpecification.bindings[1].pImmutableSamplers = nullptr;
+
+			// create
+			mPipelines["Primitive"] = CreateShared<VKPipeline>(mDevice, primitiveSpecification);
+
+			// modify parameters after initial creation
+			mPipelines["Primitive"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
+
+			// build the pipeline
+			mPipelines["Primitive"]->Build();
+		}
 		
-		// build the pipeline
-		mPipelines["Model"]->Build();
+		
 	}
 }

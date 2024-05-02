@@ -26,17 +26,7 @@ namespace Cosmos
 		
 	}
 
-	void Model::Draw(VkCommandBuffer commandBuffer)
-	{
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
-
-		for (auto& mesh : mMeshes)
-		{
-			mesh.Draw(commandBuffer, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipelineLayout(), mDescriptorSets[mRenderer->GetCurrentFrame()]);
-		}
-	}
-
-	void Model::Update(float deltaTime, glm::mat4 transform)
+	void Model::OnUpdate(float deltaTime, glm::mat4 transform)
 	{
 		if (!mLoaded) return;
 
@@ -48,6 +38,16 @@ namespace Cosmos
 		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 
 		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
+	}
+	
+	void Model::OnRender(VkCommandBuffer commandBuffer)
+	{
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
+
+		for (auto& mesh : mMeshes)
+		{
+			mesh.Draw(commandBuffer, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipelineLayout(), mDescriptorSets[mRenderer->GetCurrentFrame()]);
+		}
 	}
 
 	void Model::Destroy()

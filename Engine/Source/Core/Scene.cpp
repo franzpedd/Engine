@@ -2,6 +2,11 @@
 #include "Scene.h"
 
 #include "Entity/Entity.h"
+#include "Entity/Components/Base.h"
+#include "Entity/Components/Renderable.h"
+#include "Entity/Components/Scriptable.h"
+#include "Entity/Components/Sound.h"
+
 #include "Renderer/Vulkan/VKCommander.h"
 #include "UI/GUI.h"
 
@@ -34,15 +39,27 @@ namespace Cosmos
 	void Scene::OnUpdate(float timestep)
 	{
 		// update models
-		auto modelsGroup = mRegistry.group<TransformComponent>(entt::get<ModelComponent>);
-		for (auto ent : modelsGroup)
+		auto modelsView = mRegistry.view<TransformComponent, ModelComponent>();
+		for (auto ent : modelsView)
 		{
-			auto [transformComponent, modelComponent] = modelsGroup.get<TransformComponent, ModelComponent>(ent);
+			auto [transformComponent, modelComponent] = modelsView.get<TransformComponent, ModelComponent>(ent);
 
 			if (modelComponent.model == nullptr || !modelComponent.model->IsLoaded())
 				continue;
 
-			modelComponent.model->Update(timestep, transformComponent.GetTransform());
+			modelComponent.model->OnUpdate(timestep, transformComponent.GetTransform());
+		}
+
+		// update quads
+		auto quadsView = mRegistry.view<TransformComponent, QuadComponent>();
+		for(auto ent : quadsView)
+		{
+			auto [transformComponent, quadComponent] = quadsView.get<TransformComponent, QuadComponent>(ent);
+		
+			if(quadComponent.quad == nullptr)
+				continue;
+		
+			quadComponent.quad->OnUpdate(timestep, transformComponent.GetTransform());
 		}
 	}
 
@@ -55,15 +72,27 @@ namespace Cosmos
 		VkCommandBuffer commandBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
 
 		// draw models
-		auto modelsGroup = mRegistry.group<ModelComponent>();
-		for (auto ent : modelsGroup)
+		auto modelsView = mRegistry.view<ModelComponent>();
+		for (auto ent : modelsView)
 		{
-			auto& [model] = modelsGroup.get<ModelComponent>(ent);
+			auto& [model] = modelsView.get<ModelComponent>(ent);
 
 			if (model == nullptr || !model->IsLoaded())
 				continue;
 
-			model->Draw(commandBuffer);
+			model->OnRender(commandBuffer);
+		}
+
+		// draw quads
+		auto quadsView = mRegistry.view<QuadComponent>();
+		for(auto ent : quadsView)
+		{
+			auto& [quad] = quadsView.get<QuadComponent>(ent);
+		
+			if(quad == nullptr)
+				continue;
+		
+			quad->OnRender(commandBuffer);
 		}
 	}
 
