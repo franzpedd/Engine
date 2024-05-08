@@ -22,7 +22,7 @@ namespace Cosmos
 
 	Editor::Editor()
 	{
-		mProject = std::make_unique<Project>("Project");
+		mProject = CreateUnique<Project>("Project");
 
 		mConsole = new Console();
 		mExplorer = new Explorer(mRenderer);
@@ -36,11 +36,11 @@ namespace Cosmos
 
 		// widgets
 		mUI->Widgets().Push(mDockspace); // docking first widget on the list
+		mUI->Widgets().Push(mSceneHierarchy);
 		mUI->Widgets().Push(mImDemo);
 		mUI->Widgets().Push(mConsole);
 		mUI->Widgets().Push(mExplorer);
 		mUI->Widgets().Push(mMainmenu);
-		mUI->Widgets().Push(mSceneHierarchy);
 		mUI->Widgets().Push(mTextureBrowser);
 		mUI->Widgets().Push(mGrid);
 		mUI->Widgets().Push(mViewport); // viewport over everything

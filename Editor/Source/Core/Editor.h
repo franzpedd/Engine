@@ -37,16 +37,16 @@ namespace Cosmos
 	private:
 
 		// project related
-		std::unique_ptr<Project> mProject;
+		Unique<Project> mProject;
 
 		// ui
 		Console* mConsole = nullptr;
 		Dockspace* mDockspace = nullptr;
-		Explorer* mExplorer= nullptr;
-		Viewport* mViewport= nullptr;
-		Mainmenu* mMainmenu= nullptr;
-		SceneHierarchy* mSceneHierarchy= nullptr;
-		TextureBrowser* mTextureBrowser= nullptr;
+		Explorer* mExplorer = nullptr;
+		Viewport* mViewport = nullptr;
+		Mainmenu* mMainmenu = nullptr;
+		SceneHierarchy* mSceneHierarchy = nullptr;
+		TextureBrowser* mTextureBrowser = nullptr;
 		Grid* mGrid = nullptr;
 		ImDemo* mImDemo = nullptr;
 	};

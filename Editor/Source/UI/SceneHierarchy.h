@@ -2,6 +2,8 @@
 
 #include <Engine.h>
 
+#include "Entitymenu/Hierarchy.h"
+
 namespace Cosmos
 {
 	// forward declaration
@@ -65,6 +67,6 @@ namespace Cosmos
 		Shared<Renderer> mRenderer;
 		Shared<Camera> mCamera;
 		Entity* mSelectedEntity = nullptr;
-		std::vector<EntityNode> mEntityNodes;
+		Hierarchy mHierarchy;
 	};
 }

@@ -12,6 +12,8 @@ namespace Cosmos
 
 	void SceneHierarchy::OnUpdate()
 	{
+		mHierarchy.OnUpdate();
+
 		DisplaySceneHierarchy();
 		DisplaySelectedEntityComponents();
 	}
