@@ -46,6 +46,11 @@ project "Engine"
         runtime "Debug"
         symbols "On"
 
+        includedirs
+        {
+            "%{wks.location}/Thirdparty/assimp/build/Debug/include"
+        }
+
         defines
         {
             "_CRT_SECURE_NO_WARNINGS"
@@ -81,6 +86,11 @@ project "Engine"
         defines { "ENGINE_RELEASE" }
         runtime "Release"
         optimize "On"
+
+        includedirs
+        {
+            "%{wks.location}/Thirdparty/assimp/build/Release/include"
+        }
 
         prebuildcommands
         {

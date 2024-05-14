@@ -27,21 +27,11 @@ namespace Cosmos
 
         // selection-context of this node
         bool selected = false;
-    };
 
-    class HierarchySingle : public HierarchyBase
-    {
-    public:
+        // the name of this node
+        std::string name = {};
 
-        // constructor
-        HierarchySingle() = default;
-
-        // destructor
-        ~HierarchySingle() = default;
-
-    public:
-
-        // the entity of this node
+        // pointer to the entity
         Entity* entity = nullptr;
     };
 
@@ -58,6 +48,6 @@ namespace Cosmos
     public:
 
         // the vector of entities of this node
-        std::vector<Entity*> entities = {};
+        std::vector<Shared<HierarchyBase>> entities = {};
     };
 }

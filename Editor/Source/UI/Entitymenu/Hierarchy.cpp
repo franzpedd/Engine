@@ -16,104 +16,130 @@ namespace Cosmos
 
     void Hierarchy::OnUpdate()
     {
-        ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Entities", nullptr);
 
-        // hierarchy top menu
-        if(ImGui::BeginMenuBar())
+        // right-click menu
+        if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight))
         {
-            ImGui::BeginGroup();
-			{
-                ImGui::Text(ICON_FA_PAINT_BRUSH " Edit Entity");
-
-				float itemSize = 35.0f;
-                float itemCount = 2.0f;
-
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (itemSize * itemCount--));
-
-				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
-				{
-                    Shared<HierarchySingle> node = CreateShared<HierarchySingle>();
-                    node->type = HierarchyType::Single;
-
-                    mHierarchyNodes.push_back(node);
-				}
-
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (itemSize * itemCount--));
-
-                if (ImGui::MenuItem(ICON_FA_FOLDER))
-				{
-                    Shared<HierarchyGroup> node = CreateShared<HierarchyGroup>();
-                    node->type = HierarchyType::Group;
-
-                    mHierarchyNodes.push_back(node);
-				}
-			}
-			ImGui::EndGroup();
-
-            ImGui::EndMenuBar();
-        }
-
-        // draw nodes
-        uint32_t selectedNodesCount = GetSelectedNodesCount();
-        
-        for(auto& node : mHierarchyNodes)
-        {
-            // push id for uniquely identify this node
-            ImGui::PushID((void*)node.get());
-
-            switch(node->type)
+            if (ImGui::MenuItem("Add Group"))
             {
-                case HierarchyType::Single:
-                {
-                    ImGui::Text(ICON_LC_BOX);
-                    ImGui::SameLine();
+                std::string id = "Group ";
+                id.append(std::to_string(mGroupsID++));
 
-                    if (ImGui::Selectable(
-                        "Single Entity", 
-                        &node->selected, 
-                        ImGuiSelectableFlags_DontClosePopups))
-			        {
-                        if(selectedNodesCount > 0 && !ImGui::GetIO().KeyCtrl)
-                            node->selected = false;
-			        }
-                    
-                    break;
-                }
-
-                case HierarchyType::Group:
-                {
-                    ImGui::Text(ICON_LC_BOXES);
-                    ImGui::SameLine();
-
-                    if (ImGui::Selectable(
-                        "Group Entity", 
-                        &node->selected, 
-                        ImGuiSelectableFlags_DontClosePopups))
-			        {
-                        if(selectedNodesCount > 0 && !ImGui::GetIO().KeyCtrl)
-                            node->selected = false;
-			        }
-
-                    break;
-                }
+                Shared<HierarchyGroup> node = CreateShared<HierarchyGroup>();
+                node->type = HierarchyType::Group;
+                node->name = id;
+                
+                mGroups.insert({ id, node });
             }
 
-            ImGui::PopID();
+            ImGui::EndPopup();
         }
+
+        DrawFromRoot();
 
         ImGui::End();
     }
 
-    uint32_t Hierarchy::GetSelectedNodesCount()
+    void Hierarchy::DrawFromRoot()
     {
-        uint32_t count = 0;
+        size_t itCount = 0;
 
-        for(auto& node : mHierarchyNodes)
+        // draw groups
+        // top drop behaviour
+        DropBehaviour(itCount);
+
+        for (auto& group : mGroups)
         {
-            if(node->selected)
-                count++;
+            // above drag and drop behavior
+            DragBehaviour(itCount);
+
+            // retrieve node's name
+            auto& groupName = group.second->name;
+            char groupBuffer[ENTITY_NAME_MAX_CHARS];
+            memset(groupBuffer, 0, sizeof(groupBuffer));
+            std::strncpy(groupBuffer, groupName.c_str(), sizeof(groupBuffer));
+
+            ImGuiTreeNodeFlags flags = {};
+            if (ImGui::TreeNodeEx(group.second.get(), flags, groupName.c_str()))
+            {
+                // group right-menu
+                if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight))
+                {
+                    if (ImGui::MenuItem("Add Entity"))
+                    {
+                        Shared<HierarchyBase> base = CreateShared<HierarchyBase>();
+                        base->entity = Application::GetInstance()->GetActiveScene()->CreateEntity();
+                        group.second->entities.push_back(base);
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                // draw children nodes
+                for (size_t i = 0; i < group.second->entities.size(); i++)
+                {
+                    //auto& nodeName = group.second->entities[i]->GetComponent<NameComponent>().name;
+                    char nodeBuffer[ENTITY_NAME_MAX_CHARS];
+                    memset(nodeBuffer, 0, sizeof(nodeBuffer));
+                    std::strncpy(nodeBuffer, nodeName.c_str(), sizeof(nodeBuffer));
+
+                    ImGuiSelectableFlags flags = {};
+                    flags |= ImGuiSelectableFlags_DontClosePopups;
+                    if (Cosmos::SelectableInputText(nodeName.c_str(), &group.second->, flags, nodeBuffer, sizeof(nodeBuffer)))
+                    {
+                        nodeName = std::string(nodeBuffer);
+                    }
+                }
+
+                ImGui::TreePop();
+            }
+
+            // under drop behaviour
+            DropBehaviour(itCount);
+
+            // increment counter
+            itCount++;
         }
 
-        return count;
+        // bottom drop behaviour
+        DragBehaviour(itCount);
+    }
+
+    void Hierarchy::DragBehaviour(size_t from)
+    {
+        ImGuiDragDropFlags src_flags = 0;
+        src_flags |= ImGuiDragDropFlags_SourceAllowNullID;
+        src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+        src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+
+        if (ImGui::BeginDragDropSource(src_flags))
+        {
+            ImGui::SetDragDropPayload("HIERARCHYNODE_PAYLOAD", &from, sizeof(size_t));
+            ImGui::EndDragDropSource();
+        }
+    }
+
+    void Hierarchy::DropBehaviour(size_t to)
+    {
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHYNODE_PAYLOAD"))
+            {
+                mPayloadHelper.from = *(const size_t*)payload->Data;
+                mPayloadHelper.to = to;
+
+                // moving stuff around
+                //if (mPayloadHelper.from != mPayloadHelper.to)
+                //{
+                //    if (mHierarchyNodes[mPayloadHelper.to]->type == HierarchyType::Single)
+                //    {
+                //
+                //    }
+                //}
+            }
+
+            ImGui::EndDragDropTarget();
+        }
     }
 }
