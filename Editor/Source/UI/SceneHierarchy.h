@@ -13,14 +13,6 @@ namespace Cosmos
 	{
 	public:
 
-		struct EntityNode
-		{
-			uint32_t id;
-			bool* selected;
-		};
-
-	public:
-
 		// constructor
 		SceneHierarchy(Shared<Renderer> renderer, Shared<Camera> camera);
 

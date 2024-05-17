@@ -112,7 +112,7 @@ namespace Cosmos
 		return &mEntityMap[id];
 	}
 
-	void Scene::DuplicateEntity(Entity* entity)
+	Entity* Scene::DuplicateEntity(Entity* entity)
 	{
 		// name is an existing component
 		std::string name = entity->GetComponent<NameComponent>().name;
@@ -148,6 +148,8 @@ namespace Cosmos
 				}
 			}
 		}
+
+		return newEnt;
 	}
 
 	void Scene::DestroyEntity(Entity* entity, bool eraseFromEntitymap)

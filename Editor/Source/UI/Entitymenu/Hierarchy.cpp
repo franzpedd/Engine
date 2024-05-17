@@ -23,44 +23,30 @@ namespace Cosmos
         {
             if (ImGui::MenuItem("Add Group"))
             {
-                std::string id = "Group ";
-                id.append(std::to_string(mGroupsID++));
-
-                Shared<HierarchyGroup> node = CreateShared<HierarchyGroup>();
-                node->type = HierarchyType::Group;
-                node->name = id;
-                
-                mGroups.insert({ id, node });
+                mGroups.insert({ "Group", CreateShared<HierarchyGroup>() });
             }
 
             ImGui::EndPopup();
         }
 
-        DrawFromRoot();
+        DrawGroups();
 
         ImGui::End();
     }
 
-    void Hierarchy::DrawFromRoot()
+    void Hierarchy::DrawGroups()
     {
-        size_t itCount = 0;
-
-        // draw groups
-        // top drop behaviour
-        DropBehaviour(itCount);
-
         for (auto& group : mGroups)
         {
-            // above drag and drop behavior
-            DragBehaviour(itCount);
-
             // retrieve node's name
             auto& groupName = group.second->name;
             char groupBuffer[ENTITY_NAME_MAX_CHARS];
             memset(groupBuffer, 0, sizeof(groupBuffer));
             std::strncpy(groupBuffer, groupName.c_str(), sizeof(groupBuffer));
-
             ImGuiTreeNodeFlags flags = {};
+
+            bool popupRename = false;
+
             if (ImGui::TreeNodeEx(group.second.get(), flags, groupName.c_str()))
             {
                 // group right-menu
@@ -70,76 +56,98 @@ namespace Cosmos
                     {
                         Shared<HierarchyBase> base = CreateShared<HierarchyBase>();
                         base->entity = Application::GetInstance()->GetActiveScene()->CreateEntity();
-                        group.second->entities.push_back(base);
+
+                        group.second->entities.insert({ base->entity->GetComponent<NameComponent>().name, base});
+                    }
+
+                    ImGui::Separator();
+
+                    if(ImGui::MenuItem("Rename Group"))
+                    {
+                        popupRename = true;
+                    }
+
+                    if(ImGui::MenuItem("Delete Group"))
+                    {
+                        for(auto& entNode : group.second->entities)
+                        {
+                            Application::GetInstance()->GetActiveScene()->DestroyEntity(entNode.second->entity);
+                        }
+
+                        group.second->entities.clear();
+                        mGroups.erase(group.first);
+
+                        ImGui::EndPopup();
+                        ImGui::TreePop();
+                        break;
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if(popupRename) ImGui::OpenPopup("RenamePopup");
+                if (ImGui::BeginPopup("RenamePopup"))
+                {
+                    if(ImGui::InputText("##NewName", groupBuffer, sizeof(groupBuffer)))
+                    {
+                        groupName = std::string(groupBuffer);
                     }
 
                     ImGui::EndPopup();
                 }
 
                 // draw children nodes
-                for (size_t i = 0; i < group.second->entities.size(); i++)
+                for (auto& node : group.second->entities)
                 {
-                    //auto& nodeName = group.second->entities[i]->GetComponent<NameComponent>().name;
-                    char nodeBuffer[ENTITY_NAME_MAX_CHARS];
-                    memset(nodeBuffer, 0, sizeof(nodeBuffer));
-                    std::strncpy(nodeBuffer, nodeName.c_str(), sizeof(nodeBuffer));
-
-                    ImGuiSelectableFlags flags = {};
-                    flags |= ImGuiSelectableFlags_DontClosePopups;
-                    if (Cosmos::SelectableInputText(nodeName.c_str(), &group.second->, flags, nodeBuffer, sizeof(nodeBuffer)))
-                    {
-                        nodeName = std::string(nodeBuffer);
-                    }
+                    bool redraw = false;
+                    DrawEntityNode(group.second, node.second, &redraw);
+                
+                    if(redraw) break;
                 }
 
                 ImGui::TreePop();
             }
-
-            // under drop behaviour
-            DropBehaviour(itCount);
-
-            // increment counter
-            itCount++;
-        }
-
-        // bottom drop behaviour
-        DragBehaviour(itCount);
-    }
-
-    void Hierarchy::DragBehaviour(size_t from)
-    {
-        ImGuiDragDropFlags src_flags = 0;
-        src_flags |= ImGuiDragDropFlags_SourceAllowNullID;
-        src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
-        src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
-
-        if (ImGui::BeginDragDropSource(src_flags))
-        {
-            ImGui::SetDragDropPayload("HIERARCHYNODE_PAYLOAD", &from, sizeof(size_t));
-            ImGui::EndDragDropSource();
         }
     }
 
-    void Hierarchy::DropBehaviour(size_t to)
+    void Hierarchy::DrawEntityNode(Shared<HierarchyGroup> group, Shared<HierarchyBase> base, bool* redraw)
     {
-        if (ImGui::BeginDragDropTarget())
+        ImGui::PushID(base.get());
+
+        auto& nodeName = base->entity->GetComponent<NameComponent>().name;
+        char nodeBuffer[ENTITY_NAME_MAX_CHARS];
+        memset(nodeBuffer, 0, sizeof(nodeBuffer));
+        std::strncpy(nodeBuffer, nodeName.c_str(), sizeof(nodeBuffer));
+
+        ImGuiSelectableFlags flags = {};
+        if (Cosmos::SelectableInputText(nodeName.c_str(), &base->selected, flags, nodeBuffer, sizeof(nodeBuffer)))
         {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHYNODE_PAYLOAD"))
+            nodeName = std::string(nodeBuffer);
+        }
+
+        // entity right-click menu
+        if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight))
+        {
+            if(ImGui::MenuItem("Dupplicate"))
             {
-                mPayloadHelper.from = *(const size_t*)payload->Data;
-                mPayloadHelper.to = to;
+                Shared<HierarchyBase> dupplicate = CreateShared<HierarchyBase>();
+                dupplicate->entity = Application::GetInstance()->GetActiveScene()->DuplicateEntity(base->entity);
+                group->entities.insert({ dupplicate->entity->GetComponent<NameComponent>().name , dupplicate });
 
-                // moving stuff around
-                //if (mPayloadHelper.from != mPayloadHelper.to)
-                //{
-                //    if (mHierarchyNodes[mPayloadHelper.to]->type == HierarchyType::Single)
-                //    {
-                //
-                //    }
-                //}
+                *redraw = true;
             }
 
-            ImGui::EndDragDropTarget();
+            if(ImGui::MenuItem("Delete"))
+            {
+                Application::GetInstance()->GetActiveScene()->DestroyEntity(base->entity);
+                group->entities.erase(group->entities.find(base->entity->GetComponent<NameComponent>().name));
+                
+                *redraw = true;
+            }
+
+            ImGui::EndPopup();
         }
+
+        ImGui::PopID();
     }
 }

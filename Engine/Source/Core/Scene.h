@@ -52,7 +52,7 @@ namespace Cosmos
 		Entity* CreateEntity(const char* name = "Entity");
 
 		// duplicates an entity and insert's it on the entitymap
-		void DuplicateEntity(Entity* entity);
+		Entity* DuplicateEntity(Entity* entity);
 
 		// deleste an entity and free it's resources
 		void DestroyEntity(Entity* entity, bool eraseFromEntitymap = true);
