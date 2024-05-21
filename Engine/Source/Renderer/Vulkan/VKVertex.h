@@ -8,47 +8,46 @@ namespace Cosmos
 {
     struct VKVertex
     {
+        enum Component 
+        {
+            POSITION = 0,
+            COLOR,
+            NORMAL,
+            UV0
+        };
+
         glm::vec3 position;
         glm::vec3 color;
+        glm::vec3 normal;
         glm::vec2 uv0;
 
-        static std::vector<VkVertexInputBindingDescription> GetBindingDescription()
-        {
-            std::vector<VkVertexInputBindingDescription> bindingDescription(1);
-            bindingDescription[0].binding = 0;
-            bindingDescription[0].stride = sizeof(VKVertex);
-            bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        // these variables must be hold in memory for the creation of pre-configured pipelines
+        static std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+        static std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-            return bindingDescription;
-        }
+    public:
 
-        static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
-        {
-            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
-
-            attributeDescriptions[0].binding = 0;
-            attributeDescriptions[0].location = 0;
-            attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(VKVertex, position);
-
-            attributeDescriptions[1].binding = 0;
-            attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(VKVertex, color);
-
-            attributeDescriptions[2].binding = 0;
-            attributeDescriptions[2].location = 2;
-            attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-            attributeDescriptions[2].offset = offsetof(VKVertex, uv0);
-
-            return attributeDescriptions;
-        }
-
+        // checks if current vertex is the same as another
         bool operator==(const VKVertex& other) const
         {
-            return position == other.position 
-                && color == other.color 
+            return position == other.position
+                && color == other.color
+                && normal == other.normal
                 && uv0 == other.uv0;
         }
-    };
+
+    public:
+
+        // returns the binding descriptions, currently it is very simple and only has one binding, used internally
+        static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
+
+        // returns the attribute description based on configuration, used internally
+        static VkVertexInputAttributeDescription GetInputAttributeDescription(uint32_t binding, uint32_t location, VKVertex::Component component);
+
+        // returns the attribute descriptions, it generates the attributes based on a list of desired attributes, used internally
+        static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions(const std::vector<VKVertex::Component> components);
+
+        // returns the pipeline vertex input state based on desired components
+        static VkPipelineVertexInputStateCreateInfo GetPipelineVertexInputState(const std::vector<VKVertex::Component> components);
+    }; 
 }

@@ -9,57 +9,16 @@ namespace Cosmos
 	class VKDevice;
 	struct TextureSampler;
 
-	class Texture2D
+	typedef enum MSAA
 	{
-	public:
-
-		typedef enum MSAA
-		{
-			SAMPLE_1_BIT = 0x00000001,
-			SAMPLE_2_BIT = 0x00000002,
-			SAMPLE_4_BIT = 0x00000004,
-			SAMPLE_8_BIT = 0x00000008,
-			SAMPLE_16_BIT = 0x00000010,
-			SAMPLE_32_BIT = 0x00000020,
-			SAMPLE_64_BIT = 0x00000040,
-		} MSAA;
-
-	public:
-
-		// creates a texture from an input file
-		static Shared<Texture2D> Create(Shared<VKDevice> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT);
-
-		// constructor
-		Texture2D() = default;
-
-		// destructor
-		virtual ~Texture2D() = default;
-
-	public:
-
-		// returns a reference to the image view
-		virtual VkImageView GetView() = 0;
-
-		// returns a reference to the image sampler
-		virtual VkSampler& GetSampler() = 0;
-
-	public:
-
-		// returns the texture width
-		inline uint32_t GetWidth() const { return mWidth; }
-
-		// returns the texture height
-		inline uint32_t GetHeight() const { return mHeight; }
-
-		// returns the mip levels
-		inline uint32_t GetMipLevels() const { return mMipLevels; }
-
-	protected:
-
-		uint32_t mWidth = 0;
-		uint32_t mHeight = 0;
-		uint32_t mMipLevels = 0;
-	};
+		SAMPLE_1_BIT = 0x00000001,
+		SAMPLE_2_BIT = 0x00000002,
+		SAMPLE_4_BIT = 0x00000004,
+		SAMPLE_8_BIT = 0x00000008,
+		SAMPLE_16_BIT = 0x00000010,
+		SAMPLE_32_BIT = 0x00000020,
+		SAMPLE_64_BIT = 0x00000040,
+	} MSAA;
 
 	struct TextureSampler
 	{
@@ -88,5 +47,83 @@ namespace Cosmos
 		AddressMode u = AddressMode::ADDRESS_MODE_REPEAT;
 		AddressMode v = AddressMode::ADDRESS_MODE_REPEAT;
 		AddressMode w = AddressMode::ADDRESS_MODE_REPEAT;
+	};
+
+	class Texture2D
+	{
+	public:
+
+		// creates a texture from an input file
+		static Shared<Texture2D> Create(Shared<VKDevice> device, const char* path, MSAA msaa = MSAA::SAMPLE_1_BIT);
+
+		// constructor
+		Texture2D() = default;
+
+		// destructor
+		virtual ~Texture2D() = default;
+
+	public:
+
+		// returns a reference to the image view
+		virtual VkImageView GetView() = 0;
+
+		// returns a reference to the image sampler
+		virtual VkSampler GetSampler() = 0;
+
+	public:
+
+		// returns the texture width
+		inline uint32_t GetWidth() const { return mWidth; }
+
+		// returns the texture height
+		inline uint32_t GetHeight() const { return mHeight; }
+
+		// returns the mip levels
+		inline uint32_t GetMipLevels() const { return mMipLevels; }
+
+	protected:
+
+		uint32_t mWidth = 0;
+		uint32_t mHeight = 0;
+		uint32_t mMipLevels = 0;
+	};
+
+	class TextureCubemap
+	{
+	public:
+
+		// creates a texture from an input file
+		static Shared<TextureCubemap> Create(Shared<VKDevice> device, std::array<std::string, 6> paths, MSAA msaa = MSAA::SAMPLE_1_BIT);
+
+		// constructor
+		TextureCubemap() = default;
+
+		// destructor
+		virtual ~TextureCubemap() = default;
+
+	public:
+
+		// returns a reference to the image view
+		virtual VkImageView GetView() = 0;
+
+		// returns a reference to the image sampler
+		virtual VkSampler GetSampler() = 0;
+
+	public:
+
+		// returns the texture width
+		inline uint32_t GetWidth() const { return mWidth; }
+
+		// returns the texture height
+		inline uint32_t GetHeight() const { return mHeight; }
+
+		// returns the mip levels
+		inline uint32_t GetMipLevels() const { return mMipLevels; }
+
+	protected:
+
+		uint32_t mWidth = 0;
+		uint32_t mHeight = 0;
+		uint32_t mMipLevels = 0;
 	};
 }

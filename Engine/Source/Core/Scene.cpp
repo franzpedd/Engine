@@ -38,6 +38,15 @@ namespace Cosmos
 
 	void Scene::OnUpdate(float timestep)
 	{
+		// update skyboxes
+		auto skyboxsView = mRegistry.view<TransformComponent, SkyboxComponent>();
+		for (auto ent : skyboxsView)
+		{
+			auto [transformComponent, skyboxComponent] = skyboxsView.get<TransformComponent, SkyboxComponent>(ent);
+
+			skyboxComponent.skybox->OnUpdate(timestep, transformComponent.GetTransform());
+		}
+
 		// update models
 		auto modelsView = mRegistry.view<TransformComponent, ModelComponent>();
 		for (auto ent : modelsView)
@@ -70,6 +79,18 @@ namespace Cosmos
 		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer commandBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
+
+		// draw skyboxes
+		auto skyboxView = mRegistry.view<SkyboxComponent>();
+		for (auto ent : skyboxView)
+		{
+			auto& [skybox] = skyboxView.get<SkyboxComponent>(ent);
+
+			if (skybox == nullptr || !skybox->IsLoaded())
+				continue;
+
+			skybox->OnRender(commandBuffer);
+		}
 
 		// draw models
 		auto modelsView = mRegistry.view<ModelComponent>();

@@ -23,10 +23,9 @@ namespace Cosmos
 	{
 		mMaterial = CreateShared<Material>();
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
-		
 	}
 
-	void Model::OnUpdate(float deltaTime, glm::mat4 transform)
+	void Model::OnUpdate(float deltaTime, glm::mat4& transform)
 	{
 		if (!mLoaded) return;
 
@@ -35,14 +34,13 @@ namespace Cosmos
 		ubo.view = mCamera->GetViewRef();
 		ubo.proj = mCamera->GetProjectionRef();
 
-		uint32_t currentFrame = mRenderer->GetCurrentFrame();
-
 		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
 	}
 	
-	void Model::OnRender(VkCommandBuffer commandBuffer)
+	void Model::OnRender(VkCommandBuffer commandBuffer, bool bindPipeline)
 	{
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
+		if(bindPipeline)
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
 
 		for (auto& mesh : mMeshes)
 		{
@@ -58,6 +56,9 @@ namespace Cosmos
 		{
 			vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffers[i], nullptr);
 			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], nullptr);
+
+			vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mLightBuffers[i], nullptr);
+			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mLightBuffersMemory[i], nullptr);
 		}
 		
 		vkDestroyDescriptorPool(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mDescriptorPool, nullptr);
@@ -151,16 +152,16 @@ namespace Cosmos
 			vertex.position = glm::vec3(vectorRotated);
 
 			// color
-			if(mesh->mColors[0])
-				vertex.color = glm::vec3(mesh->mColors[0]->r, mesh->mColors[0]->g, mesh->mColors[0]->b);
-			else
-				vertex.color = glm::vec3(1.0f, 1.0f, 1.0f);
+			if(mesh->mColors[0]) vertex.color = glm::vec3(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b);
+			else vertex.color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+			// normal
+			if (mesh->mNormals) vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+			else vertex.normal = glm::vec3(1.0f, 1.0f, 1.0f);
 
 			// uv0
-			if (mesh->mTextureCoords[0])
-				vertex.uv0 = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-			else
-				vertex.uv0 = glm::vec2(1.0f, -1.0f);
+			if (mesh->mTextureCoords[0]) vertex.uv0 = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+			else vertex.uv0 = glm::vec2(1.0f, -1.0f);
 
 			vertices.push_back(vertex);
 		}
@@ -178,14 +179,19 @@ namespace Cosmos
 
 	void Model::CreateResources()
 	{
-		// matrix ubo
+		// ubo's
 		{
 			mUniformBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 			mUniformBuffersMemory.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 			mUniformBuffersMapped.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
 
+			mLightBuffers.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mLightBuffersMemory.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+			mLightBuffersMapped.resize(RENDERER_MAX_FRAMES_IN_FLIGHT);
+
 			for (size_t i = 0; i < RENDERER_MAX_FRAMES_IN_FLIGHT; i++)
 			{
+				// camera's ubo
 				BufferCreate
 				(
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
@@ -197,6 +203,20 @@ namespace Cosmos
 				);
 
 				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+			
+				// light's ubo
+				BufferCreate
+				(
+					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					sizeof(LightBufferObject),
+					&mLightBuffers[i],
+					&mLightBuffersMemory[i]
+				);
+
+				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mLightBuffersMemory[i], 0, sizeof(LightBufferObject), 0, &mLightBuffersMapped[i]);
+
 			}
 		}
 
@@ -207,11 +227,13 @@ namespace Cosmos
 
 		// create descriptor pool and descriptor sets
 		{
-			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+			std::array<VkDescriptorPoolSize, 3> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[0].descriptorCount = 2;
-			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[1].descriptorCount = 2;
+			poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[2].descriptorCount = 2;
 
 			VkDescriptorPoolCreateInfo descPoolCI = {};
 			descPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -245,22 +267,41 @@ namespace Cosmos
 		{
 			std::vector<VkWriteDescriptorSet> descriptorWrites = {};
 
-			VkDescriptorBufferInfo uboInfo = {};
-			uboInfo.buffer = mUniformBuffers[i];
-			uboInfo.offset = 0;
-			uboInfo.range = sizeof(UniformBufferObject);
+			//
+			VkDescriptorBufferInfo cameraUBOInfo = {};
+			cameraUBOInfo.buffer = mUniformBuffers[i];
+			cameraUBOInfo.offset = 0;
+			cameraUBOInfo.range = sizeof(UniformBufferObject);
 
-			VkWriteDescriptorSet uboDesc = {};
-			uboDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			uboDesc.dstSet = mDescriptorSets[i];
-			uboDesc.dstBinding = 0;
-			uboDesc.dstArrayElement = 0;
-			uboDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uboDesc.descriptorCount = 1;
-			uboDesc.pBufferInfo = &uboInfo;
+			VkWriteDescriptorSet cameraUBODesc = {};
+			cameraUBODesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			cameraUBODesc.dstSet = mDescriptorSets[i];
+			cameraUBODesc.dstBinding = 0;
+			cameraUBODesc.dstArrayElement = 0;
+			cameraUBODesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			cameraUBODesc.descriptorCount = 1;
+			cameraUBODesc.pBufferInfo = &cameraUBOInfo;
 
-			descriptorWrites.push_back(uboDesc);
+			descriptorWrites.push_back(cameraUBODesc);
 
+			//
+			VkDescriptorBufferInfo lightUBOInfo = {};
+			lightUBOInfo.buffer = mLightBuffers[i];
+			lightUBOInfo.offset = 0;
+			lightUBOInfo.range = sizeof(LightBufferObject);
+
+			VkWriteDescriptorSet lightUBODesc = {};
+			lightUBODesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			lightUBODesc.dstSet = mDescriptorSets[i];
+			lightUBODesc.dstBinding = 1;
+			lightUBODesc.dstArrayElement = 0;
+			lightUBODesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			lightUBODesc.descriptorCount = 1;
+			lightUBODesc.pBufferInfo = &lightUBOInfo;
+
+			descriptorWrites.push_back(lightUBODesc);
+
+			//
 			VkDescriptorImageInfo albedoInfo = {};
 			albedoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			albedoInfo.imageView = mAlbedoTexture->GetView();
@@ -269,7 +310,7 @@ namespace Cosmos
 			VkWriteDescriptorSet albedoDesc = {};
 			albedoDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			albedoDesc.dstSet = mDescriptorSets[i];
-			albedoDesc.dstBinding = 1;
+			albedoDesc.dstBinding = 2;
 			albedoDesc.dstArrayElement = 0;
 			albedoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			albedoDesc.descriptorCount = 1;

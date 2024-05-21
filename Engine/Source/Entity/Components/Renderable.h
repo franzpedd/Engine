@@ -2,6 +2,7 @@
 
 #include "Entity/Renderable/Model.h"
 #include "Entity/Renderable/Primitive.h"
+#include "Entity/Renderable/Skybox.h"
 
 namespace Cosmos
 {
@@ -11,6 +12,14 @@ namespace Cosmos
 
 		// constructor
 		ModelComponent() = default;
+	};
+
+	struct SkyboxComponent
+	{
+		Shared<Skybox> skybox;
+
+		// constructor
+		SkyboxComponent() = default;
 	};
 
 	struct QuadComponent

@@ -100,6 +100,6 @@ namespace Cosmos
 	// custom vector-3 controls
 	bool Vector3Control(const char* label, glm::vec3& values);
 
-	// used for folder managing
-	bool SelectableInputText(const char* label, bool* selected, ImGuiSelectableFlags flags, char* buffer, size_t bufferSize);
+	// allows the hability to change a selectable name on double-click
+	bool SelectableInputText(bool* selected, char* buffer, size_t bufferSize);
 }

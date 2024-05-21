@@ -6,7 +6,7 @@
 
 namespace Cosmos
 {
-	void CreateImage(std::shared_ptr<VKDevice> device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory)
+	void CreateImage(std::shared_ptr<VKDevice> device, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t arrayLayers, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory)
 	{
 		// specify image
 		VkImageCreateInfo imageCI = {};
@@ -18,7 +18,7 @@ namespace Cosmos
 		imageCI.extent.height = height;
 		imageCI.extent.depth = 1;
 		imageCI.mipLevels = mipLevels;
-		imageCI.arrayLayers = 1;
+		imageCI.arrayLayers = arrayLayers;
 		imageCI.format = format;
 		imageCI.tiling = tiling;
 		imageCI.usage = usage;
@@ -127,7 +127,7 @@ namespace Cosmos
 		EndSingleTimeCommand(device, cmdPool, cmdBuffer);
 	}
 
-	VkImageView CreateImageView(std::shared_ptr<VKDevice> device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevel)
+	VkImageView CreateImageView(std::shared_ptr<VKDevice> device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevel, uint32_t layerCount)
 	{
 		VkImageViewCreateInfo imageViewCI = {};
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -138,7 +138,7 @@ namespace Cosmos
 		imageViewCI.subresourceRange.baseMipLevel = 0;
 		imageViewCI.subresourceRange.levelCount = mipLevel;
 		imageViewCI.subresourceRange.baseArrayLayer = 0;
-		imageViewCI.subresourceRange.layerCount = 1;
+		imageViewCI.subresourceRange.layerCount = layerCount;
 
 		VkImageView imageView;
 		VK_ASSERT(vkCreateImageView(device->GetDevice(), &imageViewCI, nullptr, &imageView), "Failed to create image view");

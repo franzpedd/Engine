@@ -29,5 +29,11 @@ namespace Cosmos
 			glm::mat4 rot = glm::toMat4(glm::quat(rotation));
 			return glm::translate(glm::mat4(1.0f), translation) * rot * glm::scale(glm::mat4(1.0f), scale);
 		}
+
+		// returns the normal matrix
+		glm::mat4 GetNormal() const
+		{
+			return glm::transpose(glm::inverse(glm::mat3(GetTransform())));
+		}
 	};
 }

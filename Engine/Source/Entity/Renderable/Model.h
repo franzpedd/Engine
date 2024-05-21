@@ -47,10 +47,10 @@ namespace Cosmos
 	public:
 
 		// updates model's logic
-		void OnUpdate(float deltaTime, glm::mat4 transform);
+		void OnUpdate(float deltaTime, glm::mat4& transform);
 		
 		// draws the model
-		void OnRender(VkCommandBuffer commandBuffer);
+		void OnRender(VkCommandBuffer commandBuffer, bool bindPipeline = true);
 
 		// free used resources
 		void Destroy();
@@ -89,9 +89,15 @@ namespace Cosmos
 		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 		std::vector<VkDescriptorSet> mDescriptorSets = {};
 		
+		// camera's ubo
 		std::vector<VkBuffer> mUniformBuffers;
 		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 		std::vector<void*> mUniformBuffersMapped;
+
+		// light's ubo
+		std::vector<VkBuffer> mLightBuffers;
+		std::vector<VkDeviceMemory> mLightBuffersMemory;
+		std::vector<void*> mLightBuffersMapped;
 
 		Shared<Material> mMaterial;
 		std::string mAlbedoPath;

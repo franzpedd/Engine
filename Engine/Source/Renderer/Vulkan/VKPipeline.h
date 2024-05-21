@@ -4,6 +4,7 @@
 #include "VKDevice.h"
 
 #include "VKShader.h"
+#include "VKVertex.h"
 
 namespace Cosmos
 {
@@ -13,11 +14,10 @@ namespace Cosmos
         VkPipelineCache cache;
         Shared<VKShader> vertexShader;
         Shared<VKShader> fragmentShader;
-        std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-        std::vector<VkDescriptorSetLayoutBinding> bindings;
+        std::vector<VKVertex::Component> vertexComponents = {};
+        std::vector<VkDescriptorSetLayoutBinding> bindings = {};
         
-        // these will be auto generated, but can be previously modified for customization
+        // these will be auto generated, but can be previously modified between VKPipeline::VKPipeline and VKPipeline::Build for customization
         std::vector<VkDynamicState> dynamicStates { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
         std::vector<VkPipelineShaderStageCreateInfo> shaderStagesCI = {};
         VkPipelineVertexInputStateCreateInfo VISCI = {};

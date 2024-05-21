@@ -34,13 +34,8 @@ namespace Cosmos
 
         // pipeline default configuration
         // vertex input state
-        mSpecification.VISCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        mSpecification.VISCI.pNext = nullptr;
-        mSpecification.VISCI.flags = 0;
-        mSpecification.VISCI.vertexBindingDescriptionCount = (uint32_t)mSpecification.bindingDescriptions.size();
-        mSpecification.VISCI.pVertexBindingDescriptions = mSpecification.bindingDescriptions.data();
-        mSpecification.VISCI.vertexAttributeDescriptionCount = (uint32_t)mSpecification.attributeDescriptions.size();
-        mSpecification.VISCI.pVertexAttributeDescriptions = mSpecification.attributeDescriptions.data();
+        mSpecification.VISCI = VKVertex::GetPipelineVertexInputState(mSpecification.vertexComponents);
+
         // input assembly state
         mSpecification.IASCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         mSpecification.IASCI.pNext = nullptr;
@@ -138,9 +133,5 @@ namespace Cosmos
         pipelineCI.renderPass = VKCommander::GetInstance()->GetMainRef()->renderPass;
         pipelineCI.subpass = 0;
         VK_ASSERT(vkCreateGraphicsPipelines(mDevice->GetDevice(), mSpecification.cache, 1, &pipelineCI, nullptr, &mPipeline), "Failed to create graphics pipeline");
-        
-        // free shader resources
-        //vkDestroyShaderModule(mDevice->GetDevice(), mSpecification.vertexShader->GetModule(), nullptr);
-        //vkDestroyShaderModule(mDevice->GetDevice(), mSpecification.fragmentShader->GetModule(), nullptr);
     }
 }

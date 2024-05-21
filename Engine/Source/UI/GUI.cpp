@@ -687,12 +687,12 @@ namespace Cosmos
 		return true;
 	}
 
-	bool SelectableInputText(const char* label, bool* selected, ImGuiSelectableFlags flags, char* buffer, size_t bufferSize)
+	bool SelectableInputText(bool* selected, char* buffer, size_t bufferSize)
 	{
 		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = g.CurrentWindow;
 		ImVec2 pos_before = window->DC.CursorPos;
-
+		ImGuiSelectableFlags flags = {};
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(g.Style.ItemSpacing.x, g.Style.FramePadding.y * 2.0f));
 		bool ret = ImGui::Selectable("##Selectable", selected, flags | ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_AllowItemOverlap);
 		ImGui::PopStyleVar();
@@ -706,9 +706,10 @@ namespace Cosmos
 
 		if (temp_input_is_active || temp_input_start)
 		{
+			static ImRect lastRect = ImGui::GetCurrentContext()->LastItemData.Rect;
 			ImVec2 pos_after = window->DC.CursorPos;
 			window->DC.CursorPos = pos_before;
-			ret = ImGui::TempInputText(ImGui::GetCurrentContext()->LastItemData.Rect, id, "##Input", buffer, (int)bufferSize, ImGuiInputTextFlags_None);
+			ret = ImGui::TempInputText(lastRect, id, "##Input", buffer, (int)bufferSize, ImGuiInputTextFlags_None);
 			window->DC.CursorPos = pos_after;
 
 			ImGui::KeepAliveID(id);

@@ -1,6 +1,7 @@
 #include "epch.h"
 #include "VKRenderer.h"
 
+#include "VKImage.h"
 #include "VKInitializers.h"
 #include "VKShader.h"
 #include "VKVertex.h"
@@ -145,7 +146,7 @@ namespace Cosmos
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		// color and depth render pass
-		if(mCommander->Exists("Swapchain"))
+		if (mCommander->Exists("Swapchain"))
 		{
 			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["Swapchain"]->commandBuffers[mCurrentFrame];
 			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["Swapchain"]->frameBuffers[imageIndex];
@@ -198,7 +199,7 @@ namespace Cosmos
 		}
 
 		// viewport
-		if(mCommander->Exists("Viewport"))
+		if (mCommander->Exists("Viewport"))
 		{
 			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["Viewport"]->commandBuffers[mCurrentFrame];
 			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["Viewport"]->frameBuffers[imageIndex];
@@ -248,7 +249,7 @@ namespace Cosmos
 		}
 
 		// user interface
-		if(mCommander->Exists("ImGui"))
+		if (mCommander->Exists("ImGui"))
 		{
 			VkCommandBuffer& cmdBuffer = mCommander->GetEntriesRef()["ImGui"]->commandBuffers[mCurrentFrame];
 			VkFramebuffer& frameBuffer = mCommander->GetEntriesRef()["ImGui"]->frameBuffers[imageIndex];
@@ -326,34 +327,78 @@ namespace Cosmos
 			modelSpecification.cache = mPipelineCache;
 			modelSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Model.vert", GetAssetSubDir("Shaders/model.vert"));
 			modelSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Model.frag", GetAssetSubDir("Shaders/model.frag"));
-        	modelSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
-			modelSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
-			modelSpecification.bindings.resize(2);
+			modelSpecification.vertexComponents =
+			{
+				VKVertex::Component::POSITION, VKVertex::Component::COLOR, VKVertex::Component::NORMAL, VKVertex::Component::UV0
+			};
 
-			// ubo
-        	modelSpecification.bindings[0].binding = 0;
-        	modelSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        	modelSpecification.bindings[0].descriptorCount = 1;
-        	modelSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        	modelSpecification.bindings[0].pImmutableSamplers = nullptr;
-			
+			modelSpecification.bindings.resize(3);
+			// global ubo
+			modelSpecification.bindings[0].binding = 0;
+			modelSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			modelSpecification.bindings[0].descriptorCount = 1;
+			modelSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			modelSpecification.bindings[0].pImmutableSamplers = nullptr;
+
+			// light ubo
+			modelSpecification.bindings[1].binding = 1;
+			modelSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			modelSpecification.bindings[1].descriptorCount = 1;
+			modelSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			modelSpecification.bindings[1].pImmutableSamplers = nullptr;
+
 			// albedo
-        	modelSpecification.bindings[1].binding = 1;
-        	modelSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        	modelSpecification.bindings[1].descriptorCount = 1;
-        	modelSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        	modelSpecification.bindings[1].pImmutableSamplers = nullptr;
+			modelSpecification.bindings[2].binding = 2;
+			modelSpecification.bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			modelSpecification.bindings[2].descriptorCount = 1;
+			modelSpecification.bindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			modelSpecification.bindings[2].pImmutableSamplers = nullptr;
 
 			// create
 			mPipelines["Model"] = CreateShared<VKPipeline>(mDevice, modelSpecification);
-			
+
 			// modify parameters after initial creation
 			mPipelines["Model"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_BACK_BIT;
 
 			// build the pipeline
 			mPipelines["Model"]->Build();
 		}
-        
+
+		// skybox pipeline
+		{
+			VKPipelineSpecification skyboxSpecification = {};
+			skyboxSpecification.cache = mPipelineCache;
+			skyboxSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Skybox.vert", GetAssetSubDir("Shaders/skybox.vert"));
+			skyboxSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Skybox.frag", GetAssetSubDir("Shaders/skybox.frag"));
+			skyboxSpecification.vertexComponents =
+			{
+				VKVertex::Component::POSITION
+			};
+
+			skyboxSpecification.bindings.resize(2);
+			// global ubo
+			skyboxSpecification.bindings[0].binding = 0;
+			skyboxSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			skyboxSpecification.bindings[0].descriptorCount = 1;
+			skyboxSpecification.bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			skyboxSpecification.bindings[0].pImmutableSamplers = nullptr;
+
+			//cubemap
+			skyboxSpecification.bindings[1].binding = 1;
+			skyboxSpecification.bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			skyboxSpecification.bindings[1].descriptorCount = 1;
+			skyboxSpecification.bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			skyboxSpecification.bindings[1].pImmutableSamplers = nullptr;
+
+			// create
+			mPipelines["Skybox"] = CreateShared<VKPipeline>(mDevice, skyboxSpecification);
+
+			// modify parameters after initial creation
+			mPipelines["Skybox"]->GetSpecificationRef().RSCI.cullMode = VK_CULL_MODE_FRONT_BIT;
+
+			// build the pipeline
+			mPipelines["Skybox"]->Build();
+		}
 
 		// primitive pipeline
 		{
@@ -361,10 +406,12 @@ namespace Cosmos
 			primitiveSpecification.cache = mPipelineCache;
 			primitiveSpecification.vertexShader = CreateShared<VKShader>(mDevice, VKShader::Type::Vertex, "Primitive.vert", GetAssetSubDir("Shaders/primitive.vert"));
 			primitiveSpecification.fragmentShader = CreateShared<VKShader>(mDevice, VKShader::Type::Fragment, "Primitive.frag", GetAssetSubDir("Shaders/primitive.frag"));
-			primitiveSpecification.bindingDescriptions = VKVertex::GetBindingDescription();
-			primitiveSpecification.attributeDescriptions = VKVertex::GetAttributeDescriptions();
-			primitiveSpecification.bindings.resize(2);
+			primitiveSpecification.vertexComponents =
+			{
+				VKVertex::Component::POSITION, VKVertex::Component::COLOR, VKVertex::Component::UV0
+			};
 
+			primitiveSpecification.bindings.resize(2);
 			// ubo
 			primitiveSpecification.bindings[0].binding = 0;
 			primitiveSpecification.bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -388,7 +435,5 @@ namespace Cosmos
 			// build the pipeline
 			mPipelines["Primitive"]->Build();
 		}
-		
-		
 	}
 }

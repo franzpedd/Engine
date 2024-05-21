@@ -42,6 +42,7 @@ namespace Cosmos
     private:
 
         std::multimap<std::string, Shared<HierarchyGroup>> mGroups;
+
         size_t mEntitiesID = 0;
         
         PayloadHelper mPayloadHelper = {};

@@ -38,16 +38,12 @@ namespace Cosmos
     {
         for (auto& group : mGroups)
         {
-            // retrieve node's name
-            auto& groupName = group.second->name;
-            char groupBuffer[ENTITY_NAME_MAX_CHARS];
-            memset(groupBuffer, 0, sizeof(groupBuffer));
-            std::strncpy(groupBuffer, groupName.c_str(), sizeof(groupBuffer));
-            ImGuiTreeNodeFlags flags = {};
-
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
             bool popupRename = false;
 
-            if (ImGui::TreeNodeEx(group.second.get(), flags, groupName.c_str()))
+            ImGui::PushID(group.second.get());
+
+            if(ImGui::CollapsingHeader(group.second->name.c_str(), flags))
             {
                 // group right-menu
                 if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight))
@@ -57,7 +53,7 @@ namespace Cosmos
                         Shared<HierarchyBase> base = CreateShared<HierarchyBase>();
                         base->entity = Application::GetInstance()->GetActiveScene()->CreateEntity();
 
-                        group.second->entities.insert({ base->entity->GetComponent<NameComponent>().name, base});
+                        group.second->entities.insert({ base->entity->GetComponent<NameComponent>().name, base });
                     }
 
                     ImGui::Separator();
@@ -78,19 +74,25 @@ namespace Cosmos
                         mGroups.erase(group.first);
 
                         ImGui::EndPopup();
-                        ImGui::TreePop();
                         break;
                     }
 
                     ImGui::EndPopup();
                 }
 
+                // rename popup
+                auto& groupName = group.second->name;
+                char groupBuffer[ENTITY_NAME_MAX_CHARS];
+                memset(groupBuffer, 0, sizeof(groupBuffer));
+                std::strncpy(groupBuffer, groupName.c_str(), sizeof(groupBuffer));
+
                 if(popupRename) ImGui::OpenPopup("RenamePopup");
                 if (ImGui::BeginPopup("RenamePopup"))
                 {
-                    if(ImGui::InputText("##NewName", groupBuffer, sizeof(groupBuffer)))
+                    if(ImGui::InputText("##NewName", groupBuffer, sizeof(groupBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
                     {
                         groupName = std::string(groupBuffer);
+                        ImGui::CloseCurrentPopup();
                     }
 
                     ImGui::EndPopup();
@@ -104,9 +106,8 @@ namespace Cosmos
                 
                     if(redraw) break;
                 }
-
-                ImGui::TreePop();
             }
+            ImGui::PopID();
         }
     }
 
@@ -119,8 +120,7 @@ namespace Cosmos
         memset(nodeBuffer, 0, sizeof(nodeBuffer));
         std::strncpy(nodeBuffer, nodeName.c_str(), sizeof(nodeBuffer));
 
-        ImGuiSelectableFlags flags = {};
-        if (Cosmos::SelectableInputText(nodeName.c_str(), &base->selected, flags, nodeBuffer, sizeof(nodeBuffer)))
+        if (Cosmos::SelectableInputText(&base->selected, nodeBuffer, sizeof(nodeBuffer)))
         {
             nodeName = std::string(nodeBuffer);
         }

@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Camera.h"
+
 #include "Event/Event.h"
+
 #include "Renderer/Renderer.h"
+
 #include "Util/DataFile.h"
 #include "Util/Memory.h"
 #include "Util/UUID.h"

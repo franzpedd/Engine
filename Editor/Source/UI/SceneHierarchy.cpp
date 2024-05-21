@@ -12,10 +12,8 @@ namespace Cosmos
 
 	void SceneHierarchy::OnUpdate()
 	{
-		mHierarchy.OnUpdate();
-
-		//DisplaySceneHierarchy();
-		//DisplaySelectedEntityComponents();
+		DisplaySceneHierarchy();
+		DisplaySelectedEntityComponents();
 	}
 
 	Entity* SceneHierarchy::GetSelectedEntity()
@@ -96,6 +94,7 @@ namespace Cosmos
 			{
 				DisplayAddComponentEntry<TransformComponent>("Transform");
 				DisplayAddComponentEntry<ModelComponent>("Model");
+				DisplayAddComponentEntry<SkyboxComponent>("Skybox");
 				DisplayAddComponentEntry<SoundSourceComponent>("Sound Source");
 
 				ImGui::EndMenu();
@@ -259,9 +258,7 @@ namespace Cosmos
 					memset(buffer, 0, sizeof(buffer));
 					std::strncpy(buffer, texturePath.c_str(), sizeof(buffer));
 					
-					//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
 					ImGui::InputTextWithHint("", "Drag and drop from Explorer", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					//ImGui::PopStyleVar();
 					
 					ImGui::EndGroup();
 					
@@ -275,6 +272,160 @@ namespace Cosmos
 					
 						ImGui::EndDragDropTarget();
 					}
+				}
+			});
+
+		DrawComponent<SkyboxComponent>("Skybox", mSelectedEntity, [&](SkyboxComponent& component)
+			{
+				if (!component.skybox) component.skybox = CreateShared<Skybox>(mRenderer, mCamera);
+
+				// front
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[0];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+					
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " front-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[0] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				// back
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[1];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " back-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[1] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				// left
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[2];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " left-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[2] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				// right
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[3];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " right-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[3] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				// top
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[4];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " top-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[4] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				// bottom
+				{
+					ImGui::BeginGroup();
+
+					auto path = component.skybox->GetPathsRef()[5];
+					char buffer[ENTITY_NAME_MAX_CHARS];
+					memset(buffer, 0, sizeof(buffer));
+					std::strncpy(buffer, path.c_str(), sizeof(buffer));
+
+					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " bottom-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+					ImGui::EndGroup();
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+						{
+							std::filesystem::path path = (const char*)payload->Data;
+							component.skybox->GetPathsRef()[5] = path.string();
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
+				if (ImGui::Button("Build"))
+				{
+
 				}
 			});
 
@@ -341,17 +492,18 @@ namespace Cosmos
 			if (ImGui::TreeNodeEx((void*)typeid(T).hash_code(), 0, name))
 			{
 				func(component);
-				ImGui::TreePop();
-			}
 
-			if (ImGui::BeginPopupContextItem("##RightClickComponent"))
-			{
-				if (ImGui::MenuItem("Remove Component"))
+				if (ImGui::BeginPopupContextItem("##RightClickComponent"))
 				{
-					entity->RemoveComponent<T>();
+					if (ImGui::MenuItem("Remove Component"))
+					{
+						entity->RemoveComponent<T>();
+					}
+
+					ImGui::EndPopup();
 				}
 
-				ImGui::EndPopup();
+				ImGui::TreePop();
 			}
 		}
 	}

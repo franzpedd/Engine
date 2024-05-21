@@ -37,12 +37,6 @@ namespace Cosmos
 			VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			(float)mMipLevels
 		);
-		
-		// update descriptor
-		mLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		mDescriptor.sampler = mSampler;
-		mDescriptor.imageView = mView;
-		mDescriptor.imageLayout = mLayout;
 	}
 
 	VKTexture2D::~VKTexture2D()
@@ -53,16 +47,6 @@ namespace Cosmos
 		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
 		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
 		vkDestroySampler(mDevice->GetDevice(), mSampler, nullptr);
-	}
-
-	VkImageView VKTexture2D::GetView()
-	{
-		return mView;
-	}
-
-	VkSampler& VKTexture2D::GetSampler()
-	{
-		return mSampler;
 	}
 
 	void VKTexture2D::LoadTexture()
@@ -111,6 +95,7 @@ namespace Cosmos
 			mWidth,
 			mHeight,
 			mMipLevels,
+			1,
 			mMSAA,
 			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_TILING_OPTIMAL,
@@ -241,5 +226,171 @@ namespace Cosmos
 
 		EndSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool, commandBuffer);
 		int x = 0;
+	}
+
+	VKTextureCubemap::VKTextureCubemap(Shared<VKDevice> device, std::array<std::string, 6> paths, VkSampleCountFlagBits msaa)
+		: mDevice(device), mPaths(paths), mMSAA(msaa)
+	{
+		LoadTextures();
+
+		// image view
+		mView = CreateImageView
+		(
+			mDevice,
+			mImage,
+			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			mMipLevels,
+			6
+		);
+
+		// sampler
+		mSampler = CreateSampler
+		(
+			mDevice,
+			VK_FILTER_LINEAR,
+			VK_FILTER_LINEAR,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			(float)mMipLevels
+		);
+	}
+
+	VKTextureCubemap::~VKTextureCubemap()
+	{
+		vkDeviceWaitIdle(mDevice->GetDevice());
+
+		vkDestroyImageView(mDevice->GetDevice(), mView, nullptr);
+		vkDestroyImage(mDevice->GetDevice(), mImage, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), mMemory, nullptr);
+		vkDestroySampler(mDevice->GetDevice(), mSampler, nullptr);
+	}
+
+	void VKTextureCubemap::LoadTextures()
+	{
+		LOG_ASSERT(mPaths.size() != 6, "A Skybox must have 6 textures");
+
+		VkDeviceSize layerSize;
+		VkDeviceSize imageSize;
+
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+
+		void* data;
+		uint64_t memAddress;
+		int32_t width = 0;
+		int32_t height = 0;
+
+		for (uint8_t i = 0; i < mPaths.size(); i++)
+		{
+			stbi_uc* pixels = stbi_load(mPaths[i].c_str(), &width, &height, &mChannels, STBI_rgb_alpha);
+
+			if (pixels == nullptr)
+			{
+				LOG_TO_TERMINAL(Logger::Severity::Assert, "Failed to load %s texture", mPaths[i]);
+				return;
+			}
+
+			if (i == 0)
+			{
+				layerSize = width * height * mChannels;
+				imageSize = layerSize * mPaths.size();
+
+				BufferCreate
+				(
+					mDevice,
+					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					imageSize,
+					&stagingBuffer,
+					&stagingBufferMemory
+				);
+
+				vkMapMemory(mDevice->GetDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+				memAddress = reinterpret_cast<uint64_t>(data);
+			}
+
+			memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
+			stbi_image_free(pixels);
+			memAddress += layerSize;
+
+			if (i == 5)
+			{
+				vkUnmapMemory(mDevice->GetDevice(), stagingBufferMemory);
+			}
+		}
+
+		mWidth = (uint32_t)width;
+		mHeight = (uint32_t)height;
+		LOG_TO_TERMINAL(Logger::Warn, "Test mip levels for skybox");
+		//mMipLevels = (uint32_t)(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
+
+		// create image resource
+		CreateImage
+		(
+			mDevice,
+			mWidth,
+			mHeight,
+			mMipLevels,
+			6,
+			(VkSampleCountFlagBits)mMSAA,
+			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			mImage,
+			mMemory
+		);
+
+		// transition layout to transfer data
+		TransitionImageLayout
+		(
+			mDevice,
+			VKCommander::GetInstance()->GetMainRef()->commandPool,
+			mImage,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			mMipLevels
+		);
+
+		// copy buffer to image
+		{
+			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool);
+
+			VkBufferImageCopy region = {};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 6;
+			region.imageOffset.x = 0;
+			region.imageOffset.y = 0;
+			region.imageOffset.z = 0;
+			region.imageExtent.width = mWidth;
+			region.imageExtent.height = mHeight;
+			region.imageExtent.depth = 1;
+			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+			EndSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool, cmdBuffer);
+		}
+
+		// free staging buffer
+		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingBufferMemory, nullptr);
+
+		// transition layout to shader read only
+		LOG_TO_TERMINAL(Logger::Warn, "Test this transition and if it works, use on Texture2D");
+		TransitionImageLayout
+		(
+			mDevice,
+			VKCommander::GetInstance()->GetMainRef()->commandPool,
+			mImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			mMipLevels
+		);
 	}
 }
