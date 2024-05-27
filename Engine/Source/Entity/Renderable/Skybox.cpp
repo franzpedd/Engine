@@ -2,6 +2,7 @@
 #include "Skybox.h"
 
 #include "Renderer/Vulkan/VKRenderer.h"
+#include "Util/FileSystem.h"
 
 namespace Cosmos
 {
@@ -17,7 +18,7 @@ namespace Cosmos
 			{-1.0f,  1.0f, -1.0f}, // 3: Top-back-left
 			{-1.0f, -1.0f,  1.0f}, // 4: Bottom-front-left
 			{ 1.0f, -1.0f,  1.0f}, // 5: Bottom-front-right
-			{ 1.0f,  1.0f,  1.0f}, // 6: Top-front-right
+			{ 1.0f,  1.0f,  1.0f}, // 6: Tosp-front-right
 			{-1.0f,  1.0f,  1.0f}  // 7: Top-front-left
 		};
 
@@ -49,7 +50,6 @@ namespace Cosmos
 			"Failed to create model Vertex Buffer"
 		);
 		
-		
 		// index buffer
 		bufferSize = sizeof(mIndices[0]) * mIndices.size();
 
@@ -67,9 +67,75 @@ namespace Cosmos
 			),
 			"Failed to create model Vertex Buffer"
 		);
+
+		// default sky
+		mPaths[0] = GetAssetSubDir("Textures/skybox/right.jpg");	// +X
+		mPaths[1] = GetAssetSubDir("Textures/skybox/left.jpg");		// -X
+		mPaths[2] = GetAssetSubDir("Textures/skybox/top.jpg");		// +Y
+		mPaths[3] = GetAssetSubDir("Textures/skybox/bottom.jpg");	// -Y
+		mPaths[4] = GetAssetSubDir("Textures/skybox/front.jpg");	// +Z
+		mPaths[5] = GetAssetSubDir("Textures/skybox/back.jpg");		// -Z
+
+		LoadSkybox();
+		mSkyboxModel = CreateShared<Model>(mRenderer, mCamera);
+		mSkyboxModel->LoadFromFile(GetAssetSubDir("Models/skybox.gltf"));
 	}
 
-	Skybox::~Skybox()
+	void Skybox::LoadSkybox()
+	{
+		// clear previous skybox
+		if (!mCubemap) mCubemap.reset();
+
+		// create cubemap
+		mCubemap = TextureCubemap::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mPaths, MSAA::SAMPLE_1_BIT);
+
+		// create vulkan resources
+		CreateResources();
+	}
+
+	void Skybox::OnUpdate(float deltaTime, glm::mat4 transform)
+	{
+		UniformBufferObject ubo = {};
+		ubo.model = transform;
+		ubo.view = mCamera->GetViewRef();
+		ubo.proj = mCamera->GetProjectionRef();
+		
+		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
+	}
+
+	void Skybox::OnRender(VkCommandBuffer commandBuffer)
+	{
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Skybox"]->GetPipeline());
+		mSkyboxModel->OnRenderSkybox
+		(
+			commandBuffer,
+			std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Skybox"]->GetPipelineLayout(), 
+			mDescriptorSets[mRenderer->GetCurrentFrame()]
+		);
+		
+		//VkDeviceSize offsets[] = { 0 };
+
+		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mVertexBuffer, offsets);
+
+		//if (mIndices.size() > 0)
+		//{
+		//	vkCmdBindIndexBuffer(commandBuffer, mIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		//	vkCmdBindDescriptorSets
+		//	(
+		//		commandBuffer, 
+		//		VK_PIPELINE_BIND_POINT_GRAPHICS, 
+		//		std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Skybox"]->GetPipelineLayout(), 
+		//		0, 
+		//		1, 
+		//		&mDescriptorSets[mRenderer->GetCurrentFrame()],
+		//		0, 
+		//		nullptr
+		//	);
+		//	vkCmdDrawIndexed(commandBuffer, (uint32_t)mIndices.size(), 1, 0, 0, 0);
+		//}
+	}
+
+	void Skybox::Destroy()
 	{
 		// cubemap
 		vkDeviceWaitIdle(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice());
@@ -85,68 +151,20 @@ namespace Cosmos
 		if (mCubemap)
 			mCubemap.reset();
 
-		// model
-		vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mVertexBuffer, nullptr);
-		vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mVertexMemory, nullptr);
-		
-		if (mIndices.size() > 0)
-		{
-			vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mIndexBuffer, nullptr);
-			vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mIndexMemory, nullptr);
-		}
-		
-		mIndices.clear();
-		mVertices.clear();
-	}
+		mSkyboxModel->Destroy();
 
-	void Skybox::LoadSkybox()
-	{
-		// clear previous skybox if exists
-		if (!mCubemap)
-			mCubemap.reset();
-
-		// create cubemap
-		mCubemap = TextureCubemap::Create(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(), mPaths, MSAA::SAMPLE_1_BIT);
-
-		CreateResources();
-
-		mLoaded = true;
-	}
-
-	void Skybox::OnUpdate(float deltaTime, glm::mat4& transform)
-	{
-		UniformBufferObject ubo = {};
-		ubo.model = transform;
-		ubo.view = mCamera->GetViewRef();
-		ubo.proj = mCamera->GetProjectionRef();
-		
-		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
-	}
-
-	void Skybox::OnRender(VkCommandBuffer commandBuffer)
-	{
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Skybox"]->GetPipeline());
-		
-		VkDeviceSize offsets[] = { 0 };
-
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mVertexBuffer, offsets);
-
-		if (mIndices.size() > 0)
-		{
-			vkCmdBindIndexBuffer(commandBuffer, mIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-			vkCmdBindDescriptorSets
-			(
-				commandBuffer, 
-				VK_PIPELINE_BIND_POINT_GRAPHICS, 
-				std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Skybox"]->GetPipelineLayout(), 
-				0, 
-				1, 
-				&mDescriptorSets[mRenderer->GetCurrentFrame()],
-				0, 
-				nullptr
-			);
-			vkCmdDrawIndexed(commandBuffer, (uint32_t)mIndices.size(), 1, 0, 0, 0);
-		}
+		//// model
+		//vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mVertexBuffer, nullptr);
+		//vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mVertexMemory, nullptr);
+		//
+		//if (mIndices.size() > 0)
+		//{
+		//	vkDestroyBuffer(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mIndexBuffer, nullptr);
+		//	vkFreeMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mIndexMemory, nullptr);
+		//}
+		//
+		//mIndices.clear();
+		//mVertices.clear();
 	}
 
 	void Skybox::CreateResources()
@@ -176,11 +194,11 @@ namespace Cosmos
 
 		// create descriptor pool and descriptor sets
 		{
-			std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			poolSizes[0].descriptorCount = 2;
-			poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[2].descriptorCount = 2;
+			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[1].descriptorCount = 2;
 
 			VkDescriptorPoolCreateInfo descPoolCI = {};
 			descPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

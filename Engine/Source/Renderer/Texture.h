@@ -73,19 +73,23 @@ namespace Cosmos
 	public:
 
 		// returns the texture width
-		inline uint32_t GetWidth() const { return mWidth; }
+		inline int32_t GetWidth() const { return mWidth; }
 
 		// returns the texture height
-		inline uint32_t GetHeight() const { return mHeight; }
+		inline int32_t GetHeight() const { return mHeight; }
 
 		// returns the mip levels
-		inline uint32_t GetMipLevels() const { return mMipLevels; }
+		inline int32_t GetMipLevels() const { return mMipLevels; }
+
+		// returns the channels used
+		inline int32_t GetChannels() const { return mChannels; }
 
 	protected:
 
-		uint32_t mWidth = 0;
-		uint32_t mHeight = 0;
-		uint32_t mMipLevels = 0;
+		int32_t mWidth = 0;
+		int32_t mHeight = 0;
+		int32_t mMipLevels = 1;
+		int32_t mChannels = 0;
 	};
 
 	class TextureCubemap
@@ -112,18 +116,22 @@ namespace Cosmos
 	public:
 
 		// returns the texture width
-		inline uint32_t GetWidth() const { return mWidth; }
+		inline int32_t GetWidth() const { return mWidth; }
 
 		// returns the texture height
-		inline uint32_t GetHeight() const { return mHeight; }
+		inline int32_t GetHeight() const { return mHeight; }
 
 		// returns the mip levels
-		inline uint32_t GetMipLevels() const { return mMipLevels; }
+		inline int32_t GetMipLevels() const { return mMipLevels; }
+
+		// returns the channels used
+		inline int32_t GetChannels() const { return mChannels; }
 
 	protected:
 
-		uint32_t mWidth = 0;
-		uint32_t mHeight = 0;
-		uint32_t mMipLevels = 0;
+		int32_t mWidth = 0;
+		int32_t mHeight = 0;
+		int32_t mMipLevels = 1;
+		int32_t mChannels = 0;
 	};
 }

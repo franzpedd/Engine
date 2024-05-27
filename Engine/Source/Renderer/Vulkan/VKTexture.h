@@ -44,8 +44,6 @@ namespace Cosmos
 		VkDeviceMemory mMemory = VK_NULL_HANDLE;
 		VkImageView mView = VK_NULL_HANDLE;
 		VkSampler mSampler = VK_NULL_HANDLE;
-
-		int32_t mChannels = 0;
 	};
 
 	class VKTextureCubemap : public TextureCubemap
@@ -81,7 +79,5 @@ namespace Cosmos
 		VkDeviceMemory mMemory = VK_NULL_HANDLE;
 		VkImageView mView = VK_NULL_HANDLE;
 		VkSampler mSampler = VK_NULL_HANDLE;
-
-		int32_t mChannels = 0;
 	};
 }

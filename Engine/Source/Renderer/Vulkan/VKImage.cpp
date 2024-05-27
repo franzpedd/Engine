@@ -6,13 +6,28 @@
 
 namespace Cosmos
 {
-	void CreateImage(std::shared_ptr<VKDevice> device, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t arrayLayers, VkSampleCountFlagBits samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& memory)
+	void CreateImage
+	(
+		std::shared_ptr<VKDevice> device, 
+		uint32_t width, 
+		uint32_t height, 
+		uint32_t mipLevels, 
+		uint32_t arrayLayers, 
+		VkSampleCountFlagBits samples, 
+		VkFormat format, 
+		VkImageTiling tiling, 
+		VkImageUsageFlags usage, 
+		VkMemoryPropertyFlags properties, 
+		VkImage& image, 
+		VkDeviceMemory& memory,
+		VkImageCreateFlags flags
+	)
 	{
 		// specify image
 		VkImageCreateInfo imageCI = {};
 		imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCI.pNext = nullptr;
-		imageCI.flags = 0;
+		imageCI.flags = flags;
 		imageCI.imageType = VK_IMAGE_TYPE_2D;
 		imageCI.extent.width = width;
 		imageCI.extent.height = height;
@@ -67,7 +82,7 @@ namespace Cosmos
 		return sampler;
 	}
 
-	void TransitionImageLayout(std::shared_ptr<VKDevice> device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+	void TransitionImageLayout(std::shared_ptr<VKDevice> device, VkCommandPool& cmdPool, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount)
 	{
 		VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(device, cmdPool);
 
@@ -82,7 +97,7 @@ namespace Cosmos
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = mipLevels;
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.layerCount = layerCount;
 
 		VkPipelineStageFlags sourceStage;
 		VkPipelineStageFlags destinationStage;
@@ -127,12 +142,20 @@ namespace Cosmos
 		EndSingleTimeCommand(device, cmdPool, cmdBuffer);
 	}
 
-	VkImageView CreateImageView(std::shared_ptr<VKDevice> device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevel, uint32_t layerCount)
+	VkImageView CreateImageView
+	(
+		std::shared_ptr<VKDevice> device, 
+		VkImage image, 
+		VkFormat format, 
+		VkImageAspectFlags aspectFlags, 
+		uint32_t mipLevel, 
+		uint32_t layerCount,
+		VkImageViewType viewType)
 	{
 		VkImageViewCreateInfo imageViewCI = {};
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		imageViewCI.image = image;
-		imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		imageViewCI.viewType = viewType;
 		imageViewCI.format = format;
 		imageViewCI.subresourceRange.aspectMask = aspectFlags;
 		imageViewCI.subresourceRange.baseMipLevel = 0;

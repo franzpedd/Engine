@@ -47,10 +47,13 @@ namespace Cosmos
 	public:
 
 		// updates model's logic
-		void OnUpdate(float deltaTime, glm::mat4& transform);
+		void OnUpdate(float deltaTime, glm::mat4 transform);
 		
 		// draws the model
 		void OnRender(VkCommandBuffer commandBuffer, bool bindPipeline = true);
+
+		// test
+		void OnRenderSkybox(VkCommandBuffer commandBuffer, VkPipelineLayout descLayout, VkDescriptorSet descSet);
 
 		// free used resources
 		void Destroy();

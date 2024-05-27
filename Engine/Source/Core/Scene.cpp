@@ -44,6 +44,9 @@ namespace Cosmos
 		{
 			auto [transformComponent, skyboxComponent] = skyboxsView.get<TransformComponent, SkyboxComponent>(ent);
 
+			if(skyboxComponent.skybox == nullptr)
+				continue;
+			
 			skyboxComponent.skybox->OnUpdate(timestep, transformComponent.GetTransform());
 		}
 
@@ -86,7 +89,7 @@ namespace Cosmos
 		{
 			auto& [skybox] = skyboxView.get<SkyboxComponent>(ent);
 
-			if (skybox == nullptr || !skybox->IsLoaded())
+			if (skybox == nullptr)
 				continue;
 
 			skybox->OnRender(commandBuffer);
@@ -183,6 +186,14 @@ namespace Cosmos
 			if (entity->GetComponent<ModelComponent>().model != nullptr)
 			{
 				entity->GetComponent<ModelComponent>().model->Destroy();
+			}
+		}
+
+		if (entity->HasComponent<SkyboxComponent>())
+		{
+			if(entity->GetComponent<SkyboxComponent>().skybox != nullptr)
+			{
+				entity->GetComponent<SkyboxComponent>().skybox->Destroy();
 			}
 		}
 

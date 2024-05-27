@@ -15,10 +15,7 @@ namespace Cosmos
 		Skybox(Shared<Renderer> renderer, Shared<Camera> camera);
 
 		// destructor
-		~Skybox();
-
-		// returns if the skybox was loaded
-		inline bool IsLoaded() { return mLoaded; }
+		~Skybox() = default;
 
 		// returns the paths array reference
 		inline std::array<std::string, 6> GetPathsRef() { return mPaths; }
@@ -29,10 +26,13 @@ namespace Cosmos
 		void LoadSkybox();
 
 		// updates skybox logic
-		void OnUpdate(float deltaTime, glm::mat4& transform);
+		void OnUpdate(float deltaTime, glm::mat4 transform);
 
 		// renders the skybox
 		void OnRender(VkCommandBuffer commandBuffer);
+
+		// free used resources
+		void Destroy();
 
 	private:
 
@@ -47,8 +47,9 @@ namespace Cosmos
 		Shared<Renderer> mRenderer;
 		Shared<Camera> mCamera;
 		Shared<TextureCubemap> mCubemap;
-		bool mLoaded = false;
 		std::array<std::string, 6> mPaths = {};
+
+		Shared<Model> mSkyboxModel;
 	
 		// camera's ubo
 		std::vector<VkBuffer> mUniformBuffers;
@@ -61,7 +62,7 @@ namespace Cosmos
 
 		// skybox model
 		std::vector<glm::vec3> mVertices = {};
-		std::vector<uint16_t> mIndices = {};
+		std::vector<uint32_t> mIndices = {};
 		VkBuffer mVertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory mVertexMemory = VK_NULL_HANDLE;
 		VkBuffer mIndexBuffer = VK_NULL_HANDLE;

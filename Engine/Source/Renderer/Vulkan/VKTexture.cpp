@@ -32,9 +32,9 @@ namespace Cosmos
 			mDevice,
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
 			(float)mMipLevels
 		);
 	}
@@ -51,10 +51,7 @@ namespace Cosmos
 
 	void VKTexture2D::LoadTexture()
 	{
-		int width = 0;
-		int height = 0;
-
-		stbi_uc* pixels = stbi_load(mPath, &width, &height, &mChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(mPath, &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
 
 		if (pixels == nullptr)
 		{
@@ -62,8 +59,6 @@ namespace Cosmos
 			return;
 		}
 		
-		mWidth = (uint32_t)width;
-		mHeight = (uint32_t)height;
 		mMipLevels = (uint32_t)(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
 		VkDeviceSize imgSize = (VkDeviceSize)(mWidth * mHeight * 4);
 
@@ -241,7 +236,8 @@ namespace Cosmos
 			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			mMipLevels,
-			6
+			6,
+			VK_IMAGE_VIEW_TYPE_CUBE
 		);
 
 		// sampler
@@ -250,9 +246,9 @@ namespace Cosmos
 			mDevice,
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
 			(float)mMipLevels
 		);
 	}
@@ -269,62 +265,52 @@ namespace Cosmos
 
 	void VKTextureCubemap::LoadTextures()
 	{
-		LOG_ASSERT(mPaths.size() != 6, "A Skybox must have 6 textures");
+		LOG_ASSERT(mPaths.size() == 6, "A Skybox must have 6 textures but currently have %d", mPaths.size());
 
-		VkDeviceSize layerSize;
 		VkDeviceSize imageSize;
+		VkDeviceSize layerSize;
+		uint8_t *data;
+        uint64_t memAddress;
+        stbi_uc* pixels;
 
-		VkBuffer stagingBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
-
-		void* data;
-		uint64_t memAddress;
-		int32_t width = 0;
-		int32_t height = 0;
-
-		for (uint8_t i = 0; i < mPaths.size(); i++)
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		
+		for(int8_t i = 0; i < 6; i++)
 		{
-			stbi_uc* pixels = stbi_load(mPaths[i].c_str(), &width, &height, &mChannels, STBI_rgb_alpha);
+			stbi_uc* pixels = stbi_load(mPaths[i].c_str(), &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
 
-			if (pixels == nullptr)
+			if(!pixels)
 			{
-				LOG_TO_TERMINAL(Logger::Severity::Assert, "Failed to load %s texture", mPaths[i]);
+				LOG_TO_TERMINAL(Logger::Severity::Assert, "Failed to load %s texture", mPaths[i].c_str());
 				return;
 			}
 
 			if (i == 0)
-			{
-				layerSize = width * height * mChannels;
-				imageSize = layerSize * mPaths.size();
+            {
+                layerSize = mWidth * mHeight * mChannels;
+                imageSize = layerSize * 6;
 
-				BufferCreate
+                BufferCreate
 				(
 					mDevice,
 					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					imageSize,
 					&stagingBuffer,
-					&stagingBufferMemory
+					&stagingMemory
 				);
 
-				vkMapMemory(mDevice->GetDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-				memAddress = reinterpret_cast<uint64_t>(data);
-			}
+                vkMapMemory(mDevice->GetDevice(), stagingMemory, 0, imageSize, 0, (void **)&data);
+                memAddress = reinterpret_cast<uint64_t>(data);
+            }
 
-			memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
-			stbi_image_free(pixels);
-			memAddress += layerSize;
-
-			if (i == 5)
-			{
-				vkUnmapMemory(mDevice->GetDevice(), stagingBufferMemory);
-			}
+			memcpy(reinterpret_cast<uint8_t*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
+            stbi_image_free(pixels);
+            memAddress += layerSize;
 		}
 
-		mWidth = (uint32_t)width;
-		mHeight = (uint32_t)height;
-		LOG_TO_TERMINAL(Logger::Warn, "Test mip levels for skybox");
-		//mMipLevels = (uint32_t)(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
+		vkUnmapMemory(mDevice->GetDevice(), stagingMemory);
 
 		// create image resource
 		CreateImage
@@ -334,14 +320,40 @@ namespace Cosmos
 			mHeight,
 			mMipLevels,
 			6,
-			(VkSampleCountFlagBits)mMSAA,
+			mMSAA,
 			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			mImage,
-			mMemory
+			mMemory,
+			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 		);
+
+		// Setup buffer copy regions for each face including all of its miplevels
+		std::vector<VkBufferImageCopy> regions = {};
+		size_t offset = 0;
+		for (uint32_t face = 0; face < 6; face++)
+		{
+			for (uint32_t level = 0; level < mMipLevels; level++)
+			{
+				// calculate offset into staging buffer for the current mip level and face
+				offset = mWidth * mHeight * mChannels * face * sizeof(VkDeviceSize);
+
+				VkBufferImageCopy bufferCopyRegion = {};
+				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				bufferCopyRegion.imageSubresource.mipLevel = level;
+				bufferCopyRegion.imageSubresource.baseArrayLayer = face;
+				bufferCopyRegion.imageSubresource.layerCount = 1;
+				bufferCopyRegion.imageExtent.width = mWidth;
+				bufferCopyRegion.imageExtent.height = mHeight;
+				bufferCopyRegion.imageExtent.depth = 1;
+				bufferCopyRegion.bufferOffset = offset;
+				bufferCopyRegion.bufferRowLength = 0;
+				bufferCopyRegion.bufferImageHeight = 0;
+				regions.push_back(bufferCopyRegion);
+			}
+		}
 
 		// transition layout to transfer data
 		TransitionImageLayout
@@ -351,38 +363,28 @@ namespace Cosmos
 			mImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			mMipLevels
+			mMipLevels,
+			6
 		);
 
 		// copy buffer to image
 		{
 			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool);
 
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 6;
-			region.imageOffset.x = 0;
-			region.imageOffset.y = 0;
-			region.imageOffset.z = 0;
-			region.imageExtent.width = mWidth;
-			region.imageExtent.height = mHeight;
-			region.imageExtent.depth = 1;
-			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+			vkCmdCopyBufferToImage
+			(
+				cmdBuffer, 
+				stagingBuffer, 
+				mImage, 
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+				(uint32_t)regions.size(),
+				regions.data()
+			);
 
 			EndSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool, cmdBuffer);
 		}
 
-		// free staging buffer
-		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
-		vkFreeMemory(mDevice->GetDevice(), stagingBufferMemory, nullptr);
-
-		// transition layout to shader read only
-		LOG_TO_TERMINAL(Logger::Warn, "Test this transition and if it works, use on Texture2D");
+		// transition layout to transfer data
 		TransitionImageLayout
 		(
 			mDevice,
@@ -390,7 +392,12 @@ namespace Cosmos
 			mImage,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			mMipLevels
+			mMipLevels,
+			6
 		);
+
+		// free staging buffer
+		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingMemory, nullptr);
 	}
 }

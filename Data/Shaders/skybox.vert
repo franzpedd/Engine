@@ -14,9 +14,18 @@ layout (location = 0) out vec3 out_uvw;
 
 void main() 
 {
-	// set vertex position on world
-	//gl_Position = ubo.proj * ubo.view * ubo.model * vec4(in_position, 1.0);				// see the cubemap on world
-	gl_Position = ubo.proj * ubo.view * mat4(mat3(ubo.view)) * vec4(in_position, 1.0);		// project the cubemap into infinity
+	// doesnt move
+	// convert cubemap coordinates into vulkan coordinate space
+	//out_uvw = in_position;
+	//out_uvw.xy *= -1.0f;
+	//
+	// remove translation from view matrix
+	//mat4 viewMat = mat4(mat3(ubo.model));
+	//gl_Position = ubo.proj * viewMat * vec4(in_position.xyz, 1.0);
 
-	out_uvw = in_position;
+	// moves
+	vec3 position = mat3(ubo.model * ubo.view) * in_position;
+  	gl_Position = (ubo.proj * vec4( position, 0.0 )).xyzz;
+  	out_uvw = in_position;
+	
 }

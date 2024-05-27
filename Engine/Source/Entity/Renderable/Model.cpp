@@ -25,7 +25,7 @@ namespace Cosmos
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
 	}
 
-	void Model::OnUpdate(float deltaTime, glm::mat4& transform)
+	void Model::OnUpdate(float deltaTime, glm::mat4 transform)
 	{
 		if (!mLoaded) return;
 
@@ -45,6 +45,14 @@ namespace Cosmos
 		for (auto& mesh : mMeshes)
 		{
 			mesh.Draw(commandBuffer, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipelineLayout(), mDescriptorSets[mRenderer->GetCurrentFrame()]);
+		}
+	}
+
+	void Model::OnRenderSkybox(VkCommandBuffer commandBuffer, VkPipelineLayout descLayout, VkDescriptorSet descSet)
+	{
+		for (auto& mesh : mMeshes)
+		{
+			mesh.Draw(commandBuffer, descLayout, descSet);
 		}
 	}
 

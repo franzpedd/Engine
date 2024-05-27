@@ -72,7 +72,7 @@ namespace Cosmos
         mSpecification.DSSCI.flags = 0;
         mSpecification.DSSCI.depthTestEnable = VK_TRUE;
         mSpecification.DSSCI.depthWriteEnable = VK_TRUE;
-        mSpecification.DSSCI.depthCompareOp = VK_COMPARE_OP_LESS;
+        mSpecification.DSSCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         mSpecification.DSSCI.back.compareOp = VK_COMPARE_OP_ALWAYS;
         // color blend
         mSpecification.CBAS.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
