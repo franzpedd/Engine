@@ -16,6 +16,7 @@ namespace Cosmos
 {
 	// forward declarations
 	class Entity;
+	class Skybox;
 
 	class Scene
 	{
@@ -45,9 +46,6 @@ namespace Cosmos
 
 		// event handling
 		void OnEvent(Shared<Event> event);
-
-		// clears the scene
-		void Clear();
 
 	public:
 
@@ -80,5 +78,7 @@ namespace Cosmos
 		Shared<Camera> mCamera;
 		entt::registry mRegistry;
 		std::unordered_map<std::string, Entity> mEntityMap;
+
+		Shared<Skybox> mSkybox;
 	};
 }

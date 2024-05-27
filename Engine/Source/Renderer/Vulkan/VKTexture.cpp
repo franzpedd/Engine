@@ -32,9 +32,9 @@ namespace Cosmos
 			mDevice,
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			(float)mMipLevels
 		);
 	}
@@ -51,7 +51,8 @@ namespace Cosmos
 
 	void VKTexture2D::LoadTexture()
 	{
-		stbi_uc* pixels = stbi_load(mPath, &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
+		int32_t channels;
+		stbi_uc* pixels = stbi_load(mPath, &mWidth, &mHeight, &channels, STBI_rgb_alpha);
 
 		if (pixels == nullptr)
 		{
@@ -60,7 +61,7 @@ namespace Cosmos
 		}
 		
 		mMipLevels = (uint32_t)(std::floor(std::log2(std::max(mWidth, mHeight)))) + 1;
-		VkDeviceSize imgSize = (VkDeviceSize)(mWidth * mHeight * 4);
+		VkDeviceSize imgSize = (VkDeviceSize)(mWidth * mHeight * 4); // enforce 4 channels
 
 		// create staging buffer for image
 		VkBuffer stagingBuffer;
@@ -158,7 +159,7 @@ namespace Cosmos
 		int32_t mipWidth = mWidth;
 		int32_t mipHeight = mHeight;
 
-		for (uint32_t i = 1; i < mMipLevels; i++)
+		for (int32_t i = 1; i < mMipLevels; i++)
 		{
 			barrier.subresourceRange.baseMipLevel = i - 1;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -246,9 +247,9 @@ namespace Cosmos
 			mDevice,
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			(float)mMipLevels
 		);
 	}
@@ -265,52 +266,57 @@ namespace Cosmos
 
 	void VKTextureCubemap::LoadTextures()
 	{
-		LOG_ASSERT(mPaths.size() == 6, "A Skybox must have 6 textures but currently have %d", mPaths.size());
+		LOG_ASSERT(mPaths.size() == 6, "A Skybox must have 6 textures");
 
-		VkDeviceSize imageSize;
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+
 		VkDeviceSize layerSize;
-		uint8_t *data;
-        uint64_t memAddress;
-        stbi_uc* pixels;
+		VkDeviceSize imageSize;
+		int32_t channels;
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingMemory;
-		
-		for(int8_t i = 0; i < 6; i++)
+		void* data;
+		uint64_t memAddress;
+
+		for (uint8_t i = 0; i < mPaths.size(); i++)
 		{
-			stbi_uc* pixels = stbi_load(mPaths[i].c_str(), &mWidth, &mHeight, &mChannels, STBI_rgb_alpha);
+			stbi_uc* pixels = stbi_load(mPaths[i].c_str(), &mWidth, &mHeight, &channels, STBI_rgb_alpha);
 
-			if(!pixels)
+			if (pixels == nullptr)
 			{
-				LOG_TO_TERMINAL(Logger::Severity::Assert, "Failed to load %s texture", mPaths[i].c_str());
+				LOG_TO_TERMINAL(Logger::Severity::Assert, "Failed to load %s texture", mPaths[i]);
 				return;
 			}
 
 			if (i == 0)
-            {
-                layerSize = mWidth * mHeight * mChannels;
-                imageSize = layerSize * 6;
+			{
+				// this 4 should be mChannels, however RGBA is widely supported on GPU as RGB-only is not
+				layerSize = mWidth * mHeight * 4;
+				imageSize = layerSize * mPaths.size();
 
-                BufferCreate
+				BufferCreate
 				(
 					mDevice,
 					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					imageSize,
 					&stagingBuffer,
-					&stagingMemory
+					&stagingBufferMemory
 				);
 
-                vkMapMemory(mDevice->GetDevice(), stagingMemory, 0, imageSize, 0, (void **)&data);
-                memAddress = reinterpret_cast<uint64_t>(data);
-            }
+				vkMapMemory(mDevice->GetDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+				memAddress = reinterpret_cast<uint64_t>(data);
+			}
 
 			memcpy(reinterpret_cast<uint8_t*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
-            stbi_image_free(pixels);
-            memAddress += layerSize;
-		}
+			stbi_image_free(pixels);
+			memAddress += layerSize;
 
-		vkUnmapMemory(mDevice->GetDevice(), stagingMemory);
+			if (i == 5)
+			{
+				vkUnmapMemory(mDevice->GetDevice(), stagingBufferMemory);
+			}
+		}
 
 		// create image resource
 		CreateImage
@@ -320,7 +326,7 @@ namespace Cosmos
 			mHeight,
 			mMipLevels,
 			6,
-			mMSAA,
+			(VkSampleCountFlagBits)mMSAA,
 			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -329,31 +335,6 @@ namespace Cosmos
 			mMemory,
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 		);
-
-		// Setup buffer copy regions for each face including all of its miplevels
-		std::vector<VkBufferImageCopy> regions = {};
-		size_t offset = 0;
-		for (uint32_t face = 0; face < 6; face++)
-		{
-			for (uint32_t level = 0; level < mMipLevels; level++)
-			{
-				// calculate offset into staging buffer for the current mip level and face
-				offset = mWidth * mHeight * mChannels * face * sizeof(VkDeviceSize);
-
-				VkBufferImageCopy bufferCopyRegion = {};
-				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				bufferCopyRegion.imageSubresource.mipLevel = level;
-				bufferCopyRegion.imageSubresource.baseArrayLayer = face;
-				bufferCopyRegion.imageSubresource.layerCount = 1;
-				bufferCopyRegion.imageExtent.width = mWidth;
-				bufferCopyRegion.imageExtent.height = mHeight;
-				bufferCopyRegion.imageExtent.depth = 1;
-				bufferCopyRegion.bufferOffset = offset;
-				bufferCopyRegion.bufferRowLength = 0;
-				bufferCopyRegion.bufferImageHeight = 0;
-				regions.push_back(bufferCopyRegion);
-			}
-		}
 
 		// transition layout to transfer data
 		TransitionImageLayout
@@ -364,27 +345,35 @@ namespace Cosmos
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			mMipLevels,
-			6
+			(uint32_t)mPaths.size()
 		);
+
+		LOG_TO_TERMINAL(Logger::Warn, "Test with copy regions");
 
 		// copy buffer to image
 		{
 			VkCommandBuffer cmdBuffer = BeginSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool);
 
-			vkCmdCopyBufferToImage
-			(
-				cmdBuffer, 
-				stagingBuffer, 
-				mImage, 
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				(uint32_t)regions.size(),
-				regions.data()
-			);
+			VkBufferImageCopy region = {};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 6;
+			region.imageOffset.x = 0;
+			region.imageOffset.y = 0;
+			region.imageOffset.z = 0;
+			region.imageExtent.width = mWidth;
+			region.imageExtent.height = mHeight;
+			region.imageExtent.depth = 1;
+			vkCmdCopyBufferToImage(cmdBuffer, stagingBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 			EndSingleTimeCommand(mDevice, VKCommander::GetInstance()->GetMainRef()->commandPool, cmdBuffer);
 		}
 
-		// transition layout to transfer data
+		// transition layout to shader read only
 		TransitionImageLayout
 		(
 			mDevice,
@@ -393,11 +382,11 @@ namespace Cosmos
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			mMipLevels,
-			6
+			(uint32_t)mPaths.size()
 		);
 
 		// free staging buffer
 		vkDestroyBuffer(mDevice->GetDevice(), stagingBuffer, nullptr);
-		vkFreeMemory(mDevice->GetDevice(), stagingMemory, nullptr);
+		vkFreeMemory(mDevice->GetDevice(), stagingBufferMemory, nullptr);
 	}
 }

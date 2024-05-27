@@ -11,10 +11,7 @@
 #include "Renderer/Vulkan/VKRenderer.h"
 #include "Util/FileSystem.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/cimport.h>
+#include "wrapper_assimp.h"
 
 namespace Cosmos
 {
@@ -25,11 +22,11 @@ namespace Cosmos
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
 	}
 
-	void Model::OnUpdate(float deltaTime, glm::mat4 transform)
+	void Model::OnUpdate(float deltaTime, glm::mat4& transform)
 	{
 		if (!mLoaded) return;
 
-		UniformBufferObject ubo = {};
+		ModelViewProjection_BufferObject ubo = {};
 		ubo.model = transform;
 		ubo.view = mCamera->GetViewRef();
 		ubo.proj = mCamera->GetProjectionRef();
@@ -37,22 +34,13 @@ namespace Cosmos
 		memcpy(mUniformBuffersMapped[mRenderer->GetCurrentFrame()], &ubo, sizeof(ubo));
 	}
 	
-	void Model::OnRender(VkCommandBuffer commandBuffer, bool bindPipeline)
+	void Model::OnRender(VkCommandBuffer commandBuffer)
 	{
-		if(bindPipeline)
-			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipeline());
 
 		for (auto& mesh : mMeshes)
 		{
 			mesh.Draw(commandBuffer, std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetPipelinesRef()["Model"]->GetPipelineLayout(), mDescriptorSets[mRenderer->GetCurrentFrame()]);
-		}
-	}
-
-	void Model::OnRenderSkybox(VkCommandBuffer commandBuffer, VkPipelineLayout descLayout, VkDescriptorSet descSet)
-	{
-		for (auto& mesh : mMeshes)
-		{
-			mesh.Draw(commandBuffer, descLayout, descSet);
 		}
 	}
 
@@ -205,12 +193,12 @@ namespace Cosmos
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-					sizeof(UniformBufferObject),
+					sizeof(ModelViewProjection_BufferObject),
 					&mUniformBuffers[i],
 					&mUniformBuffersMemory[i]
 				);
 
-				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(ModelViewProjection_BufferObject), 0, &mUniformBuffersMapped[i]);
 			
 				// light's ubo
 				BufferCreate
@@ -218,12 +206,12 @@ namespace Cosmos
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-					sizeof(LightBufferObject),
+					sizeof(Light_BufferObject),
 					&mLightBuffers[i],
 					&mLightBuffersMemory[i]
 				);
 
-				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mLightBuffersMemory[i], 0, sizeof(LightBufferObject), 0, &mLightBuffersMapped[i]);
+				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mLightBuffersMemory[i], 0, sizeof(Light_BufferObject), 0, &mLightBuffersMapped[i]);
 
 			}
 		}
@@ -279,7 +267,7 @@ namespace Cosmos
 			VkDescriptorBufferInfo cameraUBOInfo = {};
 			cameraUBOInfo.buffer = mUniformBuffers[i];
 			cameraUBOInfo.offset = 0;
-			cameraUBOInfo.range = sizeof(UniformBufferObject);
+			cameraUBOInfo.range = sizeof(ModelViewProjection_BufferObject);
 
 			VkWriteDescriptorSet cameraUBODesc = {};
 			cameraUBODesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -296,7 +284,7 @@ namespace Cosmos
 			VkDescriptorBufferInfo lightUBOInfo = {};
 			lightUBOInfo.buffer = mLightBuffers[i];
 			lightUBOInfo.offset = 0;
-			lightUBOInfo.range = sizeof(LightBufferObject);
+			lightUBOInfo.range = sizeof(Light_BufferObject);
 
 			VkWriteDescriptorSet lightUBODesc = {};
 			lightUBODesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

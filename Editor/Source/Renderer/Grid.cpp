@@ -45,7 +45,7 @@ namespace Cosmos
 
 	void Grid::OnUpdate()
 	{
-		UniformBufferObject ubo = {};
+		ModelViewProjection_BufferObject ubo = {};
 		ubo.model = glm::mat4(1.0f);
 		ubo.view = Application::GetInstance()->GetCamera()->GetViewRef();
 		ubo.proj = Application::GetInstance()->GetCamera()->GetProjectionRef();
@@ -128,12 +128,12 @@ namespace Cosmos
 					std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice(),
 					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-					sizeof(UniformBufferObject),
+					sizeof(ModelViewProjection_BufferObject),
 					&mUniformBuffers[i],
 					&mUniformBuffersMemory[i]
 				);
 
-				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(UniformBufferObject), 0, &mUniformBuffersMapped[i]);
+				vkMapMemory(std::dynamic_pointer_cast<VKRenderer>(mRenderer)->GetDevice()->GetDevice(), mUniformBuffersMemory[i], 0, sizeof(ModelViewProjection_BufferObject), 0, &mUniformBuffersMapped[i]);
 			}
 		}
 
@@ -166,7 +166,7 @@ namespace Cosmos
 				VkDescriptorBufferInfo bufferInfo{};
 				bufferInfo.buffer = mUniformBuffers[i];
 				bufferInfo.offset = 0;
-				bufferInfo.range = sizeof(UniformBufferObject);
+				bufferInfo.range = sizeof(ModelViewProjection_BufferObject);
 				
 				VkWriteDescriptorSet descriptorWrite{};
 				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

@@ -81,15 +81,11 @@ namespace Cosmos
 		// returns the mip levels
 		inline int32_t GetMipLevels() const { return mMipLevels; }
 
-		// returns the channels used
-		inline int32_t GetChannels() const { return mChannels; }
-
 	protected:
 
 		int32_t mWidth = 0;
 		int32_t mHeight = 0;
 		int32_t mMipLevels = 1;
-		int32_t mChannels = 0;
 	};
 
 	class TextureCubemap
@@ -124,14 +120,10 @@ namespace Cosmos
 		// returns the mip levels
 		inline int32_t GetMipLevels() const { return mMipLevels; }
 
-		// returns the channels used
-		inline int32_t GetChannels() const { return mChannels; }
-
 	protected:
 
 		int32_t mWidth = 0;
 		int32_t mHeight = 0;
 		int32_t mMipLevels = 1;
-		int32_t mChannels = 0;
 	};
 }

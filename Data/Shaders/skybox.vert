@@ -14,18 +14,10 @@ layout (location = 0) out vec3 out_uvw;
 
 void main() 
 {
-	// doesnt move
-	// convert cubemap coordinates into vulkan coordinate space
-	//out_uvw = in_position;
-	//out_uvw.xy *= -1.0f;
-	//
-	// remove translation from view matrix
-	//mat4 viewMat = mat4(mat3(ubo.model));
-	//gl_Position = ubo.proj * viewMat * vec4(in_position.xyz, 1.0);
-
-	// moves
+    // calculate the fixed correct position
 	vec3 position = mat3(ubo.model * ubo.view) * in_position;
   	gl_Position = (ubo.proj * vec4( position, 0.0 )).xyzz;
+
+    // pass world coordinate to fragment shader
   	out_uvw = in_position;
-	
 }

@@ -44,6 +44,9 @@ namespace Cosmos
 		// handles selected menu option
 		void HandleMenuAction();
 
+		// draws teh scene settings
+		void SceneSettingsWindow();
+
 	private:
 
 		std::unique_ptr<Project>& mProject;
@@ -53,5 +56,7 @@ namespace Cosmos
 		bool mCheckboxGrid = true;
 		Action mMenuAction = Action::None;
 		bool mCancelAction = false;
+
+		bool mDisplaySceneSettings = true;
 	};
 }

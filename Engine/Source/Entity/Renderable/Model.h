@@ -35,6 +35,9 @@ namespace Cosmos
 		// returns the model's albedo
 		inline std::string GetAlbedoPath() const { return mAlbedoPath; }
 
+		// returns a reference to the model meshes
+		inline std::vector<Mesh>& GetMeshesRef() { return mMeshes; }
+
 		// returns if model's albedo is not the default dev texture
 		inline bool IsCustomAlbedoLoaded() const { return mLoadedAlbedo;  }
 
@@ -47,13 +50,10 @@ namespace Cosmos
 	public:
 
 		// updates model's logic
-		void OnUpdate(float deltaTime, glm::mat4 transform);
+		void OnUpdate(float deltaTime, glm::mat4& transform);
 		
 		// draws the model
-		void OnRender(VkCommandBuffer commandBuffer, bool bindPipeline = true);
-
-		// test
-		void OnRenderSkybox(VkCommandBuffer commandBuffer, VkPipelineLayout descLayout, VkDescriptorSet descSet);
+		void OnRender(VkCommandBuffer commandBuffer);
 
 		// free used resources
 		void Destroy();

@@ -4,8 +4,8 @@
 
 namespace Cosmos
 {
-	// camera buffer
-	struct UniformBufferObject
+	// camera's model view projection
+	struct ModelViewProjection_BufferObject
 	{
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
@@ -13,7 +13,7 @@ namespace Cosmos
 	};
 
 	// light buffer
-	struct LightBufferObject
+	struct Light_BufferObject
 	{
 		alignas(16) glm::vec4 light = { 1.0f, 1.0f, 1.0f, 1.0f }; // w is intensity
 		alignas(16) glm::vec4 ambient = { 1.0f, 1.0f, 1.0f, 0.02f }; // w is intensity

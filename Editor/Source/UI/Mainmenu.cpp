@@ -19,6 +19,7 @@ namespace Cosmos
 
 		HandleMenuAction();
 
+		// scene info
 		ImGuiWindowFlags flags = {};
 
 		auto camera = Application::GetInstance()->GetCamera();
@@ -30,6 +31,9 @@ namespace Cosmos
 		ImGui::Text(ICON_FA_CAMERA " Camera Rot: %.2f %.2f %.2f", camera->GetRotationRef().x, camera->GetRotationRef().y, camera->GetRotationRef().z);
 
 		ImGui::End();
+
+		// scene settings
+		SceneSettingsWindow();
 	}
 
 	void Mainmenu::DisplayMainMenu()
@@ -52,6 +56,16 @@ namespace Cosmos
 			if (CheckboxSliderEx("Draw Grid", &mCheckboxGrid))
 			{
 				mGrid->ToogleOnOff();
+			}
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu(ICON_FA_COG " Settings"))
+		{
+			if (ImGui::MenuItem("Scene Settings", nullptr))
+			{
+				mDisplaySceneSettings = true;
 			}
 
 			ImGui::EndMenu();
@@ -87,6 +101,37 @@ namespace Cosmos
 				mProject->SaveAs();
 				break;
 			}
+		}
+	}
+
+	void Mainmenu::SceneSettingsWindow()
+	{
+		if (!mDisplaySceneSettings)
+			return;
+
+		ImGuiWindowFlags flags = {};
+		if (!ImGui::Begin("Scene Settings", &mDisplaySceneSettings, flags))
+		{ 
+			ImGui::End();
+		}
+
+		else
+		{
+			ImGui::SeparatorText("Skybox configuration");
+
+			ImGui::Text("Front");
+
+			ImGui::Text("Back");
+
+			ImGui::Text("Left");
+
+			ImGui::Text("Right");
+
+			ImGui::Text("Top");
+
+			ImGui::Text("Bottom");
+
+			ImGui::End();
 		}
 	}
 }

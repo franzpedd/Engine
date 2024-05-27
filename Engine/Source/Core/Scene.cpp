@@ -2,10 +2,13 @@
 #include "Scene.h"
 
 #include "Entity/Entity.h"
+
 #include "Entity/Components/Base.h"
 #include "Entity/Components/Renderable.h"
 #include "Entity/Components/Scriptable.h"
 #include "Entity/Components/Sound.h"
+
+#include "Entity/Unique/Skybox.h"
 
 #include "Renderer/Vulkan/VKCommander.h"
 #include "UI/GUI.h"
@@ -20,6 +23,8 @@ namespace Cosmos
 		Logger() << "Creating Scene";
 
 		mEntityMap = {};
+
+		mSkybox = CreateShared<Skybox>(mRenderer, mCamera);
 	}
 
 	Scene::~Scene()
@@ -38,18 +43,6 @@ namespace Cosmos
 
 	void Scene::OnUpdate(float timestep)
 	{
-		// update skyboxes
-		auto skyboxsView = mRegistry.view<TransformComponent, SkyboxComponent>();
-		for (auto ent : skyboxsView)
-		{
-			auto [transformComponent, skyboxComponent] = skyboxsView.get<TransformComponent, SkyboxComponent>(ent);
-
-			if(skyboxComponent.skybox == nullptr)
-				continue;
-			
-			skyboxComponent.skybox->OnUpdate(timestep, transformComponent.GetTransform());
-		}
-
 		// update models
 		auto modelsView = mRegistry.view<TransformComponent, ModelComponent>();
 		for (auto ent : modelsView)
@@ -73,6 +66,9 @@ namespace Cosmos
 		
 			quadComponent.quad->OnUpdate(timestep, transformComponent.GetTransform());
 		}
+
+		// update skybox
+		mSkybox->OnUpdate(timestep);
 	}
 
 	void Scene::OnRender()
@@ -82,18 +78,6 @@ namespace Cosmos
 		uint32_t currentFrame = mRenderer->GetCurrentFrame();
 		VkDeviceSize offsets[] = { 0 };
 		VkCommandBuffer commandBuffer = VKCommander::GetInstance()->GetMainRef()->commandBuffers[currentFrame];
-
-		// draw skyboxes
-		auto skyboxView = mRegistry.view<SkyboxComponent>();
-		for (auto ent : skyboxView)
-		{
-			auto& [skybox] = skyboxView.get<SkyboxComponent>(ent);
-
-			if (skybox == nullptr)
-				continue;
-
-			skybox->OnRender(commandBuffer);
-		}
 
 		// draw models
 		auto modelsView = mRegistry.view<ModelComponent>();
@@ -118,6 +102,9 @@ namespace Cosmos
 		
 			quad->OnRender(commandBuffer);
 		}
+
+		// draw skybox
+		mSkybox->OnRender(commandBuffer);
 	}
 
 	void Scene::OnEvent(Shared<Event> event)
@@ -186,14 +173,6 @@ namespace Cosmos
 			if (entity->GetComponent<ModelComponent>().model != nullptr)
 			{
 				entity->GetComponent<ModelComponent>().model->Destroy();
-			}
-		}
-
-		if (entity->HasComponent<SkyboxComponent>())
-		{
-			if(entity->GetComponent<SkyboxComponent>().skybox != nullptr)
-			{
-				entity->GetComponent<SkyboxComponent>().skybox->Destroy();
 			}
 		}
 

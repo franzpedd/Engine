@@ -5,7 +5,7 @@
 
 namespace Cosmos
 {
-   VKPipeline::VKPipeline(Shared<VKDevice> device, VKPipelineSpecification specification)
+    VKPipeline::VKPipeline(Shared<VKDevice> device, VKPipelineSpecification specification)
         : mDevice(device), mSpecification(specification)
     {
         // descriptor set and pipeline layout
@@ -15,7 +15,7 @@ namespace Cosmos
         descSetLayoutCI.flags = 0;
         descSetLayoutCI.bindingCount = (uint32_t)mSpecification.bindings.size();
         descSetLayoutCI.pBindings = mSpecification.bindings.data();
-		VK_ASSERT(vkCreateDescriptorSetLayout(device->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
+        VK_ASSERT(vkCreateDescriptorSetLayout(device->GetDevice(), &descSetLayoutCI, nullptr, &mDescriptorSetLayout), "Failed to create descriptor set layout");
 
         VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
         pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -23,10 +23,10 @@ namespace Cosmos
         pipelineLayoutCI.flags = 0;
         pipelineLayoutCI.setLayoutCount = 1;
         pipelineLayoutCI.pSetLayouts = &mDescriptorSetLayout;
-		VK_ASSERT(vkCreatePipelineLayout(mDevice->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
-		
+        VK_ASSERT(vkCreatePipelineLayout(mDevice->GetDevice(), &pipelineLayoutCI, nullptr, &mPipelineLayout), "Failed to create pipeline layout");
+
         // shader stages
-        mSpecification.shaderStagesCI = 
+        mSpecification.shaderStagesCI =
         {
             mSpecification.vertexShader->GetShaderStageCreateInfoRef(),
             mSpecification.fragmentShader->GetShaderStageCreateInfoRef()

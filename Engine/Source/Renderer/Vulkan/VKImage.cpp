@@ -8,17 +8,17 @@ namespace Cosmos
 {
 	void CreateImage
 	(
-		std::shared_ptr<VKDevice> device, 
-		uint32_t width, 
-		uint32_t height, 
-		uint32_t mipLevels, 
-		uint32_t arrayLayers, 
-		VkSampleCountFlagBits samples, 
-		VkFormat format, 
-		VkImageTiling tiling, 
-		VkImageUsageFlags usage, 
-		VkMemoryPropertyFlags properties, 
-		VkImage& image, 
+		std::shared_ptr<VKDevice> device,
+		uint32_t width,
+		uint32_t height,
+		uint32_t mipLevels,
+		uint32_t arrayLayers,
+		VkSampleCountFlagBits samples,
+		VkFormat format,
+		VkImageTiling tiling,
+		VkImageUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkImage& image,
 		VkDeviceMemory& memory,
 		VkImageCreateFlags flags
 	)
@@ -144,11 +144,11 @@ namespace Cosmos
 
 	VkImageView CreateImageView
 	(
-		std::shared_ptr<VKDevice> device, 
-		VkImage image, 
-		VkFormat format, 
-		VkImageAspectFlags aspectFlags, 
-		uint32_t mipLevel, 
+		std::shared_ptr<VKDevice> device,
+		VkImage image,
+		VkFormat format,
+		VkImageAspectFlags aspectFlags,
+		uint32_t mipLevel,
 		uint32_t layerCount,
 		VkImageViewType viewType)
 	{

@@ -39,14 +39,17 @@ namespace Cosmos
 			{
 				ImGui::Text(ICON_FA_PAINT_BRUSH " Edit Entity");
 
-				float itemSize = 35.0f;
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - itemSize);
+				float itemSize = 25.0f;
+				float itemCount = 1.0f;
+
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (itemSize * itemCount));
 
 				if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE))
 				{
 					Entity* ent = Application::GetInstance()->GetActiveScene()->CreateEntity();
 				}
 			}
+
 			ImGui::EndGroup();
 		}
 
@@ -94,7 +97,6 @@ namespace Cosmos
 			{
 				DisplayAddComponentEntry<TransformComponent>("Transform");
 				DisplayAddComponentEntry<ModelComponent>("Model");
-				DisplayAddComponentEntry<SkyboxComponent>("Skybox");
 				DisplayAddComponentEntry<SoundSourceComponent>("Sound Source");
 
 				ImGui::EndMenu();
@@ -272,160 +274,6 @@ namespace Cosmos
 					
 						ImGui::EndDragDropTarget();
 					}
-				}
-			});
-
-		DrawComponent<SkyboxComponent>("Skybox", mSelectedEntity, [&](SkyboxComponent& component)
-			{
-				if (!component.skybox) component.skybox = CreateShared<Skybox>(mRenderer, mCamera);
-
-				// front
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[0];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-					
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " front-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[0] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				// back
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[1];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " back-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[1] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				// left
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[2];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " left-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[2] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				// right
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[3];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " right-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[3] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				// top
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[4];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " top-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[4] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				// bottom
-				{
-					ImGui::BeginGroup();
-
-					auto path = component.skybox->GetPathsRef()[5];
-					char buffer[ENTITY_NAME_MAX_CHARS];
-					memset(buffer, 0, sizeof(buffer));
-					std::strncpy(buffer, path.c_str(), sizeof(buffer));
-
-					ImGui::InputTextWithHint("", ICON_FA_PAINT_BRUSH " bottom-face", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
-					ImGui::EndGroup();
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
-						{
-							std::filesystem::path path = (const char*)payload->Data;
-							component.skybox->GetPathsRef()[5] = path.string();
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				if (ImGui::Button("Build"))
-				{
-
 				}
 			});
 
