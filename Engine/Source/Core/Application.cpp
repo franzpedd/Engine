@@ -8,6 +8,7 @@
 namespace Cosmos
 {
 	Application* Application::sApplication = nullptr;
+	Shared<Renderer> Application::mRenderer = nullptr;
 
 	Application::Application()
 	{
@@ -68,10 +69,9 @@ namespace Cosmos
 
 	void Application::CreateNewScene()
 	{
-		if (mScene)
-			delete mScene;
+		if (mScene) delete mScene;
 
-		// create main scene
+		// create new main scene
 		mScene = new Scene(mRenderer, mCamera);
 	}
 }

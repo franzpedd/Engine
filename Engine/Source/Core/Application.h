@@ -23,11 +23,13 @@ namespace Cosmos
 		// returns the singleton
 		static inline Application* GetInstance() { return sApplication; }
 
+		// returns the renderer
+		static inline Shared<Renderer> GetRenderer() { return mRenderer; }
+
+	public:
+
 		// returns the main window
 		inline Shared<Window> GetWindow() { return mWindow; }
-
-		// returns the renderer
-		inline Shared<Renderer> GetRenderer() { return mRenderer; }
 
 		// returns the main camera
 		inline Shared<Camera> GetCamera() { return mCamera; }
@@ -56,7 +58,7 @@ namespace Cosmos
 
 		static Application* sApplication;
 		Shared<Window> mWindow;
-		Shared<Renderer> mRenderer;
+		static Shared<Renderer> mRenderer;
 		Shared<GUI> mUI;
 		Shared<FramesPerSecond> mFpsSystem;
 		Shared<Camera> mCamera;

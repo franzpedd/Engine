@@ -136,7 +136,7 @@ namespace Cosmos
 		translateMat = glm::translate(glm::mat4(1.0f), translation);
 		scaleMat = glm::scale(glm::mat4(1.0f), scale);
 		
-		if (mType == Type::EDITOR_FLY) mView = scaleMat * rotMat * translateMat;
+		if (mType == Type::FREE_LOOK) mView = scaleMat * rotMat * translateMat;
 		else mView = scaleMat * translateMat * rotMat;
 	}
 

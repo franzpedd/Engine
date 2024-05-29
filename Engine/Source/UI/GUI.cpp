@@ -730,10 +730,16 @@ namespace Cosmos::UI
 	{
 		bool res = false;
 		const std::vector<const char*> validFormats = { ".png", ".jpg" };
-		ImGui::ImageButton(text, descriptor, size);
-		
 		ImVec2 currentPos = ImGui::GetCursorPos();
-		
+
+		ImGui::BeginGroup();
+
+		ImGui::ImageButton(text, descriptor, size);
+
+		currentPos = ImGui::GetCursorPos();
+		ImGui::SetCursorPosX({ currentPos.x + 5.0f });
+
+		ImGui::Text(text);
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -752,6 +758,8 @@ namespace Cosmos::UI
 
 			ImGui::EndDragDropTarget();
 		}
+
+		ImGui::EndGroup();
 
 		return res;
 	} 

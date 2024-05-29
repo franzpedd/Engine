@@ -15,7 +15,7 @@ namespace Cosmos
 		enum Type
 		{
 			LOOK_AT = 0,
-			EDITOR_FLY
+			FREE_LOOK
 		};
 
 	public:
@@ -93,7 +93,7 @@ namespace Cosmos
 
 	private:
 
-		Type mType = Type::EDITOR_FLY;
+		Type mType = Type::FREE_LOOK;
 		bool mFlipY = true;
 		bool mShouldMove = false;
 		float mPitch = 0.0f;

@@ -63,7 +63,7 @@ namespace Cosmos
 		Action mMenuAction = Action::None;
 		bool mCancelAction = false;
 
-		bool mDisplaySceneSettings = true;
+		bool mDisplaySceneSettings = false;
 
 		std::array<AssetResource, 6> mSkyboxImages;
 	};

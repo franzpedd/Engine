@@ -126,23 +126,31 @@ namespace Cosmos
 
 		else
 		{
-			ImGui::SeparatorText("Skybox configuration");
-			ImGui::TextDisabled("Drag and drop from Explorer");
+			ImGuiTreeNodeFlags flags = {};
 
-			const char* sides[6] = { "Right", "Left", "Top", "Bottom", "Front", "Back" };
-			for(uint8_t i = 0; i < 6; i++)
+			// skybox
+			if (ImGui::TreeNodeEx("Skybox Configurations", flags))
 			{
-				if(UI::ImageBrowser(sides[i], mSkyboxImages[i].descriptor, ImVec2(64.0f, 64.0f)))
+				ImGui::Text(ICON_FA_QUESTION_CIRCLE_O " Drag and drop from Explorer and then:");
+				ImGui::SameLine();
+
+				if (ImGui::SmallButton("Apply"))
 				{
-					// attach new texture for right image
+					// rebuilds the skybox, possibly with new faces
 				}
 
-				ImGui::SameLine();
-			}
+				const char* sides[6] = { "Right", "Left", "Top", "Bottom", "Front", "Back" };
+				for (uint8_t i = 0; i < 6; i++)
+				{
+					if (UI::ImageBrowser(sides[i], mSkyboxImages[i].descriptor, ImVec2(64.0f, 64.0f)))
+					{
+						// attach new texture for right image
+					}
 
-			if(ImGui::Button("Rebuild"))
-			{
-				// rebuilds the skybox, possibly with new faces
+					if (i != 5) ImGui::SameLine();
+				}
+
+				ImGui::TreePop();
 			}
 
 			ImGui::End();
