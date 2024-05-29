@@ -102,4 +102,10 @@ namespace Cosmos
 
 	// allows the hability to change a selectable name on double-click
 	bool SelectableInputText(bool* selected, char* buffer, size_t bufferSize);
+
+	namespace UI
+	{
+		// custom image-browser
+		bool ImageBrowser(const char* text, VkDescriptorSet descriptor, ImVec2 size);
+	}
 }

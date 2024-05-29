@@ -9,6 +9,15 @@ namespace Cosmos
 		: Widget("UI:Mainmenu"), mProject(project), mGrid(grid), mSceneHierarchy(sceneHierarchy)
 	{
 		Logger() << "Creating Mainmenu";
+
+		Shared<VKDevice> device = std::dynamic_pointer_cast<VKRenderer>(Application::GetInstance()->GetRenderer())->GetDevice();
+		Scene* scene = Application::GetInstance()->GetActiveScene();
+
+		for(uint8_t i = 0; i < 6; i++)
+		{
+			mSkyboxImages[i].texture = Texture2D::Create(device, scene->GetSkybox()->GetPathsRef()[i].c_str());
+			mSkyboxImages[i].descriptor = AddTexture(mSkyboxImages[i].texture->GetSampler(), mSkyboxImages[i].texture->GetView());
+		}
 	}
 
 	void Mainmenu::OnUpdate()
@@ -118,18 +127,23 @@ namespace Cosmos
 		else
 		{
 			ImGui::SeparatorText("Skybox configuration");
+			ImGui::TextDisabled("Drag and drop from Explorer");
 
-			ImGui::Text("Front");
+			const char* sides[6] = { "Right", "Left", "Top", "Bottom", "Front", "Back" };
+			for(uint8_t i = 0; i < 6; i++)
+			{
+				if(UI::ImageBrowser(sides[i], mSkyboxImages[i].descriptor, ImVec2(64.0f, 64.0f)))
+				{
+					// attach new texture for right image
+				}
 
-			ImGui::Text("Back");
+				ImGui::SameLine();
+			}
 
-			ImGui::Text("Left");
-
-			ImGui::Text("Right");
-
-			ImGui::Text("Top");
-
-			ImGui::Text("Bottom");
+			if(ImGui::Button("Rebuild"))
+			{
+				// rebuilds the skybox, possibly with new faces
+			}
 
 			ImGui::End();
 		}

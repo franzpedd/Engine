@@ -22,7 +22,7 @@ namespace Cosmos
 		mAlbedoPath = GetAssetSubDir("Textures/dev/colors/orange.png");
 	}
 
-	void Model::OnUpdate(float deltaTime, glm::mat4& transform)
+	void Model::OnUpdate(float deltaTime, glm::mat4 transform)
 	{
 		if (!mLoaded) return;
 

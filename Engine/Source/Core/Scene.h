@@ -30,6 +30,9 @@ namespace Cosmos
 
 	public:
 
+		// returns a smart-ptr to the scene's skybox
+		inline Shared<Skybox> GetSkybox() { return mSkybox; }
+
 		// returns a reference to the registry
 		inline entt::registry& GetRegistryRef() { return mRegistry; }
 

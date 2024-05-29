@@ -11,6 +11,7 @@
 #include "Entity/Components/Renderable.h"
 #include "Entity/Components/Scriptable.h"
 #include "Entity/Components/Sound.h"
+#include "Entity/Unique/Skybox.h"
 
 #include "Event/Event.h"
 #include "Event/InputEvent.h"

@@ -723,3 +723,36 @@ namespace Cosmos
 		return ret;
 	}
 }
+
+namespace Cosmos::UI
+{
+	bool ImageBrowser(const char* text, VkDescriptorSet descriptor, ImVec2 size)
+	{
+		bool res = false;
+		const std::vector<const char*> validFormats = { ".png", ".jpg" };
+		ImGui::ImageButton(text, descriptor, size);
+		
+		ImVec2 currentPos = ImGui::GetCursorPos();
+		
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER"))
+			{
+				std::filesystem::path path = (const char*)payload->Data;
+				
+				for(size_t i = 0; i < validFormats.size(); i++)
+				{
+					if (strcmp(validFormats[i], path.extension().string().c_str()) == 0)
+					{
+						res = true;
+					}
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		return res;
+	} 
+}

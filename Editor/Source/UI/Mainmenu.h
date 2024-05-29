@@ -23,6 +23,12 @@ namespace Cosmos
 			SaveAs
 		};
 
+		struct AssetResource
+		{
+			Shared<Texture2D> texture;
+			VkDescriptorSet descriptor = VK_NULL_HANDLE;
+		};
+
 	public:
 
 		// constructor
@@ -58,5 +64,7 @@ namespace Cosmos
 		bool mCancelAction = false;
 
 		bool mDisplaySceneSettings = true;
+
+		std::array<AssetResource, 6> mSkyboxImages;
 	};
 }
